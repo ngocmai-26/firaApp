@@ -2,7 +2,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import AuthReducer from '../slices/AuthSlice'
 import RolesReducer from '../slices/RolesSlice'
 import AlertReducer from '../slices/AlertSlice'
-import PermissionsReducer from '../slices/PermisionsSlice'
+import PermissionsReducer from '../slices/PermissionsSlice'
 
 export const store = configureStore({
   reducer: {

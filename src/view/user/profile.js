@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome'
 import { logout } from '../../slices/AuthSlice'
 import { useDispatch } from 'react-redux'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false)
@@ -25,10 +26,24 @@ const Profile = () => {
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
-  const dispatch = useDispatch();
+  const [userData, setUserData] = useState({})
+  const dispatch = useDispatch()
 
+  useLayoutEffect(() => {
+    const user = async () => {
+      try {
+        return await AsyncStorage.getItem('user')
+      } catch (e) {
+        console.log('Error when removing..')
+      }
+    }
+    user().then((data) => {
+      setUserData(JSON.parse(data))
+    })
+  }, [])
   const handleSaveProfile = () => {
     // Logic to save profile information
+    console.log('userData', userData)
     setIsEditing(false)
   }
 
@@ -101,33 +116,59 @@ const Profile = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.infoContainer}>
+        <View style={{ flexDirection: 'row', gap: 5 }}>
+          <View style={{ flex: 0.5 }}>
+            <TextInput
+              style={styles.input}
+              value={userData.firstName}
+              onChangeText={(value) =>
+                setUserData({ ...userData, firstName: value })
+              }
+              editable={isEditing}
+              placeholder="First Name"
+            />
+          </View>
+          <View style={{ flex: 0.5 }}>
+            <TextInput
+              style={styles.input}
+              value={userData.lastName}
+              onChangeText={(value) =>
+                setUserData({ ...userData, lastName: value })
+              }
+              editable={isEditing}
+              placeholder="Last Name"
+            />
+          </View>
+        </View>
         <TextInput
           style={styles.input}
-          value={name}
-          onChangeText={setName}
-          editable={isEditing}
-          placeholder="Name"
-        />
-        <TextInput
-          style={styles.input}
-          value={address}
-          onChangeText={setAddress}
+          value={userData.address}
+          onChangeText={(value) => setUserData({ ...userData, address: value })}
           editable={isEditing}
           placeholder="Address"
         />
         <TextInput
           style={styles.input}
-          value={department}
-          onChangeText={setDepartment}
+          value={userData.department}
+          onChangeText={(value) =>
+            setUserData({ ...userData, department: value })
+          }
           editable={isEditing}
           placeholder="Department"
         />
         <TextInput
           style={styles.input}
-          value={email}
-          onChangeText={setEmail}
+          value={userData.email}
+          onChangeText={(value) => setUserData({ ...userData, email: value })}
           editable={isEditing}
           placeholder="Email"
+        />
+        <TextInput
+          style={styles.input}
+          value={userData.phone}
+          onChangeText={(value) => setUserData({ ...userData, phone: value })}
+          editable={isEditing}
+          placeholder="Phone"
         />
         {isEditing && (
           <TouchableOpacity

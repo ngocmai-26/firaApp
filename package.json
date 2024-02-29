@@ -15,6 +15,7 @@
     "@react-navigation/native": "^6.1.9",
     "@react-navigation/native-stack": "^6.9.17",
     "@reduxjs/toolkit": "^2.2.1",
+    "base-64": "^1.0.0",
     "btoa": "^1.2.1",
     "chart.js": "^4.4.1",
     "expo": "~50.0.4",

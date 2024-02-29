@@ -7,18 +7,21 @@ import {
   setRefresh,
   setUser,
 } from '../slices/AuthSlice'
-import { API } from '../constants/api'
+import { API, AUTH_KEY_NAME } from '../constants/api'
 import { setAlert } from '../slices/AlertSlice'
 import { TOAST_ERROR, TOAST_SUCCESS } from '../constants/toast'
 import {
+  dataToBase64,
   // dataToBase64,
   delaySync,
+  loadAuthInfoFromStorage,
   loadTokenFromStorage,
   setAuthInfo,
   setToken,
 } from '../services/AuthService'
 import { getHeaders } from '../services/ApiService'
 import Toast from 'react-native-toast-message'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export const login = createAsyncThunk(
   'Đăng Nhập',
@@ -46,6 +49,7 @@ export const login = createAsyncThunk(
           text1: dataJson?.message[0],
         })
         dispatch(setErrors({}))
+        console.log(dataJson?.message[0])
         return rejectWithValue('something error')
       }
       Toast.show({
@@ -54,7 +58,10 @@ export const login = createAsyncThunk(
       })
 
       setToken(dataJson?.data?.token)
-      // setAuthInfo(dataToBase64(loginData))
+
+      await AsyncStorage.setItem('user', JSON.stringify(dataJson?.data?.user))
+      await AsyncStorage.setItem('auth_user', JSON.stringify(loginData))
+
       dispatch(setUser(dataJson?.data?.user))
       dispatch(setLogged(true))
       dispatch(setRefresh({ refresh: true, uri: 'home' }))
@@ -95,7 +102,9 @@ export const loginWithAuthToken = createAsyncThunk(
         return rejectWithValue('something error')
       }
       setToken(dataJson?.data?.token)
-      // setAuthInfo(dataToBase64(loginData))
+      await AsyncStorage.setItem('user', JSON.stringify(dataJson?.data?.user))
+      await AsyncStorage.setItem('auth', JSON.stringify(loginData))
+      console.log('loginData', loginData)
       dispatch(setUser(dataJson?.data?.user))
       dispatch(setLogged(true))
       dispatch(setRefresh('home'))
@@ -199,6 +208,8 @@ export const createNewUser = createAsyncThunk(
         type: TOAST_SUCCESS,
         text1: 'Tạo người dùng thành công',
       })
+
+      await AsyncStorage.setItem('user', JSON.stringify(dataJson?.data))
       dispatch(setUser(dataJson?.data))
       // dispatch(setRefresh("/"));
     } catch (e) {
@@ -210,61 +221,6 @@ export const createNewUser = createAsyncThunk(
     }
   },
 )
-
-// export const createNewUser = createAsyncThunk(
-//   "create-new-user",
-//   async (newUserData, { rejectWithValue, dispatch }) => {
-//     console.log(newUserData)
-//     try {
-//       dispatch(setAuthFetching(true));
-//       await delaySync(1);
-//       const token = loadTokenFromStorage();
-//       if (!token) {
-//         Toast.show({
-//           type: TOAST_ERROR,
-//           text1: 'Phiên bản hết hạn vui lòng đăng nhập lại',
-//         })
-//         dispatch(setAuthFetching(true));
-//         rejectWithValue();
-//       }
-//       const resp = await fetch(`${API.uri}/users`, {
-//         method: "POST",
-//         headers: getHeaders(token),
-//         body: JSON.stringify(newUserData),
-//       });
-//       dispatch(setAuthFetching(false));
-//       const jsonData = await resp.json();
-//       console.log("jsonData", jsonData)
-//       if (resp.status >= 300) {
-//         if (!jsonData?.valid) {
-
-//           dispatch(setErrors(jsonData?.data));
-//           return rejectWithValue();
-//         }
-//         dispatch(setErrors({}));
-//         console.log(jsonData.message[0])
-//         Toast.show({
-//           type: TOAST_ERROR,
-//           text1: jsonData.message[0],
-//         })
-//         return rejectWithValue();
-//       }
-//       Toast.show({
-//         type: TOAST_SUCCESS,
-//         text1: 'Tạo người dùng thành công',
-//       })
-//       dispatch(setUser(jsonData?.data));
-//       dispatch(setRefresh("/"));
-//     } catch (e) {
-//       dispatch(setAuthFetching(true));
-//       Toast.show({
-//         type: TOAST_ERROR,
-//         text1: "Something error",
-//       })
-//       console.log(e);
-//     }
-//   }
-// );
 
 export const confirmAccount = createAsyncThunk(
   'verify-email',

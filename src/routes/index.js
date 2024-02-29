@@ -19,6 +19,8 @@ import { NavigationContainer, useNavigation } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { useEffect } from 'react'
 import Toast from 'react-native-toast-message'
+import { AUTH_KEY_NAME } from '../constants/api'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const Stack = createNativeStackNavigator()
 
@@ -78,6 +80,8 @@ const LoggedRoute = () => {
 
 function Router() {
   const { logged } = useSelector((state) => state.authReducer)
+
+ 
 
   return (
     <NavigationContainer>

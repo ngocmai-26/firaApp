@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import {
   StyleSheet,
   Text,
@@ -8,38 +8,60 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  TextInput,
 } from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import _ from 'lodash'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  addNewPermission,
+  deletePermissions,
+  getAllPermissions,
+} from '../../../thunks/PermissionsThunk'
+import Icon from 'react-native-vector-icons/FontAwesome6'
 
 export default function ManagerPermissions() {
+  const { allPermission, singlePermission } = useSelector(
+    (state) => state.permissionsReducer,
+  )
+  const dispatch = useDispatch()
+  const [showPermissionById, setShowPermissionById] = useState(false)
+  const [permissions, setPermissions] = useState([])
+
+  useLayoutEffect(() => {
+    if (allPermission.length <= 0) {
+      dispatch(getAllPermissions())
+    }
+  }, [])
+
+  
+
+  useEffect(() => {
+    setPermissions(allPermission)
+  }, [allPermission])
   const [columns, setColumns] = useState([
-    'Name',
-    'Gender',
-    'Breed',
-    'Weight',
-    'Age',
-    'Age',
+    'Id',
+    'Tên Chức Năng',
+    'Mô Tả',
+    'Hành động',
   ])
   const [direction, setDirection] = useState(null)
   const [selectedColumn, setSelectedColumn] = useState(null)
-  const [pets, setPets] = useState([
-    {
-      Name: 'Charlie',
-      Gender: 'Male',
-      Breed: 'Dog',
-      Weight: 12,
-      Age: 3,
-    },
-    // more pet data...
-  ])
+
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [newPermissionData, setNewPermissionData] = useState({
+    name: '',
+    description: '',
+    
+  })
+ 
 
   const sortTable = (column) => {
     const newDirection = direction === 'desc' ? 'asc' : 'desc'
-    const sortedData = _.orderBy(pets, [column], [newDirection])
+    const sortedData = _.orderBy(permissions, [column], [newDirection])
     setSelectedColumn(column)
     setDirection(newDirection)
-    setPets(sortedData)
+    setPermissions(sortedData)
   }
 
   const tableHeader = () => (
@@ -67,11 +89,102 @@ export default function ManagerPermissions() {
     </View>
   )
 
+  const handleAddPermission = () => {
+    setShowAddForm(true)
+  }
+
+  const handleInputChange = (key, value) => {
+    setNewPermissionData({ ...newPermissionData, [key]: value })
+  }
+
+  const handleSaveNewPermission = () => {
+    const updatedPermission = [...permissions, newPermissionData]
+    console.log('newPermissionData', newPermissionData)
+    dispatch(addNewPermission(newPermissionData))
+    
+    // setNewPermissionData({
+    //   name: '',
+    //   description: '',
+    // })
+    setShowAddForm(false)
+  }
+
+  const renderAddForm = () => (
+    <View style={styles.addFormContainer}>
+      <Text style={styles.formTitle}>Add New Permission</Text>
+      {Object.keys(newPermissionData).map((key, index) => {
+        return (
+          <TextInput
+            key={index}
+            style={styles.input}
+            placeholder={key}
+            value={newPermissionData[key]}
+            onChangeText={(text) => handleInputChange(key, text)}
+          />
+        )
+      })}
+
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+        <TouchableOpacity
+          style={[styles.cancelButton, { marginHorizontal: 3 }]}
+          onPress={() => setShowAddForm(false)}
+        >
+          <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={handleSaveNewPermission}
+        >
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
+
+  const [selectedPermission, setSelectedPermission] = useState(null)
+
+  const handleViewPermissionDetails = (permission) => {
+    setSelectedPermission(permission) // Lưu role được chọn để xem chi tiết
+  }
+
+  const renderPermissionDetailsForm = () => {
+    return (
+      <View style={styles.addFormContainer}>
+        <Text style={styles.formTitle}>Role Details</Text>
+        <TextInput
+          style={styles.input}
+          value={selectedPermission?.name}
+          editable={false} // Không cho phép chỉnh sửa
+        />
+        <TextInput
+          style={styles.input}
+          value={selectedPermission?.description}
+          editable={false} // Không cho phép chỉnh sửa
+        />
+        88
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'gray',
+              paddingHorizontal: 5,
+              paddingVertical: 5,
+              borderRadius: 3,
+            }}
+            onPress={() => setSelectedPermission(null)}
+          >
+            <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
         <FlatList
-          data={pets}
+          data={permissions}
           style={styles.tableContent}
           keyExtractor={(item, index) => index + ''}
           ListHeaderComponent={tableHeader}
@@ -84,21 +197,34 @@ export default function ManagerPermissions() {
               }}
             >
               <Text style={{ ...styles.columnRowTxt, fontWeight: 'bold' }}>
-                {item.Name}
+                {item.id}
               </Text>
-              <Text style={styles.columnRowTxt}>{item.Gender}</Text>
-              <Text style={styles.columnRowTxt}>{item.Breed}</Text>
-              <Text style={styles.columnRowTxt}>{item.Weight}</Text>
-              <Text style={styles.columnRowTxt}>{item.Age}</Text>
-              <Text style={styles.columnRowTxt}>{item.Age}</Text>
+              <Text style={styles.columnRowTxt}>{item.name}</Text>
+              <Text style={styles.columnRowTxt}>{item.description}</Text>
+              <View style={[styles.columnRowTxt, { flexDirection: 'row' }]}>
+                <TouchableOpacity
+                  style={{ paddingHorizontal: 10 }}
+                  onPress={() => handleViewPermissionDetails(item)}
+                >
+                  <Icon name="eye" size={20} color="#3498db" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ paddingHorizontal: 10 }}
+                  onPress={() => dispatch(deletePermissions(item.id))}
+                >
+                  <Icon name="trash-can" size={20} color="#3498db" />
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         />
       </ScrollView>
-      <TouchableOpacity style={styles.addButton}>
+      <TouchableOpacity style={styles.addButton} onPress={handleAddPermission}>
         <MaterialCommunityIcons name="plus-circle" size={64} color="blue" />
       </TouchableOpacity>
       <StatusBar style="auto" />
+      {selectedPermission && renderPermissionDetailsForm()}
+      {showAddForm && renderAddForm()}
     </View>
   )
 }
@@ -131,8 +257,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   columnHeader: {
-    minWidth: windowWidth * 0.2, // 20% của chiều rộng màn hình
-    maxWidth: windowWidth * 0.2, // 20% của chiều rộng màn hình
+    minWidth: windowWidth * 0.3,
+    maxWidth: windowWidth * 0.3,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -141,14 +267,53 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   columnRowTxt: {
-    width: '20%',
+    minWidth: windowWidth * 0.3,
+    maxWidth: windowWidth * 0.3,
     textAlign: 'center',
   },
   addButton: {
     position: 'absolute',
     bottom: 20,
     right: 20,
+  },
+  addFormContainer: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    width: '100%',
+  },
+  formTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+  },
 
+  saveButton: {
+    backgroundColor: 'blue',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: 'gray',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 })
-

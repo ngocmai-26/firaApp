@@ -1,5 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { API_KEY_NAME, AUTH_KEY_NAME } from '../constants/api'
+import {decode, encode} from 'base-64'
+
+if (!global.btoa) {
+    global.btoa = encode;
+}
+
+if (!global.atob) {
+    global.atob = decode;
+}
 
 export const getValueByKey = async (key) => {
   try {
@@ -31,12 +40,12 @@ export const removeWithKey = async (key) => {
   }
 }
 
-// export const dataToBase64 = (data) => {
-//   return btoa(JSON.stringify(data));
-// };
-// export const base64ToData = (base64Str) => {
-//   return JSON.parse(atob(base64Str))
-// }
+export const dataToBase64 = (data) => {
+  return btoa(JSON.stringify(data));
+};
+export const base64ToData = (base64Str) => {
+  return JSON.parse(atob(base64Str))
+}
 export const delaySync = async (seconds) => {
   await new Promise((res) => setTimeout(() => res(), seconds * 1000))
 }
