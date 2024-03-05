@@ -1,19 +1,52 @@
-import { useState } from 'react'
-import { Text, TextInput, TouchableOpacity, ScrollView } from 'react-native'
-import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
-import { createNewUser } from '../../thunks/AuthThunk'
-import { useNavigation } from '@react-navigation/native'
-import { logout } from '../../slices/AuthSlice'
+import React, { useState } from 'react';
+import { Text, TextInput, TouchableOpacity, ScrollView, View } from 'react-native';
+import { useDispatch } from 'react-redux';
+import { createNewUser } from '../../thunks/AuthThunk';
+import { setLogged } from '../../slices/AuthSlice';
 
 function CreateNewUser() {
-  const dispatch = useDispatch()
-  const [newUserData, setNewUserData] = useState({})
+  const dispatch = useDispatch();
+  const [newUserData, setNewUserData] = useState({});
+  const [errors, setErrors] = useState({});
 
-  const { isFetching, errors } = useSelector((state) => state.authReducer)
   const handleCreateNewUser = () => {
-    dispatch(createNewUser(newUserData))
-  }
+    const validationErrors = {};
+    if (!newUserData.firstName) {
+      validationErrors.firstName = "Không được bỏ trống";
+    }
+    if (!newUserData.lastName) {
+      validationErrors.lastName = "Không được bỏ trống";
+    }
+    if (!newUserData.address) {
+      validationErrors.address = "Không được bỏ trống";
+    }
+    if (!newUserData.birthday) {
+      validationErrors.birthday = "Không được bỏ trống";
+    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(newUserData.birthday)) {
+      validationErrors.birthday = "Định dạng ngày sinh không hợp lệ (VD: 2002-02-02)";
+    } else {
+      const parts = newUserData.birthday.split('-');
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10);
+      const day = parseInt(parts[2], 10);
+      const dateObject = new Date(year, month - 1, day);
+
+      if (
+        dateObject.getFullYear() !== year ||
+        dateObject.getMonth() !== month - 1 ||
+        dateObject.getDate() !== day
+      ) {
+        validationErrors.birthday = "Ngày sinh không hợp lệ";
+      }
+    }
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    dispatch(createNewUser(newUserData));
+  };
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -76,7 +109,7 @@ function CreateNewUser() {
                     marginTop: 3,
                     width: '100%',
                     borderWidth: 1,
-                    borderColor: '#ccc',
+                    borderColor: errors.firstName ? 'red' : '#ccc',
                     borderRadius: 5,
                     marginVertical: 5,
                   }}
@@ -85,6 +118,9 @@ function CreateNewUser() {
                   }
                   placeholder="VD: Mai"
                 />
+                {errors.firstName && (
+                  <Text style={{ color: 'red' }}>{errors.firstName}</Text>
+                )}
               </View>
 
               <View style={{ marginBottom: 10 }}>
@@ -105,7 +141,7 @@ function CreateNewUser() {
                     marginTop: 3,
                     width: '100%',
                     borderWidth: 1,
-                    borderColor: '#ccc',
+                    borderColor: errors.lastName ? 'red' : '#ccc',
                     borderRadius: 5,
                     marginVertical: 5,
                   }}
@@ -114,6 +150,9 @@ function CreateNewUser() {
                   }
                   placeholder="VD: Nguyễn"
                 />
+                {errors.lastName && (
+                  <Text style={{ color: 'red' }}>{errors.lastName}</Text>
+                )}
               </View>
 
               <View style={{ marginBottom: 10 }}>
@@ -134,7 +173,7 @@ function CreateNewUser() {
                     marginTop: 3,
                     width: '100%',
                     borderWidth: 1,
-                    borderColor: '#ccc',
+                    borderColor: errors.address ? 'red' : '#ccc',
                     borderRadius: 5,
                     marginVertical: 5,
                   }}
@@ -143,6 +182,9 @@ function CreateNewUser() {
                   }
                   placeholder="VD: Hồ Chí Minh"
                 />
+                {errors.address && (
+                  <Text style={{ color: 'red' }}>{errors.address}</Text>
+                )}
               </View>
 
               <View style={{ marginBottom: 10 }}>
@@ -163,7 +205,7 @@ function CreateNewUser() {
                     marginTop: 3,
                     width: '100%',
                     borderWidth: 1,
-                    borderColor: '#ccc',
+                    borderColor: errors.birthday ? 'red' : '#ccc',
                     borderRadius: 5,
                     marginVertical: 5,
                   }}
@@ -172,6 +214,9 @@ function CreateNewUser() {
                     setNewUserData({ ...newUserData, birthday: value })
                   }
                 />
+                {errors.birthday && (
+                  <Text style={{ color: 'red' }}>{errors.birthday}</Text>
+                )}
               </View>
 
               <View style={{ marginBottom: 10 }}>
@@ -192,7 +237,7 @@ function CreateNewUser() {
                     marginTop: 3,
                     width: '100%',
                     borderWidth: 1,
-                    borderColor: '#ccc',
+                    borderColor: errors.department ? 'red' : '#ccc',
                     borderRadius: 5,
                     marginVertical: 5,
                   }}
@@ -201,6 +246,9 @@ function CreateNewUser() {
                     setNewUserData({ ...newUserData, department: value })
                   }
                 />
+                {errors.department && (
+                  <Text style={{ color: 'red' }}>{errors.department}</Text>
+                )}
               </View>
 
               <View style={{ marginBottom: 10 }}>
@@ -221,7 +269,7 @@ function CreateNewUser() {
                     marginTop: 3,
                     width: '100%',
                     borderWidth: 1,
-                    borderColor: '#ccc',
+                    borderColor: errors.phone ? 'red' : '#ccc',
                     borderRadius: 5,
                     marginVertical: 5,
                   }}
@@ -230,30 +278,31 @@ function CreateNewUser() {
                   }
                   placeholder="VD: 0378556845"
                 />
+                {errors.phone && (
+                  <Text style={{ color: 'red' }}>{errors.phone}</Text>
+                )}
               </View>
 
               <View
                 style={{
                   flexDirection: 'row',
-                  justifyContent: 'flex-end',
+                  justifyContent: 'space-between',
                   marginTop: 20,
                 }}
               >
-                {/* <TouchableOpacity
-                  onPress={() => dispatch(logout())}
+                <TouchableOpacity
                   style={{
-                    flex: 1,
                     backgroundColor: '#4a90e2',
                     padding: 10,
                     borderRadius: 5,
-                    marginRight: 10,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '45%',
                   }}
+                  onPress={()=> {dispatch(setLogged(false))}}
                 >
-                  <Text style={{ color: 'white', textAlign: 'center' }}>
-                    Quay lại
-                  </Text>
-                </TouchableOpacity> */}
-
+                  <Text style={{ color: 'white', fontSize: 16 }}>Quay lại </Text>
+                </TouchableOpacity>
                 <TouchableOpacity
                   style={{
                     backgroundColor: '#4a90e2',
@@ -273,7 +322,7 @@ function CreateNewUser() {
         </View>
       </View>
     </ScrollView>
-  )
+  );
 }
 
-export default CreateNewUser
+export default CreateNewUser;

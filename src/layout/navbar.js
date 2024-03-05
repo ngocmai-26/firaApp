@@ -9,14 +9,18 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome6'
+import NotificationComponent from '../component/Notification'
 
-function NavBar({navigation}) {
-  
-  // const navigation = useNavigation()
+function NavBar({ children }) {
+  const navigation = useNavigation()
   const [showSidebar, setShowSidebar] = useState(false)
+  const [hiddenComponent, setHiddenComponent] = useState(false)
 
   const handleOutsidePress = () => {
     setShowSidebar(false)
+  }
+  const handleHidden = () => {
+    setHiddenComponent(!hiddenComponent)
   }
 
   return (
@@ -155,7 +159,6 @@ function NavBar({navigation}) {
                       paddingVertical: 20,
                       paddingHorizontal: 10,
                     }}
-                    
                     onPress={() => navigation.navigate('quan-ly-chuc-nang')}
                   >
                     <View style={{ width: 30 }}>
@@ -200,6 +203,28 @@ function NavBar({navigation}) {
                       paddingVertical: 20,
                       paddingHorizontal: 10,
                     }}
+                    onPress={() => navigation.navigate('checkin')}
+                  >
+                    <View style={{ width: 30 }}>
+                      <Icon name="square-pen" size={20} color="#3498db" />
+                    </View>
+                    <Text
+                      style={{
+                        marginLeft: 10,
+                        fontSize: 16,
+                        fontWeight: '700',
+                      }}
+                    >
+                      checkin
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingVertical: 20,
+                      paddingHorizontal: 10,
+                    }}
                     onPress={() => navigation.navigate('notesApp')}
                   >
                     <View style={{ width: 30 }}>
@@ -221,10 +246,28 @@ function NavBar({navigation}) {
           )}
 
           <View
-            style={{ flex: 2, justifyContent: 'center', alignItems: 'center' }}
+            style={{
+              position: 'relative',
+              flex: 2,
+              paddingHorizontal: 15,
+              backgroundColor: 'white',
+            }}
           >
-            {/* Nội dung chính của ứng dụng ở đây */}
-            <Text>Main Content Goes Here</Text>
+            <View
+              style={{
+                borderRightWidth: 1,
+                borderColor: '#eee',
+                zIndex: 999,
+                position: 'absolute',
+
+                paddingVertical: 10,
+              }}
+            >
+              {/* Nội dung chính của ứng dụng ở đây */}
+              {children}
+
+              {/* <NotificationComponent hiddenComponent={hiddenComponent} handleHidden={handleHidden}   /> */}
+            </View>
           </View>
 
           {/* Header ở cuối màn hình */}
@@ -241,18 +284,20 @@ function NavBar({navigation}) {
               backgroundColor: '#eee',
             }}
           >
-            <TouchableOpacity 
-                      onPress={() => navigation.navigate('home')}>
+            <TouchableOpacity onPress={() => navigation.navigate('home')}>
               <Icon name="house" size={25} color="#3498db" />
             </TouchableOpacity>
-            <TouchableOpacity 
-                      onPress={() => navigation.navigate('tai-khoan')}>
+            <TouchableOpacity onPress={() => navigation.navigate('tai-khoan')}>
               <Icon name="user" size={25} color="#3498db" />
             </TouchableOpacity>
-            <TouchableOpacity 
-                      onPress={() => navigation.navigate('chat')}>
+            <TouchableOpacity onPress={() => navigation.navigate('chat')}>
               <Icon name="comments" size={25} color="#3498db" />
-            </TouchableOpacity >
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('notification')}
+            >
+              <Icon name="bell" size={25} color="#3498db" />
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowSidebar(!showSidebar)}>
               <Icon name="bars" size={20} color="#3498db" />
             </TouchableOpacity>

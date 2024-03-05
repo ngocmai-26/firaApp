@@ -11,16 +11,20 @@ import MsgItem from '../../component/MsgItem'
 import { useState } from 'react'
 import Icon from 'react-native-vector-icons/FontAwesome6'
 import BoxMsg from '../../component/BoxMsg'
+import { useNavigation } from '@react-navigation/native'
+import ModalRoomChat from '../../models/ModalRoomChat'
+import NotificationComponent from '../../component/Notification'
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: "relative"
+    position: 'relative',
+    paddingTop: 20,
   },
   leftColumn: {
     borderRightColor: '#E5E5E5',
     borderRightWidth: 2,
-    paddingLeft: 10,
+    paddingHorizontal: 10,
     backgroundColor: 'white',
   },
   rightColumn: {
@@ -68,11 +72,16 @@ function Chat() {
   const [expandBox, setExpandBox] = useState(false)
   const [expand, setExpand] = useState(false)
   const [seeMore, setSeeMore] = useState(false)
-  const handleHiddenModalRoom = () => {
-    // Xử lý khi người dùng nhấn nút ẩn modal
-  }
+  const [hiddenComponent, setHiddenComponent] = useState(false)
+  console.log('hiddenComponent',hiddenComponent)
 
-  const handleExpandBox = ({ navigation, route }) => {
+  const [hiddenModalRoom, setHiddenModalRoom] = useState(false)
+  const handleHiddenModalRoom = () => {
+    setHiddenModalRoom(!hiddenModalRoom)
+  }
+  const navigation = useNavigation()
+
+  const handleExpandBox = ({ route }) => {
     // Xử lý khi người dùng nhấn nút mở rộng box
     setExpandBox(!expandBox)
     setLeftBox(!leftBox)
@@ -528,26 +537,80 @@ function Chat() {
       capacity: '29MB',
     },
   ]
+  const handleHidden = () => {
+    setHiddenComponent(!hiddenComponent)
+
+  }
   return (
     <View style={{ height: '100%' }}>
       <View style={styles.container}>
         <View
-          style={[styles.leftColumn, { display: leftBox ? 'flex' : 'none' }]}
+          style={[
+            styles.leftColumn,
+            { display: leftBox ? 'flex' : 'none', position: 'relative' },
+          ]}
         >
-          {/* <View
+          <View
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
               borderBottomColor: '#E5E5E5',
+              width: '100%',
               borderBottomWidth: 2,
               paddingVertical: 10,
+              alignItems: 'center',
             }}
           >
             <Text style={{ fontWeight: 'bold', fontSize: 26 }}>Message</Text>
-            
-          </View> */}
-          {/* Thay thế SearchComponent bằng component tương ứng trong ứng dụng của bạn */}
-          {/* <SearchComponent placeholder="Tìm kiếm người dùng" /> */}
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity onPress={() => navigation.navigate('home')}>
+                <Icon
+                  name="house"
+                  size={25}
+                  style={{ fontWeight: 600, paddingHorizontal: 5 }}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleHidden}>
+                <Icon
+                  name="bell"
+                  size={25}
+                  style={{ fontWeight: 600, paddingHorizontal: 5 }}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <NotificationComponent hiddenComponent={hiddenComponent} handleHidden={handleHidden} maxheight={350} />
+          <View
+            style={{
+              marginVertical: 10,
+              width: '100%',
+              borderWidth: 1,
+              borderColor: '#ccc',
+              paddingHorizontal: 10,
+              paddingVertical: 5,
+              borderRadius: 5,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 2,
+              }}
+            >
+              <Icon
+                name="magnifying-glass"
+                size={16}
+                style={{ fontWeight: 600 }}
+                color="#ccc"
+              />
+              <TextInput
+                placeholder="Tìm kiếm"
+                style={{ fontSize: 16, flex: 1 }}
+              />
+            </View>
+          </View>
           <ScrollView
             style={[
               {
@@ -556,7 +619,7 @@ function Chat() {
             ]}
           >
             <View style={styles.scrollItem}>
-              <View style={{ marginVertical: 10 }}>
+              <View>
                 {/* Thay thế MsgItem bằng component tương ứng trong ứng dụng của bạn */}
                 {data.map((item) => (
                   <TouchableOpacity onPress={() => handleExpandBox(item?.id)}>
@@ -832,25 +895,30 @@ function Chat() {
           </View>
         </View>
         <View style={{ position: 'absolute', bottom: 0, right: 0 }}>
-        {/* Toggle Sidebar button */}
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#007bff', // Example background color
-            borderRadius: 50, // Round border to make it circular
-            width: 50, // Adjust width and height to make it smaller or larger
-            height: 50,
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginRight: 20, // Adjust margin to position it correctly
-            marginBottom: 20,
-            display: leftBox ? 'flex' : 'none'
-          }}
-        >
-          <Icon name="plus" size={20} color="white" />
-          {/* You can replace the Icon component with an Image component if you're using an image */}
-        </TouchableOpacity>
+          {/* Toggle Sidebar button */}
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#007bff', // Example background color
+              borderRadius: 50, // Round border to make it circular
+              width: 50, // Adjust width and height to make it smaller or larger
+              height: 50,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginRight: 20, // Adjust margin to position it correctly
+              marginBottom: 20,
+              display: leftBox ? 'flex' : 'none',
+            }}
+            onPress={handleHiddenModalRoom}
+          >
+            <Icon name="plus" size={20} color="white" />
+            {/* You can replace the Icon component with an Image component if you're using an image */}
+          </TouchableOpacity>
+        </View>
       </View>
-      </View>
+      <ModalRoomChat
+        hiddenModalRoom={hiddenModalRoom}
+        handleHiddenModalRoom={handleHiddenModalRoom}
+      />
     </View>
   )
 }

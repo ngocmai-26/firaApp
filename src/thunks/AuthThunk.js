@@ -191,10 +191,7 @@ export const createNewUser = createAsyncThunk(
       const dataJson = await resp.json()
       if (resp.status >= 300) {
         if (!dataJson?.valid) {
-          Toast.show({
-            type: TOAST_ERROR,
-            text1: dataJson?.data,
-          })
+          dispatch(setErrors(jsonData?.data));
           return rejectWithValue()
         }
         Toast.show({

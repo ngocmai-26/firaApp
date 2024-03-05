@@ -1,32 +1,31 @@
 import { Text, TextInput, TouchableOpacity, View } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
-import { forgotPassword } from '../../thunks/AuthThunk';
-import { useDispatch } from 'react-redux';
-import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { forgotPassword } from '../../thunks/AuthThunk'
+import { useDispatch } from 'react-redux'
+import { useNavigation } from '@react-navigation/native'
+import { useState } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 function ForgotPassword() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
   const navigation = useNavigation()
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('')
   const save = async () => {
     try {
-      const jsonValue = JSON.stringify(email);
-      await AsyncStorage.setItem('email', jsonValue);
+      const jsonValue = JSON.stringify(email)
+      await AsyncStorage.setItem('email', jsonValue)
     } catch (e) {
       console.log(e)
     }
   }
   const handleSubmit = () => {
-    dispatch(forgotPassword(email))
-    .then((reps) => {
+    dispatch(forgotPassword(email)).then((reps) => {
       if (!reps?.error) {
         save()
         navigation.navigate('confirm-forgot-password')
       }
-    });
-  };
+    })
+  }
 
   return (
     <View style={{ height: '100%' }}>
@@ -53,7 +52,12 @@ function ForgotPassword() {
         >
           <View style={{ alignItems: 'center', paddingVertical: 10 }}>
             <Text
-              style={{ fontWeight: 'bold', fontSize: 26, color: '#367BD6', marginVertical: 2 }}
+              style={{
+                fontWeight: 'bold',
+                fontSize: 26,
+                color: '#367BD6',
+                marginVertical: 2,
+              }}
             >
               Khôi phục mật khẩu
             </Text>
@@ -72,11 +76,10 @@ function ForgotPassword() {
               position: 'absolute',
               top: 5,
               right: 10,
-              fontSize: 14,
-              fontWeight: 600,
             }}
+            onPress={() => navigation.navigate('Đăng Nhập')}
           >
-            <Text>X</Text>
+          <Icon name="close" size={20} color="#ccc" />
           </TouchableOpacity>
           <View>
             <View
@@ -106,26 +109,25 @@ function ForgotPassword() {
                   marginTop: 3,
                   width: '90%',
                 }}
-                placeholder='Email'
+                placeholder="Email"
                 keyboardType="email-address"
                 onChangeText={(value) => setEmail(value)}
               />
-              
             </View>
             <TouchableOpacity
-                style={{
-                  backgroundColor: '#3498db',
-                  padding: 10,
-                  borderRadius: 5,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginRight: 10,
-                  marginVertical: 10,
-                }}
-                onPress={handleSubmit}
-              >
-                <Text style={{ color: 'white', fontSize: 16 }}>Gửi</Text>
-              </TouchableOpacity>
+              style={{
+                backgroundColor: '#3498db',
+                padding: 10,
+                borderRadius: 5,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginRight: 10,
+                marginVertical: 10,
+              }}
+              onPress={handleSubmit}
+            >
+              <Text style={{ color: 'white', fontSize: 16 }}>Gửi</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>

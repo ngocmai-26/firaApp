@@ -79,11 +79,10 @@ function VerifyEmail() {
               position: 'absolute',
               top: 5,
               right: 10,
-              fontSize: 14,
-              fontWeight: 600,
             }}
+            onPress={() => navigation.navigate('Đăng Nhập')}
           >
-            <Text>X</Text>
+          <Icon name="close" size={20} color="#ccc" />
           </TouchableOpacity>
           <View>
             <View
