@@ -9,9 +9,11 @@ import {
   Image,
 } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
-import { logout } from '../../slices/AuthSlice'
+import { logout, setLogged } from '../../slices/AuthSlice'
 import { useDispatch } from 'react-redux'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useNavigation } from '@react-navigation/native'
+import * as ImagePicker from 'expo-image-picker'
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false)
@@ -19,6 +21,7 @@ const Profile = () => {
     isChangePasswordModalVisible,
     setIsChangePasswordModalVisible,
   ] = useState(false)
+  const navigation = useNavigation()
   const [name, setName] = useState('John Doe')
   const [address, setAddress] = useState('123 Main Street')
   const [department, setDepartment] = useState('Engineering')
@@ -28,6 +31,21 @@ const Profile = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
   const [userData, setUserData] = useState({})
   const dispatch = useDispatch()
+  const [image, setImage] = useState(null)
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    })
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri)
+    }
+  }
 
   useLayoutEffect(() => {
     const user = async () => {
@@ -41,9 +59,9 @@ const Profile = () => {
       setUserData(JSON.parse(data))
     })
   }, [])
+
   const handleSaveProfile = () => {
     // Logic to save profile information
-    console.log('userData', userData)
     setIsEditing(false)
   }
 
@@ -63,15 +81,38 @@ const Profile = () => {
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <TouchableOpacity style={styles.avatarContainer}>
+        <View style={{ position: 'relative' }}>
           <Image
-            source={{
-              uri:
-                'https://imgt.taimienphi.vn/cf/Images/np/2022/9/7/hinh-anh-cute-dep-de-thuong-nhat-7.jpg',
-            }}
+            source={{ uri: image || userData?.avatar }}
             style={{ width: 100, height: 100, borderRadius: 100 }}
           />
-        </TouchableOpacity>
+          {isEditing && <TouchableOpacity
+            style={[
+              styles.avatarContainer,
+              {
+                flexDirection: 'row',
+                borderWidth: 1,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                borderRadius: 5,
+                borderColor: '#3498db',
+                marginVertical: 5,
+              },
+            ]}
+            onPress={pickImage}
+          >
+            <Icon name="upload" size={20} color="#3498db" />
+            <Text
+              style={{
+                marginLeft: 5,
+              }}
+            >
+              Upload ảnh
+            </Text>
+          </TouchableOpacity>}
+          
+        </View>
+
         <TouchableOpacity
           onPress={() => setIsEditing(!isEditing)}
           style={{
@@ -120,7 +161,7 @@ const Profile = () => {
           <View style={{ flex: 0.5 }}>
             <TextInput
               style={styles.input}
-              value={userData.firstName}
+              value={userData?.firstName}
               onChangeText={(value) =>
                 setUserData({ ...userData, firstName: value })
               }
@@ -131,7 +172,7 @@ const Profile = () => {
           <View style={{ flex: 0.5 }}>
             <TextInput
               style={styles.input}
-              value={userData.lastName}
+              value={userData?.lastName}
               onChangeText={(value) =>
                 setUserData({ ...userData, lastName: value })
               }
@@ -142,14 +183,14 @@ const Profile = () => {
         </View>
         <TextInput
           style={styles.input}
-          value={userData.address}
+          value={userData?.address}
           onChangeText={(value) => setUserData({ ...userData, address: value })}
           editable={isEditing}
           placeholder="Address"
         />
         <TextInput
           style={styles.input}
-          value={userData.department}
+          value={userData?.department}
           onChangeText={(value) =>
             setUserData({ ...userData, department: value })
           }
@@ -158,14 +199,14 @@ const Profile = () => {
         />
         <TextInput
           style={styles.input}
-          value={userData.email}
+          value={userData?.email}
           onChangeText={(value) => setUserData({ ...userData, email: value })}
           editable={isEditing}
           placeholder="Email"
         />
         <TextInput
           style={styles.input}
-          value={userData.phone}
+          value={userData?.phone}
           onChangeText={(value) => setUserData({ ...userData, phone: value })}
           editable={isEditing}
           placeholder="Phone"

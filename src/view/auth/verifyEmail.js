@@ -21,7 +21,6 @@ function VerifyEmail() {
   }
 
   const handleSubmit = () => {
-    console.log(email)
     dispatch(requestNewCode(email?.email)).then((reps) => {
       if (!reps.error) {
         save()

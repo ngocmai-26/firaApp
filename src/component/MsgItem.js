@@ -80,9 +80,9 @@ function MsgItem({ data, key }) {
         ) : (
           <View style={{ marginRight: 5 }}>
             {/* Hiển thị hình ảnh nếu có, thay thế 'data?.img' bằng đường dẫn hình ảnh thực tế */}
-            {data?.img && (
+            {data?.avatar && (
               <Image
-                source={{ uri: data?.img }}
+                source={{ uri: data?.avatar }}
                 style={{ width: 50, height: 50, borderRadius: 5 }}
               />
             )}
@@ -91,7 +91,10 @@ function MsgItem({ data, key }) {
         <View style={{ maxWidth: 250 }}>
           <View style={{ marginBottom: 3 }}>
             <Text style={{ fontWeight: 'bold', fontSize: 16 }}>
-              {data?.name}
+              {data?.fullName}
+            </Text>
+            <Text style={{  fontSize: 14 }}>
+              {data?.email}
             </Text>
           </View>
           <View

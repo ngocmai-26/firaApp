@@ -1,208 +1,429 @@
-import { useState } from 'react'
+import React, { useState, useLayoutEffect, useEffect } from 'react'
 import {
-  View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
-  Image,
+  Text,
+  View,
+  FlatList,
+  TouchableOpacity,
   ScrollView,
+  Dimensions,
+  TextInput,
 } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import _ from 'lodash'
+import { useDispatch, useSelector } from 'react-redux'
 import Icon from 'react-native-vector-icons/FontAwesome6'
+import {
+  addNewAccount,
+  deleteAccount,
+  getAccountById,
+  getAllAccount,
+} from '../../../thunks/AccountsThunk'
+import { getAllRole } from '../../../thunks/RolesThunk'
+import Select from 'react-select'
+import { Dropdown } from 'react-native-element-dropdown'
 
-const AccountBox = ({ account, onApprove, onViewProfile }) => {
-  const navigation = useNavigation()
+export default function ManagerAccount() {
+  const { allAccount, singleAccount } = useSelector(
+    (state) => state.accountsReducer,
+  )
+  const { allRole } = useSelector((state) => state.rolesReducer)
+  const dispatch = useDispatch()
+  const [newAccountData, setNewAccountData] = useState({
+    username: '',
+    password: '',
+  })
 
-  const handlePress = () => {
-    // Chuyển đến trang hiển thị thông tin chi tiết của tài khoản
-    navigation.navigate('accountDetail')
-  }
-
-  const handleViewProfile = () => {
-    // Kiểm tra nếu status của tài khoản là 2, thì chuyển thành 0
-    if (account.status === 2) {
-      onViewProfile(account)
-    } else {
-      handlePress()
+  const [isFocus, setIsFocus] = useState(false)
+  const [accounts, setAccounts] = useState(allAccount)
+  const [accountDetail, setAccountDetail] = useState(null)
+  useLayoutEffect(() => {
+    if (allAccount.length <= 0) {
+      dispatch(getAllAccount())
     }
+    if (allRole.length <= 0) {
+      dispatch(getAllRole())
+    }
+  }, [])
+  useEffect(() => {
+    setAccounts(allAccount)
+  }, [allAccount])
+
+  const data = allRole.map((role) => ({
+    value: role.id.toString(),
+    label: role.roleName,
+  }))
+
+  const [columns, setColumns] = useState([
+    'Id',
+    'FullName',
+    'UserName',
+    'Phone',
+    'Action',
+  ])
+  const [direction, setDirection] = useState(null)
+  const [selectedColumn, setSelectedColumn] = useState(null)
+  const [showAddForm, setShowAddForm] = useState(false)
+
+  const sortTable = (column) => {
+    const newDirection = direction === 'desc' ? 'asc' : 'desc'
+    const sortedData = _.orderBy(accounts, [column], [newDirection])
+    setSelectedColumn(column)
+    setDirection(newDirection)
+    setAccounts(sortedData)
   }
 
-  const truncatedEmail =
-    account.email.length > 20
-      ? account.email.substring(0, 20) + '...'
-      : account.email
-
-  return (
-    <View
-      style={[
-        styles.box,
-        account.status === 1 && {
-          backgroundColor: '#ff7c7ca6',
-          borderColor: '#ff7c7ca6',
-        },
-      ]}
-    >
-      <View style={styles.boxItem}>
-        <Image
-          source={{
-            uri:
-              'https://imgt.taimienphi.vn/cf/Images/np/2022/9/7/hinh-anh-cute-dep-de-thuong-nhat-7.jpg',
-          }}
-          style={{ width: 65, height: 65, borderRadius: 100 }}
-        />
-      </View>
-      <View style={[styles.boxItem, { flex: 1 }]}>
-        <Text style={styles.name}>{account.name}</Text>
-        <Text style={styles.email} numberOfLines={1}>
-          {truncatedEmail}
-        </Text>
-      </View>
-      <View style={styles.boxItem}>
+  const tableHeader = () => (
+    <View style={styles.tableHeader}>
+      {columns.map((column, index) => (
         <TouchableOpacity
-          style={{ paddingHorizontal: 5, paddingVertical: 1 }}
-          onPress={handleViewProfile} // Thay đổi sự kiện onPress thành handleViewProfile
+          key={index}
+          style={styles.columnHeader}
+          onPress={() => sortTable(column)}
         >
-          <Icon
-            name={account.status === 2 ? 'user' : 'eye'}
-            size={18}
-            color="#4F4F4F"
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{ paddingHorizontal: 5, paddingVertical: 1 }}
-          onPress={() => onApprove(account)}
-        >
-          <Icon name="trash-can" size={20} color="#4F4F4F" />
-        </TouchableOpacity>
-      </View>
-    </View>
-  )
-}
-
-const ManagerAccount = () => {
-  const accountList = [
-    { name: 'John Doe', email: 'john.doe@example.com', status: 0 },
-    { name: 'Jane Smith', email: 'jane.smith@example.com', status: 1 },
-    { name: 'John Doe', email: 'john.doe@example.com', status: 0 },
-    { name: 'Jane Smith', email: 'jane.smith@example.com', status: 0 },
-    { name: 'Jane Smith', email: 'jane.smith@example.com', status: 1 },
-    { name: 'John Doe', email: 'john.doe@example.com', status: 0 },
-    { name: 'Jane Smith', email: 'jane.smith@example.com', status: 0 },
-    { name: 'Jane Smith', email: 'jane.smith@example.com', status: 0 },
-    { name: 'John Doe', email: 'john.doe@example.com', status: 1 },
-    { name: 'Jane Smith', email: 'jane.smith@example.com', status: 1 },
-    { name: 'Jane Smith', email: 'jane.smith@example.com', status: 2 },
-    { name: 'John Doe', email: 'john.doe@example.com', status: 2 },
-    { name: 'Jane Smith', email: 'jane.smith@example.com', status: 2 },
-    { name: 'Jane Smith', email: 'jane.smith@example.com', status: 2 },
-    { name: 'Jane Smith', email: 'jane.smith@example.com', status: 2 },
-    // Thêm các tài khoản khác vào đây
-  ]
-  const [accounts, setAccounts] = useState(
-    accountList.filter((account) => account.status !== 2),
-  )
-  const [showApproved, setShowApproved] = useState(false)
-
-  const handleApprove = (accountToApprove) => {
-    setAccounts(accountList.filter((account) => account.status !== 2))
-  }
-  const handleApproved = (accountToApprove) => {
-    // Lọc ra các tài khoản không có status là 2
-    const approvedAccounts = accountList.filter(
-      (account) => account.status !== 2,
-    )
-    setAccounts(accountList.filter((account) => account.status === 2))
-  }
-
-  const toggleShowApproved = () => {
-    setShowApproved(!showApproved)
-  }
-
-  const onViewProfile = (accountToUpdate) => {
-    // Cập nhật status của tài khoản thành 0
-    const updatedAccounts = accounts.map((account) => {
-      if (account === accountToUpdate) {
-        return { ...account, status: 0 }
-      }
-      return account
-    })
-    setAccounts(updatedAccounts)
-  }
-
-  return (
-    <View>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'flex-end',
-          padding: 10,
-        }}
-      >
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#007bff',
-            padding: 10,
-            borderRadius: 5,
-          }}
-          onPress={() => {
-            if (showApproved) {
-              setShowApproved(false)
-              handleApprove()
-            } else {
-              setShowApproved(true)
-              handleApproved()
-            }
-            toggleShowApproved()
-          }}
-        >
-          <Text style={{ color: 'white' }}>
-            {showApproved ? 'Tài khoản đã duyệt' : 'Duyệt tài khoản'}
+          <Text style={styles.columnHeaderTxt}>
+            {column + ' '}
+            {selectedColumn === column && (
+              <MaterialCommunityIcons
+                name={
+                  direction === 'desc'
+                    ? 'arrow-down-drop-circle'
+                    : 'arrow-up-drop-circle'
+                }
+              />
+            )}
           </Text>
         </TouchableOpacity>
+      ))}
+    </View>
+  )
+
+  const handleInputChange = (key, value) => {
+    setNewAccountData({ ...newAccountData, [key]: value })
+  }
+
+  const handleAddAccount = () => {
+    setShowAddForm(true)
+  }
+
+  const handleSaveNewAccount = () => {
+    dispatch(addNewAccount(newAccountData)).then((resp) => {
+      if (!resp?.payload) {
+        setShowAddForm(false)
+        setNewAccountData({
+          username: '',
+          password: '',
+        })
+      }
+    })
+  }
+
+  const renderAddForm = () => (
+    <View style={styles.addFormContainer}>
+      <Text style={styles.formTitle}>Thêm tài khoản</Text>
+      {Object.keys(newAccountData).map((key, index) => {
+        return (
+          <View>
+            <TextInput
+              key={index}
+              style={styles.input}
+              placeholder={key}
+              value={newAccountData[key]}
+              onChangeText={(text) => handleInputChange(key, text)}
+            />
+          </View>
+        )
+      })}
+      <Dropdown
+        style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        iconStyle={styles.iconStyle}
+        data={data}
+        maxHeight={300}
+        labelField="label"
+        valueField="value"
+        value={newAccountData.roleId}
+        onFocus={() => setIsFocus(true)}
+        onBlur={() => setIsFocus(false)}
+        onChange={(item) => {
+          setNewAccountData({ ...newAccountData, roleId: item.value })
+          setIsFocus(false)
+        }}
+      />
+
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+        <TouchableOpacity
+          style={[styles.cancelButton, { marginHorizontal: 3 }]}
+          onPress={() => setShowAddForm(false)}
+        >
+          <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={handleSaveNewAccount}
+        >
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
       </View>
-      <ScrollView contentContainerStyle={styles.container}>
-        {accounts.map((account, index) => (
-          <AccountBox
-            key={index}
-            account={account}
-            onApprove={handleApprove}
-            onViewProfile={onViewProfile} // Truyền hàm onViewProfile vào AccountBox
+    </View>
+  )
+
+  const [showRoleById, setShowRoleById] = useState(false)
+
+  const handleViewAccountDetails = (item) => {
+    setShowRoleById(!showRoleById)
+    dispatch(getAccountById(item))
+  }
+
+  const renderAccountDetailsForm = () => {
+    return (
+      <View style={styles.addFormContainer}>
+        <Text style={styles.formTitle}>Thông tin tài khoản </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
+          <Text style={{ flex: 1 }}>Họ và tên: </Text>
+          <TextInput
+            style={[styles.input, { flex: 2 }]}
+            value={singleAccount?.user?.fullName}
+            editable={false}
           />
-        ))}
+        </View>
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
+          <Text style={{ flex: 1 }}>Username: </Text>
+          <TextInput
+            style={[styles.input, { flex: 2 }]}
+            value={singleAccount?.username}
+            editable={false}
+          />
+        </View>
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
+          <Text style={{ flex: 1 }}>Số điện thoại: </Text>
+          <TextInput
+            style={[styles.input, { flex: 2 }]}
+            value={singleAccount?.user?.phone}
+            editable={false}
+          />
+        </View>
+
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'gray',
+              paddingHorizontal: 5,
+              paddingVertical: 5,
+              borderRadius: 3,
+            }}
+            onPress={handleViewAccountDetails}
+          >
+            <Text style={{ color: 'white', fontWeight: '600' }} >Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    )
+  }
+
+  return (
+    <View style={styles.container}>
+      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+        <FlatList
+          data={accounts}
+          style={styles.tableContent}
+          keyExtractor={(item, index) => index + ''}
+          ListHeaderComponent={tableHeader}
+          stickyHeaderIndices={[0]}
+          renderItem={({ item, index }) => (
+            <View
+              style={{
+                ...styles.tableRow,
+                backgroundColor: index % 2 == 1 ? '#F0FBFC' : 'white',
+              }}
+            >
+              <Text style={{ ...styles.columnRowTxt, fontWeight: 'bold' }}>
+                {index + 1}
+              </Text>
+              <Text style={styles.columnRowTxt}>
+                {item?.user?.fullName || 'Tài khoản chưa cập nhật thông tin'}
+              </Text>
+              <Text style={styles.columnRowTxt}>{item?.username}</Text>
+              <Text style={styles.columnRowTxt}>
+                {item?.user?.phone || 'Tài khoản chưa cập nhật thông tin'}
+              </Text>
+              {item.active === true ? (
+                <View style={[styles.columnRowTxt, { flexDirection: 'row' }]}>
+                  <TouchableOpacity
+                    style={{ paddingHorizontal: 10 }}
+                    onPress={() => handleViewAccountDetails(item.id)}
+                  >
+                    <Icon name="eye" size={20} color="#3498db" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{ paddingHorizontal: 10 }}
+                    onPress={() => dispatch(deleteAccount(item.id))}
+                  >
+                    <Icon name="trash-can" size={20} color="#3498db" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View>
+                  <Text>Tài khoản bị vô hiệu hóa</Text>
+                </View>
+              )}
+            </View>
+          )}
+        />
       </ScrollView>
+      <TouchableOpacity style={styles.addButton} onPress={handleAddAccount}>
+        <MaterialCommunityIcons name="plus-circle" size={48} color="blue" />
+      </TouchableOpacity>
+      {showAddForm && renderAddForm()}
+      {showRoleById && renderAccountDetailsForm()}
     </View>
   )
 }
+
+const windowWidth = Dimensions.get('window').width * 0.95
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  tableContent: {
+    width: '100%',
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    backgroundColor: '#37C2D0',
+    borderTopEndRadius: 10,
+    borderTopStartRadius: 10,
+    height: 50,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    height: 40,
+    alignItems: 'center',
+  },
+  columnHeader: {
+    minWidth: windowWidth * 0.3,
+    maxWidth: windowWidth * 0.3,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 10,
   },
-  box: {
-    width: '100%',
-    height: 100,
-    marginBottom: 10,
-    padding: 10,
+  columnHeaderTxt: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  columnRowTxt: {
+    minWidth: windowWidth * 0.3,
+    maxWidth: windowWidth * 0.3,
+    textAlign: 'center',
+    alignItems: 'center',
+  },
+  addButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+  },
+  addFormContainer: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    backgroundColor: 'white',
+    padding: 20,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#4F4F4F',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: '#ccc',
+    width: '100%',
   },
-  boxItem: {
+  formTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+  },
+  saveButton: {
+    backgroundColor: 'blue',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: 'gray',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  permissionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  permissionList: {
+    width: '48%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 5,
+  },
+  permissionsTitle: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    marginBottom: 5,
+    marginTop: 5,
+  },
+  permissionsScrollView: {
+    maxHeight: 150,
+  },
+  placeholderStyle: {
+    fontSize: 14,
+  },
+  selectedTextStyle: {
+    fontSize: 14,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
     paddingHorizontal: 5,
   },
-  name: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  email: {
+  label: {
+    position: 'absolute',
+    backgroundColor: 'white',
+    left: 22,
+    top: 8,
+    zIndex: 999,
+    paddingHorizontal: 8,
     fontSize: 14,
-    color: '#888',
+  },
+  dropdown: {
+    height: 50,
+    borderColor: 'gray',
+    borderWidth: 0.5,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderWidth: 1,
+    marginVertical: 2,
+    borderRadius: 5,
+    fontSize: 12,
   },
 })
-
-export default ManagerAccount

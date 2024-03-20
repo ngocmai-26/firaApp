@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useLayoutEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -10,145 +10,123 @@ import {
 } from 'react-native'
 import { RadioButton } from 'react-native-paper'
 import Icon from 'react-native-vector-icons/FontAwesome6'
+import { useDispatch, useSelector } from 'react-redux'
+import { DEFAULT_AVATAR } from '../app/static'
+import { createNewRoom } from '../thunks/RoomThunk'
+import Toast from 'react-native-toast-message'
+import { TOAST_ERROR } from '../constants/toast'
 
 const ModalRoomChat = ({ handleHiddenModalRoom, hiddenModalRoom }) => {
   const [selectedButtons, setSelectedButtons] = useState([])
-  const [selectedTag, setSelectedTag] = useState(null)
-  const [user, setUser] = useState({})
-  const [selectedValue, setSelectedValue] = useState('option1')
+  const [selectedTag, setSelectedTag] = useState([])
+  const [room, setRoom] = useState('')
+  const [searchContact, setSearchContact] = useState([])
 
-  const handleRadioClick = (item) => {
-    if (selectedButtons.some((button) => button.id === item.id)) {
+  const { roomTags, isLoading } = useSelector((state) => state.roomReducer)
+  const { allContact } = useSelector((state) => state.contactReducer)
+  const { user } = useSelector((state) => state.authReducer)
+  const dispatch = useDispatch()
+
+  const [query, setQuery] = useState('')
+  const [searching, setSearching] = useState(false)
+
+  // useLayoutEffect((), [allContact])
+
+  const handleSearch = (q) => {
+    const temp = []
+    q = q.trim()
+
+    if (q == '') {
+      setSearchContact(allContact)
+      return
+    }
+
+    allContact.forEach((element) => {
+      const me =
+        user?.id == element?.owner.id ? element?.relate : element?.owner
+      if (
+        me?.fullName?.includes(q) ||
+        me?.email?.includes(q) ||
+        me?.phone?.includes(q)
+      ) {
+        temp.push(element)
+      }
+    })
+
+    setSearchContact(temp)
+  }
+
+  const handleRadioClick = (buttonId) => {
+    if (selectedButtons.some((item) => item.id === buttonId.id)) {
       setSelectedButtons(
-        selectedButtons.filter((button) => button.id !== item.id),
+        selectedButtons.filter((item) => item.id !== buttonId.id),
       )
     } else {
-      setSelectedButtons([...selectedButtons, item])
+      setSelectedButtons([...selectedButtons, buttonId])
     }
   }
 
   const handleRemoveSelectUser = (item) => {
-    setSelectedButtons(
-      selectedButtons.filter((button) => button.id !== item.id),
-    )
+    setSelectedButtons(selectedButtons.filter((props) => item.id !== props.id))
   }
 
   const handleTagClick = (tagId) => {
-    setSelectedTag(tagId)
+    const sel = [...selectedTag]
+    if (sel.includes(tagId)) {
+      sel.splice(sel.indexOf(tagId), 1)
+    } else {
+      sel.push(tagId)
+    }
+    setSelectedTag(sel)
+  }
+  const handleCreateRoom = () => {
+    if (selectedButtons.length == 0) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: 'Hãy chọn một thành viên',
+      })
+      return
+    }
+    if (selectedTag.length == 0) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: 'Hãy chọn một thẻ',
+      })
+      return
+    }
+
+    if (room.trim().length == 0) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: 'Hãy nhập tên nhóm',
+      })
+      return
+    }
+    const selectedMember = selectedButtons.map((btn) => btn.id)
+    selectedMember.push(user?.id)
+
+    const roomData = {
+      roomName: room,
+      maxCountMember: 50,
+      roomTagsId: selectedTag,
+      initMember: selectedMember,
+    }
+
+    dispatch(createNewRoom(roomData)).then((resp) => {
+      if (resp?.payload) {
+        setRoom('')
+        setSelectedButtons([])
+        handleHiddenModalRoom(false)
+      }
+    })
   }
 
-  const handleCreateGroup = () => {
-    console.log('Các thành viên đã chọn:', selectedButtons)
-  }
-
-  const member = [
-    {
-      id: 1,
-      name: 'Đăng Văn Nam',
-      img:
-        'https://imgt.taimienphi.vn/cf/Images/np/2022/9/7/hinh-anh-cute-dep-de-thuong-nhat-7.jpg',
-      content: 'abc@gmail.com',
-    },
-    {
-      id: 2,
-      name: 'Đăng Văn Nam Đăng Văn Nam Đăng Văn Nam',
-      img:
-        'https://imgt.taimienphi.vn/cf/Images/np/2022/9/7/hinh-anh-cute-dep-de-thuong-nhat-7.jpg',
-      content: 'abc@gmail.com',
-    },
-    {
-      id: 3,
-      name: 'Đăng Văn x',
-      img:
-        'https://imgt.taimienphi.vn/cf/Images/np/2022/9/7/hinh-anh-cute-dep-de-thuong-nhat-7.jpg',
-      content: 'abc@gmail.com',
-    },
-    {
-      id: 4,
-      name: 'Đăng Văn Nam',
-      img:
-        'https://imgt.taimienphi.vn/cf/Images/np/2022/9/7/hinh-anh-cute-dep-de-thuong-nhat-7.jpg',
-      content: 'abc@gmail.com',
-    },
-    {
-      id: 5,
-      name: 'Đăng Văn Nam',
-      img:
-        'https://imgt.taimienphi.vn/cf/Images/np/2022/9/7/hinh-anh-cute-dep-de-thuong-nhat-7.jpg',
-      content: 'abc@gmail.com',
-    },
-    {
-      id: 6,
-      name: 'Đăng Văn Nam',
-      img:
-        'https://imgt.taimienphi.vn/cf/Images/np/2022/9/7/hinh-anh-cute-dep-de-thuong-nhat-7.jpg',
-      content: 'abc@gmail.com',
-    },
-    {
-      id: 7,
-      name: 'Đăng Văn Nam Đăng Văn Nam  Đăng Văn Nam',
-      img:
-        'https://imgt.taimienphi.vn/cf/Images/np/2022/9/7/hinh-anh-cute-dep-de-thuong-nhat-7.jpg',
-      content: 'abc@gmail.com',
-    },
-    {
-      id: 8,
-      name: 'Đăng Văn Nam',
-      img:
-        'https://imgt.taimienphi.vn/cf/Images/np/2022/9/7/hinh-anh-cute-dep-de-thuong-nhat-7.jpg',
-      content: 'abc@gmail.com',
-    },
-    {
-      id: 9,
-      name: 'Đăng Văn Nam',
-      img:
-        'https://imgt.taimienphi.vn/cf/Images/np/2022/9/7/hinh-anh-cute-dep-de-thuong-nhat-7.jpg',
-      content: 'abc@gmail.com',
-    },
-  ]
-
-  const tags = [
-    {
-      id: 1,
-      nameTag: 'Gia đình',
-    },
-    {
-      id: 2,
-      nameTag: 'Bạn bè',
-    },
-    {
-      id: 3,
-      nameTag: 'Công việc',
-    },
-    {
-      id: 4,
-      nameTag: 'Khách hàng',
-    },
-    {
-      id: 5,
-      nameTag: 'Trả lời sau',
-    },
-    {
-      id: 1,
-      nameTag: 'Gia đình',
-    },
-    {
-      id: 2,
-      nameTag: 'Bạn bè',
-    },
-    {
-      id: 3,
-      nameTag: 'Công việc',
-    },
-    {
-      id: 4,
-      nameTag: 'Khách hàng',
-    },
-    {
-      id: 5,
-      nameTag: 'Trả lời sau',
-    },
-  ]
+  useLayoutEffect(() => {
+    setSearchContact(allContact)
+  }, [allContact])
+  useLayoutEffect(() => {
+    handleSearch(query)
+  }, [query])
 
   return (
     <View
@@ -215,6 +193,7 @@ const ModalRoomChat = ({ handleHiddenModalRoom, hiddenModalRoom }) => {
               <TextInput
                 placeholder="Nhập tên nhóm"
                 style={{ fontSize: 16, flex: 1 }}
+                onChangeText={(value) => setRoom(value)}
               />
             </View>
           </View>
@@ -245,20 +224,22 @@ const ModalRoomChat = ({ handleHiddenModalRoom, hiddenModalRoom }) => {
               <TextInput
                 placeholder="Tìm kiếm"
                 style={{ fontSize: 16, flex: 1 }}
+                onChangeText={(value) => setQuery(value)}
               />
             </View>
           </View>
 
           <View>
             <ScrollView horizontal={true}>
-              {tags.map((item) => (
+              {roomTags.map((item) => (
                 <TouchableOpacity
                   key={item.id}
                   style={{
                     paddingHorizontal: 8,
                     paddingVertical: 4,
-                    backgroundColor:
-                      selectedTag === item.id ? '#4a90e2' : '#ddd',
+                    backgroundColor: selectedTag.includes(item.id)
+                      ? '#4a90e2'
+                      : '#ddd',
                     borderRadius: 4,
                     marginRight: 8,
                     marginBottom: 8,
@@ -268,10 +249,10 @@ const ModalRoomChat = ({ handleHiddenModalRoom, hiddenModalRoom }) => {
                   <Text
                     style={{
                       fontSize: 12,
-                      color: selectedTag === item.id ? 'white' : 'black',
+                      color: selectedTag.includes(item.id) ? 'white' : 'black',
                     }}
                   >
-                    {item.nameTag}
+                    {item.name}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -287,64 +268,74 @@ const ModalRoomChat = ({ handleHiddenModalRoom, hiddenModalRoom }) => {
             }}
           >
             <ScrollView style={{ width: '100%', height: 260 }}>
-              {member.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={{
-                    width: Dimensions.get('window').width * 0.85,
-                    paddingVertical: 5,
-                  }}
-                  onPress={() => handleRadioClick(item)}
-                >
-                  <View
+              {searchContact.map((item) => {
+                const me =
+                  user?.id == item?.owner.id ? item?.relate : item?.owner
+                return (
+                  <TouchableOpacity
+                    key={me.id}
                     style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      paddingHorizontal: 5,
-                      width: '100%',
-                      alignSelf: 'stretch',
+                      width: Dimensions.get('window').width * 0.85,
+                      paddingVertical: 5,
                     }}
+                    onPress={() => handleRadioClick(me)}
                   >
-                    <RadioButton.Android
-                      value={item.id}
-                      status={
-                        selectedButtons.some((button) => button.id === item.id)
-                          ? 'checked'
-                          : 'unchecked'
-                      }
-                      onPress={() => handleRadioClick(item)}
-                      color="#007BFF"
-                    />
                     <View
-                      style={{ flexDirection: 'row', alignItems: 'center' }}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingHorizontal: 5,
+                        width: '100%',
+                        alignSelf: 'stretch',
+                      }}
                     >
+                      <RadioButton.Android
+                        value={me.id}
+                        status={
+                          selectedButtons.some((button) => button.id === me.id)
+                            ? 'checked'
+                            : 'unchecked'
+                        }
+                        onPress={() => handleRadioClick(me)}
+                        color="#007BFF"
+                      />
                       <View
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 25,
-                          overflow: 'hidden',
-                          marginHorizontal: 6,
-                        }}
+                        style={{ flexDirection: 'row', alignItems: 'center' }}
                       >
-                        <Image
-                          source={{ uri: item.img }}
+                        <View
                           style={{
-                            width: '100%',
-                            height: '100%',
-                            borderRadius: 20,
+                            width: 40,
+                            height: 40,
+                            borderRadius: 25,
+                            overflow: 'hidden',
+                            marginHorizontal: 6,
                           }}
-                        />
-                      </View>
-                      <View style={{ overflow: 'hidden', flex: 1 }}>
-                        <Text numberOfLines={1} style={{ fontSize: 14 }}>
-                          {item.name}
-                        </Text>
+                        >
+                          <Image
+                            source={{ uri: me?.avatar || DEFAULT_AVATAR }}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              borderRadius: 20,
+                            }}
+                          />
+                        </View>
+                        <View style={{ overflow: 'hidden', flex: 1 }}>
+                          <Text
+                            numberOfLines={1}
+                            style={{ fontSize: 14, fontWeight: 600 }}
+                          >
+                            {me.fullName}
+                          </Text>
+                          <Text numberOfLines={1} style={{ fontSize: 12 }}>
+                            {me.email}
+                          </Text>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
+                  </TouchableOpacity>
+                )
+              })}
             </ScrollView>
           </View>
           <View
@@ -367,13 +358,13 @@ const ModalRoomChat = ({ handleHiddenModalRoom, hiddenModalRoom }) => {
               <Text>Hủy</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={handleCreateGroup}
               style={{
                 backgroundColor: '#4a90e2',
                 paddingVertical: 8,
                 paddingHorizontal: 16,
                 borderRadius: 4,
               }}
+              onPress={handleCreateRoom}
             >
               <Text style={{ color: 'white' }}>Tạo nhóm</Text>
             </TouchableOpacity>

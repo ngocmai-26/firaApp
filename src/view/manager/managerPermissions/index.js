@@ -99,7 +99,6 @@ export default function ManagerPermissions() {
 
   const handleSaveNewPermission = () => {
     const updatedPermission = [...permissions, newPermissionData]
-    console.log('newPermissionData', newPermissionData)
     dispatch(addNewPermission(newPermissionData))
     
     // setNewPermissionData({

@@ -8,20 +8,16 @@ import {
   setUser,
 } from '../slices/AuthSlice'
 import { API, AUTH_KEY_NAME } from '../constants/api'
-import { setAlert } from '../slices/AlertSlice'
 import { TOAST_ERROR, TOAST_SUCCESS } from '../constants/toast'
 import {
-  dataToBase64,
-  // dataToBase64,
   delaySync,
-  loadAuthInfoFromStorage,
   loadTokenFromStorage,
-  setAuthInfo,
   setToken,
 } from '../services/AuthService'
 import { getHeaders } from '../services/ApiService'
 import Toast from 'react-native-toast-message'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { FBStorageService } from '../services/firebase/StorageService'
 
 export const login = createAsyncThunk(
   'Đăng Nhập',
@@ -49,7 +45,6 @@ export const login = createAsyncThunk(
           text1: dataJson?.message[0],
         })
         dispatch(setErrors({}))
-        console.log(dataJson?.message[0])
         return rejectWithValue('something error')
       }
       Toast.show({
@@ -66,10 +61,7 @@ export const login = createAsyncThunk(
       dispatch(setLogged(true))
       dispatch(setRefresh({ refresh: true, uri: 'home' }))
     } catch (e) {
-      Toast.show({
-        type: 'error',
-        text1: e,
-      })
+      console.log("e", e)
     }
   },
 )
@@ -104,15 +96,11 @@ export const loginWithAuthToken = createAsyncThunk(
       setToken(dataJson?.data?.token)
       await AsyncStorage.setItem('user', JSON.stringify(dataJson?.data?.user))
       await AsyncStorage.setItem('auth', JSON.stringify(loginData))
-      console.log('loginData', loginData)
       dispatch(setUser(dataJson?.data?.user))
       dispatch(setLogged(true))
       dispatch(setRefresh('home'))
     } catch (e) {
-      Toast.show({
-        type: 'error',
-        text1: e,
-      })
+      console.log("e", e)
     }
   },
 )
@@ -157,10 +145,7 @@ export const register = createAsyncThunk(
 
       return dataJson
     } catch (e) {
-      Toast.show({
-        type: 'error',
-        text1: e,
-      })
+      console.log("e", e)
     }
   },
 )
@@ -169,8 +154,8 @@ export const createNewUser = createAsyncThunk(
   'create-new-user',
   async (newUserData, { rejectWithValue, dispatch }) => {
     try {
-      // dispatch(setAuthFetching(true));
       await delaySync(1)
+      const avatarUrl = await FBStorageService.uploadFile(newUserData.avatar);
 
       const token = await loadTokenFromStorage()
       if (!token) {
@@ -184,7 +169,7 @@ export const createNewUser = createAsyncThunk(
       const resp = await fetch(`${API.uri}/users`, {
         method: 'POST',
         headers: getHeaders(token),
-        body: JSON.stringify(newUserData),
+        body: JSON.stringify({ ...newUserData, avatar: avatarUrl} ),
       })
 
       // dispatch(setAuthFetching(false));
@@ -208,13 +193,10 @@ export const createNewUser = createAsyncThunk(
 
       await AsyncStorage.setItem('user', JSON.stringify(dataJson?.data))
       dispatch(setUser(dataJson?.data))
-      // dispatch(setRefresh("/"));
+      dispatch(setRefresh("/"));
     } catch (e) {
       // dispatch(setAuthFetching(true));
-      Toast.show({
-        type: 'error',
-        text1: e,
-      })
+      console.log("e", e)
     }
   },
 )
@@ -246,10 +228,7 @@ export const confirmAccount = createAsyncThunk(
       dispatch(setRefresh(true))
       return dataJson
     } catch (e) {
-      Toast.show({
-        type: 'error',
-        text1: e,
-      })
+      console.log("e", e)
     }
   },
 )
@@ -280,10 +259,7 @@ export const requestNewCode = createAsyncThunk(
         text1: 'Đã gửi mã mới',
       })
     } catch (e) {
-      Toast.show({
-        type: 'error',
-        text1: e,
-      })
+      console.log("e", e)
     }
   },
 )
@@ -314,10 +290,7 @@ export const forgotPassword = createAsyncThunk(
         text1: 'Đã gửi mã mới',
       })
     } catch (e) {
-      Toast.show({
-        type: 'error',
-        text1: e,
-      })
+      console.log("e", e)
     }
   },
 )
@@ -350,10 +323,7 @@ export const confirmForgotPassword = createAsyncThunk(
 
       return dataJson
     } catch (e) {
-      Toast.show({
-        type: 'error',
-        text1: e,
-      })
+      console.log("e", e)
     }
   },
 )

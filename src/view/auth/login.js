@@ -63,7 +63,7 @@ function Login() {
             <TextInput
               style={styles.input}
               placeholder="Tên đăng nhập"
-              onChangeText={(text) => setUser({ ...user, username: text })}
+              onChangeText={(text) => setUser({ ...user, username: text.trim() })}
             />
           </View>
 
@@ -73,7 +73,7 @@ function Login() {
               style={styles.input}
               placeholder="Mật khẩu"
               secureTextEntry={true}
-              onChangeText={(text) => setUser({ ...user, password: text })}
+              onChangeText={(text) => setUser({ ...user, password: text.trim() })}
             />
           </View>
 

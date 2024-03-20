@@ -6,7 +6,6 @@ import Icon from 'react-native-vector-icons/FontAwesome6'
 
 const NotificationComponent = ({hiddenComponent, handleHidden, maxheight}) => {
     const [hidden, setHidden] = useState(hiddenComponent)
-    console.log('hiddenComponent',hiddenComponent)
   const data = [
     {
       id: 1,

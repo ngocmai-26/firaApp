@@ -140,7 +140,7 @@ function Register() {
                   width: '92%',
                 }}
                 placeholder="Tên đăng nhập"
-                onChangeText={setUsername}
+                onChangeText={(value) => setUsername(value)}
               />
             </View>
             <View
@@ -175,7 +175,7 @@ function Register() {
                 }}
                 placeholder="Mật khẩu"
                 secureTextEntry={true}
-                onChangeText={setPassword}
+                onChangeText={(value) => setPassword(value.trim())}
               />
             </View>
             <View
@@ -208,7 +208,7 @@ function Register() {
                 }}
                 placeholder="Nhập lại mật khẩu"
                 secureTextEntry={true}
-                onChangeText={setConfirmPassword}
+                onChangeText={(value) => setConfirmPassword(value.trim())}
               />
             </View>
             {error && (

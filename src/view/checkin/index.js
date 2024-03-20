@@ -127,9 +127,9 @@ const CheckInOutPage = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.titleContainer}>
+      {/* <View style={styles.titleContainer}>
         <Text style={styles.title}>Check In/Out</Text>
-      </View>
+      </View> */}
       <View style={styles.buttonContainer}>
         <Button title="Checkin" onPress={handleCheckin} />
         <Button title="Checkout" onPress={handleCheckout} />
@@ -175,7 +175,7 @@ const CheckInOutPage = () => {
                 </Text>
               )}
               <Text style={styles.summaryText}>
-                Total Working Time: {typeof item[1].totalWorkingTime === 'number' ? item[1].totalWorkingTime.toFixed(2) : 'N/A'} hours
+                Total Working Time: {typeof item[1].totalWorkingTime === 'number' ? item[1]?.totalWorkingTime?.toFixed(2) : 'N/A'} hours
               </Text>
             </View>
           )}

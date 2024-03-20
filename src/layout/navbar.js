@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native'
-import { useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import {
   Image,
   StyleSheet,
@@ -10,18 +10,58 @@ import {
 } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome6'
 import NotificationComponent from '../component/Notification'
+import { useDispatch, useSelector } from 'react-redux'
+import { CONTACT_NOTI_EVENT_TYPE } from '../app/static'
+import {
+  getAllAddContactRequestByUser,
+  getAllAddContactRequestByUserRelate,
+  getAllContactByUser,
+} from '../thunks/ContractThunk'
+import SockJS from 'sockjs-client'
+import { Stomp } from '@stomp/stompjs'
+import { getAllRoomByUser } from '../thunks/RoomThunk'
+import { pushMessageToRoom } from '../slices/RoomSlice'
 
-function NavBar({ children }) {
+function NavBar({ children, hidden }) {
   const navigation = useNavigation()
   const [showSidebar, setShowSidebar] = useState(false)
-  const [hiddenComponent, setHiddenComponent] = useState(false)
+  const { user } = useSelector((state) => state.authReducer)
+  const dispatch = useDispatch()
 
   const handleOutsidePress = () => {
     setShowSidebar(false)
   }
-  const handleHidden = () => {
-    setHiddenComponent(!hiddenComponent)
-  }
+
+  useLayoutEffect(() => {
+    const ws = new SockJS('http://192.168.69.99:8082/ws') // cai nay chuyen thanh bien di ?? nguyên đoạn hay gì?
+    const client = Stomp.over(ws)
+    client.connect({}, function () {
+      console.log('connected')
+      client.subscribe('/contact', (resp) => {
+        const respBody = JSON.parse(resp.body)
+        if (respBody?.type == CONTACT_NOTI_EVENT_TYPE.NEW_REQUEST) {
+          if (respBody?.contact?.relate?.id == user?.id) {
+            dispatch(getAllAddContactRequestByUserRelate(user?.id))
+          }
+        }
+        if (respBody.type == CONTACT_NOTI_EVENT_TYPE.RESPONSE_REQUEST) {
+          dispatch(getAllContactByUser(user?.id))
+          dispatch(getAllAddContactRequestByUser(user?.id))
+        }
+      })
+      client.subscribe('/notification', (resp) => {
+        console.log('resp.body', JSON.parse(resp.body))
+      })
+      client.subscribe('/room', (resp) => {
+        const newMessage = JSON.parse(resp.body)
+        dispatch(pushMessageToRoom(newMessage))
+      })
+    })
+    dispatch(getAllAddContactRequestByUser(user?.id))
+    dispatch(getAllAddContactRequestByUserRelate(user?.id))
+    dispatch(getAllContactByUser(user?.id))
+    dispatch(getAllRoomByUser())
+  }, [])
 
   return (
     <TouchableWithoutFeedback onPress={handleOutsidePress}>
@@ -114,6 +154,7 @@ function NavBar({ children }) {
                       paddingVertical: 20,
                       paddingHorizontal: 10,
                     }}
+                    onPress={() => navigation.navigate('quan-ly-cong-viec')}
                   >
                     <View style={{ width: 30 }}>
                       <Icon name="clipboard-list" size={20} color="#3498db" />
@@ -206,7 +247,7 @@ function NavBar({ children }) {
                     onPress={() => navigation.navigate('checkin')}
                   >
                     <View style={{ width: 30 }}>
-                      <Icon name="square-pen" size={20} color="#3498db" />
+                      <Icon name="right-to-bracket" size={20} color="#3498db" />
                     </View>
                     <Text
                       style={{
@@ -271,37 +312,43 @@ function NavBar({ children }) {
           </View>
 
           {/* Header ở cuối màn hình */}
-          <View
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              flexDirection: 'row',
-              justifyContent: 'space-around',
-              alignItems: 'center',
-              height: 60,
-              backgroundColor: '#eee',
-            }}
-          >
-            <TouchableOpacity onPress={() => navigation.navigate('home')}>
-              <Icon name="house" size={25} color="#3498db" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('tai-khoan')}>
-              <Icon name="user" size={25} color="#3498db" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('chat')}>
-              <Icon name="comments" size={25} color="#3498db" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('notification')}
+          {!hidden ? (
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                flexDirection: 'row',
+                justifyContent: 'space-around',
+                alignItems: 'center',
+                height: 60,
+                backgroundColor: '#eee',
+              }}
             >
-              <Icon name="bell" size={25} color="#3498db" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setShowSidebar(!showSidebar)}>
-              <Icon name="bars" size={20} color="#3498db" />
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity onPress={() => navigation.navigate('home')}>
+                <Icon name="house" size={25} color="#3498db" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('tai-khoan')}
+              >
+                <Icon name="user" size={25} color="#3498db" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate('chat')}>
+                <Icon name="comments" size={25} color="#3498db" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('notification')}
+              >
+                <Icon name="bell" size={25} color="#3498db" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowSidebar(!showSidebar)}>
+                <Icon name="bars" size={20} color="#3498db" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <></>
+          )}
         </View>
       </View>
     </TouchableWithoutFeedback>

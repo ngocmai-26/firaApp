@@ -29,11 +29,7 @@ export const getAllRole = createAsyncThunk(
       }
       dispatch(setAllRole(dataJson.data.content))
     } catch (e) {
-      // dispatch(setAuthFetching(true));
-      Toast.show({
-        type: 'error',
-        text1: e,
-      })
+      console.log("e", e)
     }
   },
 )
@@ -60,11 +56,7 @@ export const getRoleById = createAsyncThunk(
       }
       dispatch(setSingleRole(dataJson.data))
     } catch (e) {
-      // dispatch(setAuthFetching(true));
-      Toast.show({
-        type: 'error',
-        text1: e,
-      })
+      console.log("e", e)
     }
   },
 )
@@ -95,10 +87,7 @@ export const deleteRoles = createAsyncThunk(
       })
       dispatch(getAllRole())
     } catch (e) {
-      Toast.show({
-        type: TOAST_ERROR,
-        text1: 'Error when delete role',
-      })
+      console.log("e", e)
     }
   },
 )
@@ -164,7 +153,6 @@ export const addNewRole = createAsyncThunk(
           type: TOAST_ERROR,
           text1: dataJson.message[0],
         })
-        console.log('dataJson.message[0]', dataJson.message[0])
         return rejectWithValue()
       }
       Toast.show({
@@ -173,10 +161,7 @@ export const addNewRole = createAsyncThunk(
       })
       dispatch(getAllRole())
     } catch (e) {
-      Toast.show({
-        type: TOAST_ERROR,
-        text1: 'Error when delete role',
-      })
+      console.log("e", e)
     }
   },
 )

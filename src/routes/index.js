@@ -19,11 +19,10 @@ import { NavigationContainer, useNavigation } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { useEffect } from 'react'
 import Toast from 'react-native-toast-message'
-import { AUTH_KEY_NAME } from '../constants/api'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import Notification from '../view/user/notification'
 import CheckInOutPage from '../view/checkin'
 import React from 'react'
+import ManagerJobs from '../view/manager/managerJobs'
 
 const Stack = createNativeStackNavigator()
 
@@ -87,10 +86,13 @@ const LoggedRoute = () => {
         navigation.navigate('create-new-user')
       }
     }
+    if (!logged) {
+      navigation.navigate('đăng nhập')
+    }
     if (user && refresh && refresh.uri) {
       navigation.navigate('home')
     }
-  }, [user])
+  }, [refresh])
 
   return (
     <Stack.Navigator>
@@ -106,39 +108,78 @@ const LoggedRoute = () => {
           headerShown: false,
         }}
       />
-      <Stack.Screen name="chat" component={Chat} 
+      <Stack.Screen
+        name="chat"
+        component={Chat}
         options={{
           headerShown: false,
-        }} />
+        }}
+      />
       <Stack.Screen name="dashboard" component={Dashboard} />
-      <Stack.Screen name="tai-khoan" component={Profile} options={{
-          title: "Tài Khoản"
-        }}/>
-      <Stack.Screen name="quan-ly-tai-khoan" component={ManagerAccount}options={{
-          title: "Quản lý tài khoản"
-        }} />
+      <Stack.Screen
+        name="tai-khoan"
+        component={Profile}
+        options={{
+          title: 'Tài Khoản',
+        }}
+      />
+      <Stack.Screen
+        name="quan-ly-tai-khoan"
+        component={ManagerAccount}
+        options={{
+          title: 'Quản lý tài khoản',
+        }}
+      />
       <Stack.Screen name="accountDetail" component={AccountDetail} />
-      <Stack.Screen name="quan-ly-chuc-vu" component={ManagerRoles} options={{
-          title: "Quản lý chức vụ"
-        }} />
-      <Stack.Screen name="quan-ly-chuc-nang" component={ManagerPermissions} options={{
-          title: "Quản lý chức năng"
-        }} />
-      <Stack.Screen name="notesApp" component={NotesApp} options={{
-          title: "Quản lý kế hoạch"
-        }} />
-      <Stack.Screen name="notification" component={Notification} options={{
+      <Stack.Screen
+        name="quan-ly-chuc-vu"
+        component={ManagerRoles}
+        options={{
+          title: 'Quản lý chức vụ',
+        }}
+      />
+      <Stack.Screen
+        name="quan-ly-chuc-nang"
+        component={ManagerPermissions}
+        options={{
+          title: 'Quản lý chức năng',
+        }}
+      />
+      <Stack.Screen
+        name="notesApp"
+        component={NotesApp}
+        options={{
+          title: 'Quản lý kế hoạch',
+        }}
+      />
+      <Stack.Screen
+        name="quan-ly-cong-viec"
+        component={ManagerJobs}
+        options={{
+          title: 'Quản lý công việc',
+        }}
+      />
+      <Stack.Screen
+        name="notification"
+        component={Notification}
+        options={{
           headerShown: false,
-        }} />
-      <Stack.Screen name="checkin" component={CheckInOutPage} options={{
-          headerShown: false,
-        }} />
+        }}
+      />
+      <Stack.Screen
+        name="checkin"
+        component={CheckInOutPage}
+        // options={{
+        //   headerShown: false,
+        // }}
+      />
     </Stack.Navigator>
   )
 }
 
 function Router() {
   const { logged } = useSelector((state) => state.authReducer)
+  useEffect(() => {}, [])
 
   return (
     <NavigationContainer>

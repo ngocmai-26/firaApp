@@ -1,52 +1,90 @@
-import React, { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, ScrollView, View } from 'react-native';
-import { useDispatch } from 'react-redux';
-import { createNewUser } from '../../thunks/AuthThunk';
-import { setLogged } from '../../slices/AuthSlice';
+import React, { useState } from 'react'
+import {
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  View,
+  Button,
+  Image,
+} from 'react-native'
+import { useDispatch } from 'react-redux'
+import { createNewUser } from '../../thunks/AuthThunk'
+import { setLogged } from '../../slices/AuthSlice'
+import * as ImagePicker from 'expo-image-picker'
+import { useNavigation } from '@react-navigation/native'
+import { generateRandomCharacters, resolveFilename } from '../../app/ultis.js'
 
 function CreateNewUser() {
-  const dispatch = useDispatch();
-  const [newUserData, setNewUserData] = useState({});
-  const [errors, setErrors] = useState({});
+  const dispatch = useDispatch()
+  const [newUserData, setNewUserData] = useState({})
+  const [errors, setErrors] = useState({})
+  const [image, setImage] = useState('')
+
+  const navigation = useNavigation()
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    })
+
+    if (!result.canceled) {
+      const { fileName, uri } = result.assets[0]
+      // fileName = resolveFilename("png", generateRandomCharacters(12))
+      let newFileName = fileName
+      if (fileName == null ) {
+        newFileName = uri.substring(uri.lastIndexOf('/')+1)
+      }
+      setImage({ fileName: newFileName, uri })
+    }
+  }
 
   const handleCreateNewUser = () => {
-    const validationErrors = {};
+    const validationErrors = {}
     if (!newUserData.firstName) {
-      validationErrors.firstName = "Không được bỏ trống";
+      validationErrors.firstName = 'Không được bỏ trống'
     }
     if (!newUserData.lastName) {
-      validationErrors.lastName = "Không được bỏ trống";
+      validationErrors.lastName = 'Không được bỏ trống'
     }
     if (!newUserData.address) {
-      validationErrors.address = "Không được bỏ trống";
+      validationErrors.address = 'Không được bỏ trống'
     }
     if (!newUserData.birthday) {
-      validationErrors.birthday = "Không được bỏ trống";
+      validationErrors.birthday = 'Không được bỏ trống'
     } else if (!/^\d{4}-\d{2}-\d{2}$/.test(newUserData.birthday)) {
-      validationErrors.birthday = "Định dạng ngày sinh không hợp lệ (VD: 2002-02-02)";
+      validationErrors.birthday =
+        'Định dạng ngày sinh không hợp lệ (VD: 2002-02-02)'
     } else {
-      const parts = newUserData.birthday.split('-');
-      const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10);
-      const day = parseInt(parts[2], 10);
-      const dateObject = new Date(year, month - 1, day);
+      const parts = newUserData.birthday.split('-')
+      const year = parseInt(parts[0], 10)
+      const month = parseInt(parts[1], 10)
+      const day = parseInt(parts[2], 10)
+      const dateObject = new Date(year, month - 1, day)
 
       if (
         dateObject.getFullYear() !== year ||
         dateObject.getMonth() !== month - 1 ||
         dateObject.getDate() !== day
       ) {
-        validationErrors.birthday = "Ngày sinh không hợp lệ";
+        validationErrors.birthday = 'Ngày sinh không hợp lệ'
       }
     }
 
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
+      setErrors(validationErrors)
+      return
     }
 
-    dispatch(createNewUser(newUserData));
-  };
+    dispatch(createNewUser({ ...newUserData, avatar: image })).then((data) => {
+      if (!data) {
+        navigation.navigate('home')
+      }
+    })
+  }
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -90,7 +128,21 @@ function CreateNewUser() {
               >
                 Vui lòng nhập đầy đủ thông tin
               </Text>
-
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {image && (
+                  <Image
+                    source={{ uri: image.uri }}
+                    style={{ width: 200, height: 200, marginVertical: 20 }}
+                  />
+                )}
+                <Button title="Cập nhật ảnh đại diện" onPress={pickImage} />
+              </View>
               <View style={{ marginBottom: 10 }}>
                 <Text
                   style={{
@@ -299,9 +351,13 @@ function CreateNewUser() {
                     alignItems: 'center',
                     width: '45%',
                   }}
-                  onPress={()=> {dispatch(setLogged(false))}}
+                  onPress={() => {
+                    dispatch(setLogged(false))
+                  }}
                 >
-                  <Text style={{ color: 'white', fontSize: 16 }}>Quay lại </Text>
+                  <Text style={{ color: 'white', fontSize: 16 }}>
+                    Quay lại{' '}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{
@@ -322,7 +378,7 @@ function CreateNewUser() {
         </View>
       </View>
     </ScrollView>
-  );
+  )
 }
 
-export default CreateNewUser;
+export default CreateNewUser
