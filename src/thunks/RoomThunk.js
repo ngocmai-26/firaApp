@@ -7,7 +7,7 @@ import {
   showMediaUploadInRoom,
 } from '../slices/RoomSlice'
 import Toast from 'react-native-toast-message'
-import { TOAST_ERROR } from '../constants/toast'
+import { TOAST_ERROR, TOAST_SUCCESS } from '../constants/toast'
 import { API } from '../constants/api'
 import { getHeaders } from '../services/ApiService'
 import { FBStorageService } from '../services/firebase/StorageService'
@@ -164,4 +164,44 @@ export const sendMessage = createAsyncThunk(
       })
     }
   },
+)
+
+export const addNewMember = createAsyncThunk(
+  'rooms',
+  async (data, { dispatch, rejectWithValue }) => {
+    try {
+    const token = await loadTokenFromStorage()
+  
+    if (!token) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: 'Phiên đăng nhập đã hết hạn vui lòng thử lại',
+      })
+    }
+    const resp = await fetch(`${API.uri}/rooms/add-member/${data.roomId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data.data),
+    })
+    const dataJson = await resp.json()
+    if (resp.status >= 300) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: dataJson.message[0],
+      })
+      return rejectWithValue()
+    }
+    
+    Toast.show({
+      type: TOAST_SUCCESS,
+      text1: 'Thêm thành công',
+    })
+  } catch(e) {
+    console.log(e)
+
+  }
+  }
 )

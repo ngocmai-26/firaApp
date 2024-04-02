@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { TOAST_ERROR, TOAST_SUCCESS } from '../constants/toast'
-import { setAllAccount, setSingleAccount } from '../slices/AccountsSlice'
+import { setAllAccount, setPaginationAccount, setSingleAccount } from '../slices/AccountsSlice'
 
 import Toast from 'react-native-toast-message'
 import { API } from '../constants/api'
@@ -8,11 +8,11 @@ import { loadTokenFromStorage } from '../services/AuthService'
 
 export const getAllAccount = createAsyncThunk(
   '/accounts',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (data, { dispatch, rejectWithValue }) => {
     try {
       const token = await loadTokenFromStorage()
       console.log('token', token)
-      const resp = await fetch(`${API.uri}/accounts`, {
+      const resp = await fetch(`${API.uri}/accounts?page=${data || 0}&size=20`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -29,6 +29,7 @@ export const getAllAccount = createAsyncThunk(
         return rejectWithValue()
       }
       dispatch(setAllAccount(dataJson.data.content))
+      dispatch(setPaginationAccount(dataJson.data))
     } catch (e) {
       console.log('e', e)
     }

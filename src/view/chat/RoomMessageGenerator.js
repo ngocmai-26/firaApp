@@ -1,6 +1,6 @@
 import RoomMessage from "./RoomMessage"
 
-function RoomMessageGenerator({ rooms, activeRoom, expandBox, handleCloseExpandBox,handleExpand }) {
+function RoomMessageGenerator({ rooms, activeRoom, handleCloseExpandBox,handleExpand }) {
   return (
     <>
       {rooms.map((room, index) => {
@@ -9,7 +9,6 @@ function RoomMessageGenerator({ rooms, activeRoom, expandBox, handleCloseExpandB
             room={room}
             key={index.toString()}
             activeRoom={activeRoom}
-            expandBox={expandBox}
             handleCloseExpandBox={handleCloseExpandBox}
             handleExpand={handleExpand}
           />

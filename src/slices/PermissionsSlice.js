@@ -1,30 +1,40 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit'
 
 const initState = {
   allPermission: [],
   searchPermission: [],
   singlePermission: {},
   listPermission: [],
-};
+  paginationPer: {},
+}
 const PermissionsSlice = createSlice({
-  name: "permissions",
+  name: 'permissions',
   initialState: initState,
   reducers: {
     setAllPermissions: (state, { payload }) => {
-      state.allPermission = payload;
+      state.allPermission = payload
     },
     setSearchPermissions: (state, { payload }) => {
-      state.searchPermission = payload;
+      state.searchPermission = payload
     },
     setSinglePermission: (state, { payload }) => {
-      state.singlePermission = payload;
+      state.singlePermission = payload
     },
-    setListPermission: (state, {payload}) => {
+    setListPermission: (state, { payload }) => {
       state.listPermission = payload
     },
+    setPaginationPer: (state, { payload }) => {
+      state.paginationPer = payload
+    },
   },
-});
+})
 
-export const { setAllPermissions, setSearchPermissions, setSinglePermission, setListPermission } = PermissionsSlice.actions;
+export const {
+  setAllPermissions,
+  setSearchPermissions,
+  setSinglePermission,
+  setListPermission,
+  setPaginationPer
+} = PermissionsSlice.actions
 
-export default PermissionsSlice.reducer;
+export default PermissionsSlice.reducer

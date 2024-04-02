@@ -10,10 +10,11 @@ import {
 } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import { logout, setLogged } from '../../slices/AuthSlice'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native'
 import * as ImagePicker from 'expo-image-picker'
+import { updateUser } from '../../thunks/UserThunk'
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false)
@@ -21,17 +22,28 @@ const Profile = () => {
     isChangePasswordModalVisible,
     setIsChangePasswordModalVisible,
   ] = useState(false)
-  const navigation = useNavigation()
-  const [name, setName] = useState('John Doe')
-  const [address, setAddress] = useState('123 Main Street')
-  const [department, setDepartment] = useState('Engineering')
-  const [email, setEmail] = useState('john.doe@example.com')
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
   const [userData, setUserData] = useState({})
   const dispatch = useDispatch()
   const [image, setImage] = useState(null)
+
+  const [changePassword, setChangePassword] = useState(false);
+  const { isFetching, errors, user } = useSelector(
+    (state) => state.authReducer
+  );
+  const [newUserData, setNewUserData] = useState(user);
+  const handleSubmit = () => {
+    console.log("newUserData", newUserData);
+  };
+
+
+  const handleUpdate = () => {
+    setIsEditing(false)
+    console.log("newUserData", newUserData)
+    dispatch(updateUser(newUserData));
+  };
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -161,9 +173,9 @@ const Profile = () => {
           <View style={{ flex: 0.5 }}>
             <TextInput
               style={styles.input}
-              value={userData?.firstName}
+              value={newUserData?.firstName}
               onChangeText={(value) =>
-                setUserData({ ...userData, firstName: value })
+                setNewUserData({ ...newUserData, firstName: value })
               }
               editable={isEditing}
               placeholder="First Name"
@@ -172,9 +184,9 @@ const Profile = () => {
           <View style={{ flex: 0.5 }}>
             <TextInput
               style={styles.input}
-              value={userData?.lastName}
+              value={newUserData?.lastName}
               onChangeText={(value) =>
-                setUserData({ ...userData, lastName: value })
+                setNewUserData({ ...newUserData, lastName: value })
               }
               editable={isEditing}
               placeholder="Last Name"
@@ -183,37 +195,37 @@ const Profile = () => {
         </View>
         <TextInput
           style={styles.input}
-          value={userData?.address}
-          onChangeText={(value) => setUserData({ ...userData, address: value })}
+          value={newUserData?.address}
+          onChangeText={(value) => setNewUserData({ ...newUserData, address: value })}
           editable={isEditing}
           placeholder="Address"
         />
         <TextInput
           style={styles.input}
-          value={userData?.department}
+          value={newUserData?.department}
           onChangeText={(value) =>
-            setUserData({ ...userData, department: value })
+            setNewUserData({ ...newUserData, department: value })
           }
           editable={isEditing}
           placeholder="Department"
         />
         <TextInput
           style={styles.input}
-          value={userData?.email}
-          onChangeText={(value) => setUserData({ ...userData, email: value })}
+          value={newUserData?.email}
+          onChangeText={(value) => setNewUserData({ ...newUserData, email: value })}
           editable={isEditing}
           placeholder="Email"
         />
         <TextInput
           style={styles.input}
-          value={userData?.phone}
-          onChangeText={(value) => setUserData({ ...userData, phone: value })}
+          value={newUserData?.phone}
+          onChangeText={(value) => setNewUserData({ ...newUserData, phone: value })}
           editable={isEditing}
           placeholder="Phone"
         />
         {isEditing && (
           <TouchableOpacity
-            onPress={handleSaveProfile}
+            onPress={handleUpdate}
             style={styles.saveButton}
           >
             <Text style={styles.buttonText}>Save</Text>

@@ -33,7 +33,7 @@ function NavBar({ children, hidden }) {
   }
 
   useLayoutEffect(() => {
-    const ws = new SockJS('http://192.168.69.99:8082/ws') // cai nay chuyen thanh bien di ?? nguyên đoạn hay gì?
+    const ws = new SockJS('http://192.168.69.127:8082/ws') // cai nay chuyen thanh bien di ?? nguyên đoạn hay gì?
     const client = Stomp.over(ws)
     client.connect({}, function () {
       console.log('connected')

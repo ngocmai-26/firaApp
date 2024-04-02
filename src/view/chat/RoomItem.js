@@ -32,7 +32,6 @@ function RoomItem({
   handleExpandBox,
   activeRoom,
   handleModalShow,
-  leftBox,
 }) {
   const [hiddenComponent, setHiddenComponent] = useState(false)
   const navigation = useNavigation()
@@ -44,7 +43,7 @@ function RoomItem({
     <View
       style={[
         styles.leftColumn,
-        { display: leftBox ? 'flex' : 'none', position: 'relative' },
+        { position: 'relative' },
       ]}
     >
       <View

@@ -21,7 +21,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome6'
 
 export default function ManagerPermissions() {
-  const { allPermission, singlePermission } = useSelector(
+  const { allPermission, singlePermission, paginationPer } = useSelector(
     (state) => state.permissionsReducer,
   )
   const dispatch = useDispatch()
@@ -34,11 +34,14 @@ export default function ManagerPermissions() {
     }
   }, [])
 
-  
+  useLayoutEffect(() => {
+    dispatch(getAllPermissions(0));
+  }, []);
 
   useEffect(() => {
     setPermissions(allPermission)
   }, [allPermission])
+
   const [columns, setColumns] = useState([
     'Id',
     'Tên Chức Năng',
@@ -52,9 +55,7 @@ export default function ManagerPermissions() {
   const [newPermissionData, setNewPermissionData] = useState({
     name: '',
     description: '',
-    
   })
- 
 
   const sortTable = (column) => {
     const newDirection = direction === 'desc' ? 'asc' : 'desc'
@@ -100,7 +101,7 @@ export default function ManagerPermissions() {
   const handleSaveNewPermission = () => {
     const updatedPermission = [...permissions, newPermissionData]
     dispatch(addNewPermission(newPermissionData))
-    
+
     // setNewPermissionData({
     //   name: '',
     //   description: '',
@@ -179,6 +180,23 @@ export default function ManagerPermissions() {
     )
   }
 
+  const [currentPage, setCurrentPage] = useState(paginationPer?.number)
+
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      dispatch(getAllPermissions(currentPage - 1))
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < paginationPer?.totalPages -1) {
+      dispatch(getAllPermissions(currentPage + 1))
+      setCurrentPage(currentPage + 1)
+    }
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
@@ -218,6 +236,24 @@ export default function ManagerPermissions() {
           )}
         />
       </ScrollView>
+
+      <View style={styles.containerPagination}>
+        <TouchableOpacity
+          onPress={handlePrevPage}
+          style={styles.buttonPagination}
+        >
+          <Text style={styles.buttonTextPagination}>Previous</Text>
+        </TouchableOpacity>
+        <Text style={styles.pageTextPagination}>
+          Page {paginationPer?.number + 1} of {paginationPer?.totalPages}
+        </Text>
+        <TouchableOpacity
+          onPress={handleNextPage}
+          style={styles.buttonPagination}
+        >
+          <Text style={styles.buttonTextPagination}>Next</Text>
+        </TouchableOpacity>
+      </View>
       <TouchableOpacity style={styles.addButton} onPress={handleAddPermission}>
         <MaterialCommunityIcons name="plus-circle" size={64} color="blue" />
       </TouchableOpacity>
@@ -314,5 +350,28 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+
+  containerPagination: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonPagination: {
+    padding: 10,
+    marginHorizontal: 5,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: '#ccc',
+    backgroundColor: '#f0f0f0',
+  },
+  buttonTextPagination: {
+    color: '#000',
+    fontSize: 16,
+  },
+  pageTextPagination: {
+    marginHorizontal: 10,
+    fontSize: 16,
   },
 })

@@ -23,6 +23,7 @@ import RoomItem from './RoomItem'
 import RoomMessageGenerator from './RoomMessageGenerator'
 import RoomInfo from './RoomInfo'
 import { EXPAND_FILE_MEDIA, setRoomToggle } from '../../slices/ToggleSlice'
+import AddMember from '../../models/AddMember'
 
 const styles = StyleSheet.create({
   container: {
@@ -74,12 +75,13 @@ const styles = StyleSheet.create({
 function Chat() {
   const { userRoom } = useSelector((state) => state.roomReducer)
   const [leftBox, setLeftBox] = useState(true)
-  const [expandBox, setExpandBox] = useState(false)
-  const [expand, setExpand] = useState(false)
+  const [showRoom, setShowRoom] = useState(0)
   const [seeMore, setSeeMore] = useState(false)
   const [hiddenComponent, setHiddenComponent] = useState(false)
+  const [hiddenAddMember, setHiddenAddMember] = useState(false)
   const [modalSearch, setModalSearch] = useState(false)
   const [room, setRoom] = useState(false)
+  const [roomAddMember, setRoomAddMember] = useState({})
 
   const [activeRoom, setActiveRoom] = useState('')
 
@@ -88,9 +90,7 @@ function Chat() {
   const [hiddenModalRoom, setHiddenModalRoom] = useState(false)
 
   const handleHiddenModalRoom = () => {
-    setHiddenModalRoom(!hiddenModalRoom)
-    setExpandBox(!expandBox)
-    setLeftBox(!leftBox)
+    setShowRoom(1)
   }
   const navigation = useNavigation()
 
@@ -108,13 +108,11 @@ function Chat() {
   }, [])
 
   const handleExpandBox = (id) => {
-    setExpandBox(true)
-    setLeftBox(false)
+    setShowRoom(1)
     setActiveRoom(id)
   }
   const handleCloseExpandBox = () => {
-    setExpandBox(false)
-    setLeftBox(true)
+    setShowRoom(0)
     setActiveRoom('')
   }
   const handleExpand = () => {
@@ -124,44 +122,54 @@ function Chat() {
         value: !expandFileMedia,
       }),
     )
-    setExpand(!expand)
-    setExpandBox(!expandBox)
+    setShowRoom(2)
+  }
+
+  const handleCloseExpand = () => {
+    setShowRoom(1)
   }
 
   const handleModalShow = () => {
     setModalSearch(!modalSearch)
   }
+
   return (
     <NavBar hidden={true}>
       <View style={{ width: Dimensions.get('window').width }}>
         <View style={styles.container}>
-          <RoomItem
-            activeRoom={activeRoom}
-            leftBox={leftBox}
-            handleExpandBox={handleExpandBox}
-            rooms={userRoom}
-            handleModalShow={handleModalShow}
-            setActiveRoom={setActiveRoom}
-          />
+          {showRoom === 0 && (
+            <RoomItem
+              activeRoom={activeRoom}
+              handleExpandBox={handleExpandBox}
+              rooms={userRoom}
+              handleModalShow={handleModalShow}
+              setActiveRoom={setActiveRoom}
+              
+            />
+          )}
 
-          <RoomMessageGenerator
-            rooms={userRoom}
-            expandBox={expandBox}
-            activeRoom={activeRoom}
-            handleCloseExpandBox={handleCloseExpandBox}
-            handleExpand={handleExpand}
-          />
+          {showRoom === 1 && (
+            <RoomMessageGenerator
+              rooms={userRoom}
+              activeRoom={activeRoom}
+              handleCloseExpandBox={handleCloseExpandBox}
+              handleExpand={handleExpand}
+            />
+          )}
 
-          {userRoom.map((room, index) => {
+
+            {showRoom == 2 && userRoom.map((room, index) => {
             return (
+              
               <RoomInfo
                 room={room}
                 key={index.toString()}
                 activeRoom={activeRoom}
-                handleExpand={handleExpand}
+                handleCloseExpand={handleCloseExpand}
               />
             )
           })}
+        
           <View style={{ position: 'absolute', bottom: 0, right: 0 }}>
             {/* Toggle Sidebar button */}
             <TouchableOpacity
@@ -188,6 +196,7 @@ function Chat() {
           handleHiddenModalRoom={handleHiddenModalRoom}
         />
         {modalSearch && <ContactModel setOpen={setModalSearch} />}
+      
       </View>
     </NavBar>
   )

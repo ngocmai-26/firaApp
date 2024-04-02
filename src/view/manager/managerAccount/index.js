@@ -24,7 +24,7 @@ import Select from 'react-select'
 import { Dropdown } from 'react-native-element-dropdown'
 
 export default function ManagerAccount() {
-  const { allAccount, singleAccount } = useSelector(
+  const { allAccount, singleAccount, paginationAccount } = useSelector(
     (state) => state.accountsReducer,
   )
   const { allRole } = useSelector((state) => state.rolesReducer)
@@ -181,7 +181,13 @@ export default function ManagerAccount() {
     return (
       <View style={styles.addFormContainer}>
         <Text style={styles.formTitle}>Thông tin tài khoản </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginVertical: 5,
+          }}
+        >
           <Text style={{ flex: 1 }}>Họ và tên: </Text>
           <TextInput
             style={[styles.input, { flex: 2 }]}
@@ -190,7 +196,13 @@ export default function ManagerAccount() {
           />
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginVertical: 5,
+          }}
+        >
           <Text style={{ flex: 1 }}>Username: </Text>
           <TextInput
             style={[styles.input, { flex: 2 }]}
@@ -199,7 +211,13 @@ export default function ManagerAccount() {
           />
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginVertical: 5,
+          }}
+        >
           <Text style={{ flex: 1 }}>Số điện thoại: </Text>
           <TextInput
             style={[styles.input, { flex: 2 }]}
@@ -218,11 +236,27 @@ export default function ManagerAccount() {
             }}
             onPress={handleViewAccountDetails}
           >
-            <Text style={{ color: 'white', fontWeight: '600' }} >Cancel</Text>
+            <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </View>
     )
+  }
+
+  const [currentPage, setCurrentPage] = useState(paginationAccount?.number)
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      dispatch(getAllAccount(currentPage - 1))
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < paginationAccount?.totalPages - 1) {
+      dispatch(getAllAccount(currentPage + 1))
+      setCurrentPage(currentPage + 1)
+    }
   }
 
   return (
@@ -275,6 +309,23 @@ export default function ManagerAccount() {
           )}
         />
       </ScrollView>
+      <View style={styles.containerPagination}>
+        <TouchableOpacity
+          onPress={handlePrevPage}
+          style={styles.buttonPagination}
+        >
+          <Text style={styles.buttonTextPagination}>Previous</Text>
+        </TouchableOpacity>
+        <Text style={styles.pageTextPagination}>
+          Page {paginationAccount?.number + 1} of {paginationAccount?.totalPages}
+        </Text>
+        <TouchableOpacity
+          onPress={handleNextPage}
+          style={styles.buttonPagination}
+        >
+          <Text style={styles.buttonTextPagination}>Next</Text>
+        </TouchableOpacity>
+      </View>
       <TouchableOpacity style={styles.addButton} onPress={handleAddAccount}>
         <MaterialCommunityIcons name="plus-circle" size={48} color="blue" />
       </TouchableOpacity>
@@ -425,5 +476,28 @@ const styles = StyleSheet.create({
     marginVertical: 2,
     borderRadius: 5,
     fontSize: 12,
+  },
+
+  containerPagination: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonPagination: {
+    padding: 10,
+    marginHorizontal: 5,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: '#ccc',
+    backgroundColor: '#f0f0f0',
+  },
+  buttonTextPagination: {
+    color: '#000',
+    fontSize: 16,
+  },
+  pageTextPagination: {
+    marginHorizontal: 10,
+    fontSize: 16,
   },
 })

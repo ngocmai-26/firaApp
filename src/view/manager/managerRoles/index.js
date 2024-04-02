@@ -12,15 +12,23 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import _ from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
-import { addNewRole, deleteRoles, getAllRole } from '../../../thunks/RolesThunk'
+import {
+  addNewRole,
+  deleteRoles,
+  getAllRole,
+  removePermission,
+  updatePermission,
+} from '../../../thunks/RolesThunk'
 import { getAllPermissions } from '../../../thunks/PermissionsThunk'
 import Icon from 'react-native-vector-icons/FontAwesome6'
 
 export default function ManagerRoles() {
-  const { allRole, singleRole } = useSelector((state) => state.rolesReducer)
+  const { allRole, singleRole, paginationRole } = useSelector(
+    (state) => state.rolesReducer,
+  )
   const { allPermission } = useSelector((state) => state.permissionsReducer)
   const [showRoleById, setShowRoleById] = useState(false)
-  const [isHiddenPer, setIsHiddenPer] = useState(true)
+  const [isHiddenPer, setIsHiddenPer] = useState(false)
   const [taskList, setTaskList] = useState([])
   const [perUpdate, setPerUpdate] = useState({})
   const dispatch = useDispatch()
@@ -36,11 +44,13 @@ export default function ManagerRoles() {
     }
   }, [])
 
+  useLayoutEffect(() => {
+    dispatch(getAllRole(0));
+  }, []);
+
   useEffect(() => {
     setRoles(allRole)
   }, [allRole])
-
-  
 
   const [columns, setColumns] = useState([
     'Id',
@@ -54,12 +64,12 @@ export default function ManagerRoles() {
   const [selectedRole, setSelectedRole] = useState(null)
 
   const [showAddForm, setShowAddForm] = useState(false)
+
   const [newRoleData, setNewRoleData] = useState({
     roleName: '',
     description: '',
-    
+    permissionIds: [],
   })
-
   const sortTable = (column) => {
     const newDirection = direction === 'desc' ? 'asc' : 'desc'
     const sortedData = _.orderBy(roles, [column], [newDirection])
@@ -102,10 +112,7 @@ export default function ManagerRoles() {
   }
 
   const handleSaveNewRole = () => {
-    const updatedRoles = [...roles, newRoleData]
-    
-    const newData = { ...newRoleData, permissionIds: [] }
-    dispatch(addNewRole(newData))
+    dispatch(addNewRole(newRoleData))
     setNewRoleData({
       roleName: '',
       description: '',
@@ -114,22 +121,32 @@ export default function ManagerRoles() {
     setShowAddForm(false)
   }
 
-  // const handlePermissionSelection = (permission) => {
-  //   if (!newRoleData.permissionIds.includes(permission.id)) {
-  //     const updatedPermissions = [...newRoleData.permissionIds, permission.id]
-  //     setNewRoleData({ ...newRoleData, permissionIds: updatedPermissions })
-  //   }
-  // }
+  const handleAddTaskList = (item) => {
+    if (!taskList.includes(item)) {
+      setTaskList([...taskList, item])
+    }
+  }
 
-  // const handleRemovePermission = (permissionId) => {
-  //   const updatedPermissions = newRoleData.permissionIds.filter(
-  //     (id) => id !== permissionId,
-  //   )
-  //   setNewRoleData({ ...newRoleData, permissionIds: updatedPermissions })
-  // }
+  const handleRemoveTaskList = (item) => {
+    const newTaskList = taskList.filter((e) => e !== item)
+    setTaskList(newTaskList)
+  }
+
+  const handlePermissionSelection = (permission) => {
+    if (!newRoleData.permissionIds.includes(permission.id)) {
+      const updatedPermissions = [...newRoleData.permissionIds, permission.id]
+      setNewRoleData({ ...newRoleData, permissionIds: updatedPermissions })
+    }
+  }
+
+  const handleRemovePermission = (item) => {
+    dispatch(removePermission({ id: perUpdate.id, list: { ids: [item] } }));
+    const newTaskList = taskList.filter((e) => e !== item);
+    setTaskList(newTaskList);
+  }
 
   const handleViewRoleDetails = (role) => {
-    setSelectedRole(role) // Lưu role được chọn để xem chi tiết
+    setSelectedRole(role) 
   }
 
   const renderRoleDetailsForm = () => {
@@ -198,14 +215,13 @@ export default function ManagerRoles() {
             value={newRoleData[key]}
             onChangeText={(text) => handleInputChange(key, text)}
           />
-          
         )
       })}
-      {/* <View style={styles.permissionsContainer}>
+      <View style={styles.permissionsContainer}>
         <View style={styles.permissionList}>
           <Text style={styles.permissionsTitle}>Available Permissions</Text>
           <ScrollView style={styles.permissionsScrollView}>
-            {allPermission.map((permission) => (
+            {allPermission?.map((permission) => (
               <TouchableOpacity
                 key={permission.id}
                 style={styles.permissionItem}
@@ -219,38 +235,114 @@ export default function ManagerRoles() {
         <View style={styles.permissionList}>
           <Text style={styles.permissionsTitle}>Selected Permissions</Text>
           <ScrollView style={styles.permissionsScrollView}>
-            {newRoleData.permissionIds.map((permissionId, index) => {
-              const foundPermission = allPermission.find(
-                (permission) => permission.id === permissionId,
-              )
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.permissionItem}
-                  onPress={() => handleRemovePermission(permissionId)}
-                >
-                  <Text>{foundPermission ? foundPermission.name : ''}</Text>
-                </TouchableOpacity>
-              )
-            })}
+            {allPermission?.map((pre, key) =>
+              taskList?.map((item) =>
+                pre.id === item ? (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.permissionItem}
+                    onPress={() => handleRemovePermission(permissionId)}
+                  >
+                    <Text>{foundPermission ? foundPermission.name : ''}</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <></>
+                ),
+              ),
+            )}
           </ScrollView>
         </View>
-      </View> */}
+      </View>
       <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+        <TouchableOpacity
+          style={[styles.cancelButton, { marginHorizontal: 3 }]}
+          onPress={() => setShowAddForm(false)}
+        >
+          <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.cancelButton, {marginHorizontal: 3}]}
-            onPress={() => setShowAddForm(false)}
-          >
-            <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
-          </TouchableOpacity>
-          
-      <TouchableOpacity style={styles.saveButton} onPress={handleSaveNewRole}>
-        <Text style={styles.saveButtonText}>Save</Text>
-      </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSaveNewRole}>
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   )
+
+  const handleUpdatePer = () => {
+    dispatch(updatePermission({ id: perUpdate.id, list: { ids: taskList } }))
+    setIsHiddenPer(!isHiddenPer)
+  }
+
+  const renderUpdatePerForm = () => (
+    <View style={styles.addFormContainer}>
+      <Text style={styles.formTitle}>Cấp chức năng</Text>
+
+      <View style={styles.permissionsContainer}>
+        <View style={styles.permissionList}>
+          <Text style={styles.permissionsTitle}>Available Permissions</Text>
+          <ScrollView style={styles.permissionsScrollView}>
+            {allPermission?.map((permission) => (
+              <TouchableOpacity
+                key={permission.id}
+                style={styles.permissionItem}
+                onPress={() => handleAddTaskList(permission.id)}
+              >
+                <Text>{permission.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+        <View style={styles.permissionList}>
+          <Text style={styles.permissionsTitle}>Selected Permissions</Text>
+          <ScrollView style={styles.permissionsScrollView}>
+            {allPermission?.map((pre, key) =>
+              taskList?.map((item, index) =>
+                pre.id === item ? (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.permissionItem}
+                    onPress={() => handleRemovePermission(pre?.id)}
+                  >
+                    <Text>{pre.name}</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <></>
+                ),
+              ),
+            )}
+          </ScrollView>
+        </View>
+      </View>
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+        <TouchableOpacity
+          style={[styles.cancelButton, { marginHorizontal: 3 }]}
+          onPress={() => setIsHiddenPer(!isHiddenPer)}
+        >
+          <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.saveButton} onPress={handleUpdatePer}>
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
+
+  const [currentPage, setCurrentPage] = useState(paginationRole?.number)
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      dispatch(getAllRole(currentPage - 1))
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < paginationRole?.totalPages - 1) {
+      dispatch(getAllRole(currentPage + 1))
+      setCurrentPage(currentPage + 1)
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -287,16 +379,52 @@ export default function ManagerRoles() {
                 >
                   <Icon name="trash-can" size={20} color="#3498db" />
                 </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ paddingHorizontal: 10 }}
+                  onPress={() => {
+                    setIsHiddenPer(!isHiddenPer)
+                    const foundItem = allRole.find(
+                      (pre) => pre?.id === item?.id,
+                    )
+                    if (foundItem) {
+                      const newIdsArray = foundItem.permissions.map(
+                        (perItem) => perItem?.id,
+                      )
+                      setTaskList(newIdsArray)
+                    }
+                    setPerUpdate(item)
+                  }}
+                >
+                  <Icon name="pen-to-square" size={20} color="#3498db" />
+                </TouchableOpacity>
               </View>
             </View>
           )}
         />
       </ScrollView>
+      <View style={styles.containerPagination}>
+        <TouchableOpacity
+          onPress={handlePrevPage}
+          style={styles.buttonPagination}
+        >
+          <Text style={styles.buttonTextPagination}>Previous</Text>
+        </TouchableOpacity>
+        <Text style={styles.pageTextPagination}>
+          Page {paginationRole?.number + 1} of {paginationRole?.totalPages}
+        </Text>
+        <TouchableOpacity
+          onPress={handleNextPage}
+          style={styles.buttonPagination}
+        >
+          <Text style={styles.buttonTextPagination}>Next</Text>
+        </TouchableOpacity>
+      </View>
       <TouchableOpacity style={styles.addButton} onPress={handleAddRole}>
         <MaterialCommunityIcons name="plus-circle" size={48} color="blue" />
       </TouchableOpacity>
       {showAddForm && renderAddForm()}
       {selectedRole && renderRoleDetailsForm()}
+      {isHiddenPer && renderUpdatePerForm()}
     </View>
   )
 }
@@ -412,5 +540,28 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+  },
+
+  containerPagination: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonPagination: {
+    padding: 10,
+    marginHorizontal: 5,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: '#ccc',
+    backgroundColor: '#f0f0f0',
+  },
+  buttonTextPagination: {
+    color: '#000',
+    fontSize: 16,
+  },
+  pageTextPagination: {
+    marginHorizontal: 10,
+    fontSize: 16,
   },
 })

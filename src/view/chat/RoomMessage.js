@@ -43,13 +43,12 @@ function RoomMessage({
   room,
   activeRoom,
   handleCloseExpandBox,
-  expandBox,
   handleExpand,
 }) {
   const contentRef = useRef(null)
 
   return (
-    <RoomMessageContainer active={activeRoom == room?.id} expandBox={expandBox}>
+    <RoomMessageContainer active={activeRoom == room?.id}>
       <RoomHeader
         room={room}
         handleCloseExpandBox={handleCloseExpandBox}
@@ -72,7 +71,7 @@ const RoomMessageContainer = (props) => {
       style={[
         styles.rightColumn,
         {
-          display: props.active && props.expandBox ? 'flex' : 'none',
+          display: 'flex' ,
           paddingVertical: 10,
           paddingLeft: 10,
         },

@@ -4,6 +4,7 @@ const initState = {
   allAccount: [],
   searchAccount: [],
   singleAccount: {},
+  paginationAccount: {},
   errors: {},
 }
 const AccountsSlice = createSlice({
@@ -20,7 +21,10 @@ const AccountsSlice = createSlice({
       state.singleAccount = payload
     },
     setErrors: (state, { payload }) => {
-      state.errors = payload;
+      state.errors = payload
+    },
+    setPaginationAccount: (state, { payload }) => {
+      state.paginationAccount = payload
     },
   },
 })
@@ -30,6 +34,7 @@ export const {
   setSearchAccount,
   setSingleAccount,
   setErrors,
+  setPaginationAccount,
 } = AccountsSlice.actions
 
 export default AccountsSlice.reducer

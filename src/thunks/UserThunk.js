@@ -1,17 +1,16 @@
-
-import { API } from '../constants/api'
-import { createAsyncThunk } from '@reduxjs/toolkit'
-import { TOAST_ERROR, TOAST_SUCCESS } from '../constants/toast'
 import Toast from 'react-native-toast-message'
+import { API } from '../constants/api'
+import { TOAST_ERROR, TOAST_SUCCESS } from '../constants/toast'
 import { loadTokenFromStorage } from '../services/AuthService'
-import { setAllPermissions, setPaginationPer, setSinglePermission } from '../slices/PermissionsSlice'
+import { setAllUser, setPaginationUser, setSingleUser } from '../slices/UserSlice'
+import { createAsyncThunk } from '@reduxjs/toolkit'
 
-export const getAllPermissions = createAsyncThunk(
-  'permissions',
+export const getAllUsers = createAsyncThunk(
+  '/users',
   async (data, { dispatch, rejectWithValue }) => {
     try {
       const token = await loadTokenFromStorage()
-      const resp = await fetch(`${API.uri}/permissions?page=${data || 0}&size=20`, {
+      const resp = await fetch(`${API.uri}/users?page=${data || 0}&size=20`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -22,25 +21,24 @@ export const getAllPermissions = createAsyncThunk(
       if (resp.status >= 300) {
         Toast.show({
           type: TOAST_ERROR,
-          text1: dataJson?.message[0],
+          text1: dataJson.message[0],
         })
         return rejectWithValue()
       }
-      dispatch(setAllPermissions(dataJson.data.content))
-      dispatch(setPaginationPer(dataJson.data))
+      dispatch(setAllUser(dataJson.data.content))
+      dispatch(setPaginationUser(dataJson.data))
     } catch (e) {
-      // dispatch(setAuthFetching(true));
-      console.log("e", e)
+      dispatch(setAlert({ type: TOAST_ERROR, content: 'Error' }))
     }
   },
 )
 
-export const getPerById = createAsyncThunk(
-  'permissions/id',
+export const getUserById = createAsyncThunk(
+  '/users/id',
   async (id, { dispatch, rejectWithValue }) => {
     try {
       const token = await loadTokenFromStorage()
-      const resp = await fetch(`${API.uri}/permissions/${id}`, {
+      const resp = await fetch(`${API.uri}/users/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -51,69 +49,28 @@ export const getPerById = createAsyncThunk(
       if (resp.status >= 300) {
         Toast.show({
           type: TOAST_ERROR,
-          text1: dataJson?.message[0],
+          text1: dataJson.message[0],
         })
         return rejectWithValue()
       }
-      dispatch(setSinglePermission(dataJson.data))
+      dispatch(setSingleUser(dataJson.data))
     } catch (e) {
-      // dispatch(setAuthFetching(true));
-      console.log("e", e)
+      dispatch(setAlert({ type: 'error', content: 'Error when delete account' }))
     }
   },
 )
 
-export const deletePermissions = createAsyncThunk(
-  'deletePermission',
+export const deleteUsers = createAsyncThunk(
+  '/users/id',
   async (id, { dispatch, rejectWithValue }) => {
     try {
       const token = await loadTokenFromStorage()
-      const resp = await fetch(`${API.uri}/permissions/${id}`, {
+      const resp = await fetch(`${API.uri}/users/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-      })
-      const dataJson = await resp.json()
-      if (resp.status >= 300) {
-        Toast.show({
-          type: TOAST_ERROR,
-          text1: dataJson?.message[0],
-        })
-        return rejectWithValue()
-      }
-      Toast.show({
-        type: TOAST_SUCCESS,
-        text1: 'Xóa thành công',
-      })
-      dispatch(getAllPermissions())
-    } catch (e) {
-      console.log("e", e)
-    }
-  },
-)
-
-
-
-export const addNewPermission = createAsyncThunk(
-  'add-permission',
-  async (data, { dispatch, rejectWithValue }) => {
-    try {
-      const token = await loadTokenFromStorage()
-      if (!token) {
-        Toast.show({
-          type: TOAST_ERROR,
-          text1: 'Phiên đăng nhập đã hết hạn vui lòng thử lại',
-        })
-      }
-      const resp = await fetch(`${API.uri}/permissions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
       })
       const dataJson = await resp.json()
       if (resp.status >= 300) {
@@ -125,11 +82,43 @@ export const addNewPermission = createAsyncThunk(
       }
       Toast.show({
         type: TOAST_SUCCESS,
-        text1: dataJson.message[0],
+        text1: 'Xóa chức vụ thành công',
       })
-      dispatch(getAllPermissions())
+      dispatch(getAllUsers())
     } catch (e) {
-      console.log("e", e)
+      dispatch(setAlert({ type: 'error', content: 'Error when delete account' }))
+    }
+  },
+)
+
+export const updateUser = createAsyncThunk(
+  '/users/id',
+  async (data, { dispatch, rejectWithValue }) => {
+    try {
+      const token = await loadTokenFromStorage()
+      const resp = await fetch(`${API.uri}/users/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      })
+      const dataJson = await resp.json()
+      if (resp.status >= 300) {
+        Toast.show({
+          type: TOAST_ERROR,
+          text1: dataJson?.message[0],
+        })
+        return rejectWithValue()
+      }
+      Toast.show({
+        type: TOAST_SUCCESS,
+        text1: 'Cập nhật tài khoản thành công',
+      })
+      dispatch(getAllUsers())
+    } catch (e) {
+      console.log(e)
     }
   },
 )
