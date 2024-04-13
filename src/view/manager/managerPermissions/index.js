@@ -191,7 +191,7 @@ export default function ManagerPermissions() {
   }
 
   const handleNextPage = () => {
-    if (currentPage < paginationPer?.totalPages -1) {
+    if (currentPage < paginationPer?.totalPages) {
       dispatch(getAllPermissions(currentPage + 1))
       setCurrentPage(currentPage + 1)
     }

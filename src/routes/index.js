@@ -23,6 +23,7 @@ import Notification from '../view/user/notification'
 import CheckInOutPage from '../view/checkin'
 import React from 'react'
 import ManagerJobs from '../view/manager/managerJobs'
+import DetailJob from '../view/manager/managerJobs/detail'
 
 const Stack = createNativeStackNavigator()
 
@@ -159,6 +160,13 @@ const LoggedRoute = () => {
           title: 'Quản lý công việc',
         }}
       />
+      {/* <Stack.Screen
+        name="chi-tiet-cong-viec"
+        component={DetailJob}
+        options={{
+          title: 'Quản lý công việc',
+        }}
+      /> */}
       <Stack.Screen
         name="notification"
         component={Notification}

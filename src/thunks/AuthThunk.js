@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import {
+  setAccount,
   setAuthFetching,
   setErrors,
   setLogged,
@@ -57,6 +58,7 @@ export const login = createAsyncThunk(
       await AsyncStorage.setItem('user', JSON.stringify(dataJson?.data?.user))
       await AsyncStorage.setItem('auth_user', JSON.stringify(loginData))
 
+      dispatch(setAccount(dataJson?.data))
       dispatch(setUser(dataJson?.data?.user))
       dispatch(setLogged(true))
       dispatch(setRefresh({ refresh: true, uri: 'home' }))
@@ -97,6 +99,7 @@ export const loginWithAuthToken = createAsyncThunk(
       await AsyncStorage.setItem('user', JSON.stringify(dataJson?.data?.user))
       await AsyncStorage.setItem('auth', JSON.stringify(loginData))
       dispatch(setUser(dataJson?.data?.user))
+      dispatch(setAccount(dataJson?.data))
       dispatch(setLogged(true))
       dispatch(setRefresh('home'))
     } catch (e) {

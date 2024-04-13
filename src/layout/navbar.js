@@ -17,7 +17,7 @@ import {
   getAllAddContactRequestByUserRelate,
   getAllContactByUser,
 } from '../thunks/ContractThunk'
-import SockJS from 'sockjs-client'
+import SockJS from 'sockjs-client/dist/sockjs'
 import { Stomp } from '@stomp/stompjs'
 import { getAllRoomByUser } from '../thunks/RoomThunk'
 import { pushMessageToRoom } from '../slices/RoomSlice'
@@ -33,7 +33,7 @@ function NavBar({ children, hidden }) {
   }
 
   useLayoutEffect(() => {
-    const ws = new SockJS('http://192.168.69.127:8082/ws') // cai nay chuyen thanh bien di ?? nguyên đoạn hay gì?
+    const ws = new SockJS('http://192.168.69.174:8082/ws') // cai nay chuyen thanh bien di ?? nguyên đoạn hay gì?
     const client = Stomp.over(ws)
     client.connect({}, function () {
       console.log('connected')

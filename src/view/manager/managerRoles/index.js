@@ -338,7 +338,7 @@ export default function ManagerRoles() {
   }
 
   const handleNextPage = () => {
-    if (currentPage < paginationRole?.totalPages - 1) {
+    if (currentPage < paginationRole?.totalPages) {
       dispatch(getAllRole(currentPage + 1))
       setCurrentPage(currentPage + 1)
     }

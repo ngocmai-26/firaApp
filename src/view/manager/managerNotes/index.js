@@ -1,81 +1,88 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
+import { useLayoutEffect, useState } from 'react'
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { Picker } from '@react-native-picker/picker'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  deletePlan,
+  getAllPlan,
+  updateStatus,
+} from '../../../thunks/PlansThunk'
+import moment from 'moment'
+import CreatePlanModal from '../../../models/plan/CreatePlan'
+import DetailPlanModal from '../../../models/plan/DetailPlan'
 
 export default function NotesApp() {
-  const [plannedNotes, setPlannedNotes] = useState([]);
-  const [completedNotes, setCompletedNotes] = useState([]);
-  const [newNoteTitle, setNewNoteTitle] = useState('');
-  const [newNoteContent, setNewNoteContent] = useState('');
-  const [showAddBox, setShowAddBox] = useState(false);
-  const [showPlannedNotes, setShowPlannedNotes] = useState(true);
-  const [showOptions, setShowOptions] = useState({ index: null, show: false });
-  const [selectedStatus, setSelectedStatus] = useState(2); // Mặc định khi không chọn
-
-  const [pickerValue, setPickerValue] = useState(null); // Lưu giá trị của Picker
-
-  const addNote = () => {
-    if (newNoteTitle || newNoteContent) {
-      const status = pickerValue !== null ? pickerValue : selectedStatus; // Sử dụng giá trị từ Picker nếu đã chọn, nếu không sẽ sử dụng giá trị mặc định
-      const newNote = {
-        title: newNoteTitle ? newNoteTitle : `Kế hoạch ${plannedNotes.length + 1}`,
-        content: newNoteContent,
-        status: status,
-        createdAt: new Date().toLocaleString(),
-      };
-      setPlannedNotes([...plannedNotes, newNote]);
-      setNewNoteTitle('');
-      setNewNoteContent('');
-      setPickerValue(null); // Reset giá trị của Picker sau khi thêm ghi chú
-      setShowAddBox(false);
+  const { allPlan, singlePlan } = useSelector((state) => state.plansReducer)
+  const dispatch = useDispatch()
+  useLayoutEffect(() => {
+    if (allPlan?.length <= 0) {
+      dispatch(getAllPlan())
     }
-  };
+  }, [])
+
+  const [plannedNotes, setPlannedNotes] = useState([])
+  const [completedNotes, setCompletedNotes] = useState([])
+  const [showAddBox, setShowAddBox] = useState(false)
+  const [showPlannedNotes, setShowPlannedNotes] = useState(true)
+  const [showOptions, setShowOptions] = useState({ index: null, show: false })
+  const [detailPlan, setDetailPlan] = useState(false)
 
   const markAsCompleted = (index) => {
-    const completedNote = plannedNotes[index];
-    setCompletedNotes([...completedNotes, completedNote]);
-    deleteNoteFromPlanned(index);
-    setShowOptions({ index: null, show: false });
-  };
+    const completedNote = plannedNotes[index]
+    setCompletedNotes([...completedNotes, completedNote])
+    deleteNoteFromPlanned(index)
+    setShowOptions({ index: null, show: false })
+  }
 
   const deleteNoteFromPlanned = (index) => {
-    const newPlannedNotes = [...plannedNotes];
-    newPlannedNotes.splice(index, 1);
-    setPlannedNotes(newPlannedNotes);
-    setShowOptions({ index: null, show: false });
-  };
+    const newPlannedNotes = [...plannedNotes]
+    newPlannedNotes.splice(index, 1)
+    setPlannedNotes(newPlannedNotes)
+    setShowOptions({ index: null, show: false })
+  }
 
   const deleteNoteFromCompleted = (index) => {
-    const newCompletedNotes = [...completedNotes];
-    newCompletedNotes.splice(index, 1);
-    setCompletedNotes(newCompletedNotes);
-  };
+    const newCompletedNotes = [...completedNotes]
+    newCompletedNotes.splice(index, 1)
+    setCompletedNotes(newCompletedNotes)
+  }
 
   const handleMoreOptions = (index, isCompleted) => {
     if (!isCompleted) {
-      setShowOptions({ index, show: true });
+      setShowOptions({ index, show: true })
     } else {
-      deleteNoteFromCompleted(index);
+      deleteNoteFromCompleted(index)
     }
-  };
+  }
 
   const handleOutsidePress = () => {
-    setShowOptions({ ...showOptions, show: false });
-  };
+    setShowOptions({ ...showOptions, show: false })
+  }
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 1:
-        return '#FFEFD5'; // Màu vàng nhạt
-      case 2:
-        return '#90EE90'; // Màu xanh lá
+      case 'ACTIVE':
+        return '#FFEFD5' // Màu vàng nhạt
+      case 'DISABLE':
+        return '#90EE90' // Màu xanh lá
       case 3:
-        return '#ADD8E6'; // Màu xanh dương
+        return '#ADD8E6' // Màu xanh dương
       default:
-        return '#fff';
+        return '#fff'
     }
-  };
+  }
+  const handleGetPlanById = (item) => {
+    setDetailPlan(!detailPlan)
+    dispatch(getPlanById(item))
+  }
 
   return (
     <View style={styles.container}>
@@ -102,24 +109,54 @@ export default function NotesApp() {
 
       <ScrollView style={styles.notesContainer}>
         {showPlannedNotes
-          ? plannedNotes.map((note, index) => (
-              <TouchableOpacity 
-                key={index} 
-                style={[styles.note, { backgroundColor: getStatusColor(note.status) }]}
+          ? allPlan.map((note, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.note,
+                  { backgroundColor: getStatusColor(note.status) },
+                ]}
+                onPress={() => handleGetPlanById(note)}
               >
                 <View>
                   <Text style={styles.noteTitle}>{note.title}</Text>
-                  <Text>{note.content}</Text>
-                  <Text style={styles.noteDate}>{note.createdAt}</Text>
+                  <Text>{note.planDetail.description}</Text>
+                  <Text style={styles.noteDate}>
+                    Ngày tạo:
+                    {moment(note?.createdAt).format('DD-MM-YYYY')}
+                  </Text>
                 </View>
                 <View style={styles.optionsBox}>
+                  {note.status === 'ACTIVE' ? (
+                    <TouchableOpacity
+                      onPress={() => {
+                        dispatch(
+                          updateStatus({
+                            id: note.id,
+                            data: { planStatus: 'DISABLE' },
+                          }),
+                        )
+                      }}
+                    >
+                      <Ionicons name="pause" size={24} color="green" />
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() => {
+                        dispatch(
+                          updateStatus({
+                            id: note.id,
+                            data: { planStatus: 'ACTIVE' },
+                          }),
+                        )
+                      }}
+                    >
+                      <Ionicons name="play" size={24} color="green" />
+                    </TouchableOpacity>
+                  )}
+
                   <TouchableOpacity
-                    onPress={() => markAsCompleted(index)}
-                  >
-                    <Ionicons name="checkmark-done-circle" size={24} color="green" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => deleteNoteFromPlanned(index)}
+                    onPress={() => dispatch(deletePlan(note.id))}
                   >
                     <Ionicons name="trash-bin" size={24} color="red" />
                   </TouchableOpacity>
@@ -145,50 +182,13 @@ export default function NotesApp() {
           <Ionicons name="add-circle" size={64} color="blue" />
         </TouchableOpacity>
       </View>
-      <View style={styles.showAddBox} >
-        {showAddBox && (
-          <View style={styles.addBox}>
-            <TextInput
-              style={[styles.input]}
-              placeholder="Tên kế hoạch"
-              value={newNoteTitle}
-              onChangeText={setNewNoteTitle}
-            />
-            <TextInput
-              style={[styles.input]}
-              placeholder="Nội dung"
-              value={newNoteContent}
-              onChangeText={setNewNoteContent}
-            />
-            <Picker
-              selectedValue={pickerValue}
-              style={[styles.picker]}
-              onValueChange={(itemValue) => setPickerValue(itemValue)}
-            >
-              <Picker.Item label="Chọn thuộc" value={null} />
-              <Picker.Item label="Công việc" value={1} />
-              <Picker.Item label="Cá nhân" value={2} />
-              <Picker.Item label="KPI" value={3} />
-            </Picker>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                onPress={() => setShowAddBox(false)}
-                style={[styles.button, { backgroundColor: 'gray' }]}
-              >
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={addNote}
-                style={[styles.button, { backgroundColor: 'blue' }]}
-              >
-                <Text style={styles.buttonText}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+      {/* Thêm kế hoạch */}
+      <View style={styles.showAddBox}>
+        {showAddBox && <CreatePlanModal setShowAddBox={setShowAddBox} />}
       </View>
+      {detailPlan && <DetailPlanModal handleGetPlanById={handleGetPlanById} />}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#fff',
-    position: "relative",
+    position: 'relative',
   },
   header: {
     flexDirection: 'row',
@@ -305,5 +305,4 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
   },
-});
-
+})

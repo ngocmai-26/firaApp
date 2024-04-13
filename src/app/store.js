@@ -10,6 +10,9 @@ import RoomSlice from '../slices/RoomSlice'
 import ToggleSlice from '../slices/ToggleSlice'
 import AccountsSlice from '../slices/AccountsSlice'
 import UsersSlice from '../slices/UserSlice'
+import JobsSlice from '../slices/JobsSlice'
+import TimeKeepsSlice from '../slices/TimeKeepsSlice'
+import PlansSlice from '../slices/PlansSlice'
 
 export const store = configureStore({
   reducer: {
@@ -24,6 +27,9 @@ export const store = configureStore({
     roomReducer: RoomSlice,
     toggleReducer: ToggleSlice,
     accountsReducer: AccountsSlice,
+    jobsReducer: JobsSlice,
+    timeKeepsReducer: TimeKeepsSlice,
+    plansReducer: PlansSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),
