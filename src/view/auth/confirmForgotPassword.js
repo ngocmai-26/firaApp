@@ -107,21 +107,18 @@ function ConfirmForgotPassword() {
     }
   }
 
-  useEffect(() => {
-    getData().then((data) => {
-      setCode({ ...code, email: data })
-    })
-  }, [code])
-
   ///Code đang bị bug
 
   const handleSubmit = () => {
-    dispatch(confirmForgotPassword(code)).then((reps) => {
-      if (!reps.error) {
-        remove()
-        navigation.navigate('login')
-      }
+    getData().then((data) => {
+      dispatch(confirmForgotPassword({...code, email: data })).then((reps) => {
+        if (!reps.error) {
+          remove()
+          navigation.navigate('Đăng Nhập')
+        }
+      })
     })
+    
   }
   const handleSendAgain = () => {
     getData().then((data) => {

@@ -90,7 +90,7 @@ function Chat() {
   const [hiddenModalRoom, setHiddenModalRoom] = useState(false)
 
   const handleHiddenModalRoom = () => {
-    setShowRoom(1)
+    setHiddenModalRoom(!hiddenModalRoom)
   }
   const navigation = useNavigation()
 
@@ -169,8 +169,7 @@ function Chat() {
               />
             )
           })}
-        
-          <View style={{ position: 'absolute', bottom: 0, right: 0 }}>
+        {showRoom === 0 &&  <View style={{ position: 'absolute', bottom: 0, right: 0 }}>
             {/* Toggle Sidebar button */}
             <TouchableOpacity
               style={{
@@ -189,7 +188,8 @@ function Chat() {
               <Icon name="plus" size={20} color="white" />
               {/* You can replace the Icon component with an Image component if you're using an image */}
             </TouchableOpacity>
-          </View>
+          </View>}
+         
         </View>
         <ModalRoomChat
           hiddenModalRoom={hiddenModalRoom}

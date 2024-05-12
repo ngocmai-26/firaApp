@@ -138,3 +138,37 @@ export const getAccountById = createAsyncThunk(
     }
   },
 )
+
+
+export const updateAccount = createAsyncThunk(
+  '/account/id',
+  async (data, { dispatch, rejectWithValue }) => {
+    try {
+      const token = await loadTokenFromStorage()
+      const resp = await fetch(`${API.uri}/accounts/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data.data),
+      })
+      const dataJson = await resp.json()
+      if (resp.status >= 300) {
+        Toast.show({
+          type: TOAST_ERROR,
+          text1: dataJson.message[0],
+        })
+        return rejectWithValue()
+      }
+      Toast.show({
+        type: TOAST_SUCCESS,
+        text1: "Chỉnh sửa thành công",
+      })
+      dispatch(getAllAccount())
+    } catch (e) {
+      console.log(e)
+    }
+  },
+)
+

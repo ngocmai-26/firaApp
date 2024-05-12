@@ -1,332 +1,364 @@
-import React, { useState } from 'react'
-import { createAsyncThunk } from '@reduxjs/toolkit'
+import React, { useState } from "react";
+import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
+  logout,
   setAccount,
   setAuthFetching,
   setErrors,
   setLogged,
   setRefresh,
   setUser,
-} from '../slices/AuthSlice'
-import { API, AUTH_KEY_NAME } from '../constants/api'
-import { TOAST_ERROR, TOAST_SUCCESS } from '../constants/toast'
+} from "../slices/AuthSlice";
+import { API, AUTH_KEY_NAME } from "../constants/api";
+import { TOAST_ERROR, TOAST_SUCCESS } from "../constants/toast";
 import {
   delaySync,
   loadTokenFromStorage,
   setToken,
-} from '../services/AuthService'
-import { getHeaders } from '../services/ApiService'
-import Toast from 'react-native-toast-message'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { FBStorageService } from '../services/firebase/StorageService'
+} from "../services/AuthService";
+import { getHeaders } from "../services/ApiService";
+import Toast from "react-native-toast-message";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { FBStorageService } from "../services/firebase/StorageService";
 
 export const login = createAsyncThunk(
-  'Đăng Nhập',
+  "Đăng Nhập",
   async (loginData, { rejectWithValue, dispatch }) => {
     try {
-      // dispatch(setAuthFetching(true))
-      // await delaySync(1)
+      dispatch(setAuthFetching(true));
+      await delaySync(1);
       const resp = await fetch(`${API.uri}/public/auth/login`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-type': 'application/json',
+          "Content-type": "application/json",
         },
         body: JSON.stringify(loginData),
-      })
-      const dataJson = await resp.json()
-      dispatch(setAuthFetching(false))
+      });
+      const dataJson = await resp.json();
+      dispatch(setAuthFetching(false));
 
       if (resp.status >= 300) {
         if (!dataJson?.valid) {
-          dispatch(setErrors(dataJson?.data))
-          return rejectWithValue('something error')
+          dispatch(setErrors(dataJson?.data));
+          return rejectWithValue("something error");
         }
         Toast.show({
           type: TOAST_ERROR,
           text1: dataJson?.message[0],
-        })
-        dispatch(setErrors({}))
-        return rejectWithValue('something error')
+        });
+        dispatch(setErrors({}));
+        return rejectWithValue("something error");
       }
       Toast.show({
         type: TOAST_SUCCESS,
-        text1: 'Đăng nhập thành công',
-      })
+        text1: "Đăng nhập thành công",
+      });
 
-      setToken(dataJson?.data?.token)
+      setToken(dataJson?.data?.token);
 
-      await AsyncStorage.setItem('user', JSON.stringify(dataJson?.data?.user))
-      await AsyncStorage.setItem('auth_user', JSON.stringify(loginData))
+      await AsyncStorage.setItem("user", JSON.stringify(dataJson?.data?.user));
+      await AsyncStorage.setItem("auth_user", JSON.stringify(loginData));
 
-      dispatch(setAccount(dataJson?.data))
-      dispatch(setUser(dataJson?.data?.user))
-      dispatch(setLogged(true))
-      dispatch(setRefresh({ refresh: true, uri: 'home' }))
+      dispatch(setAccount(dataJson?.data));
+      dispatch(setUser(dataJson?.data?.user));
+      dispatch(setLogged(true));
+      dispatch(setRefresh({ refresh: true, uri: "home" }));
     } catch (e) {
-      console.log("e", e)
+      console.log("e", e);  
     }
-  },
-)
+  }
+);
 export const loginWithAuthToken = createAsyncThunk(
-  'Đăng Nhập',
+  "Đăng Nhập",
   async (loginData, { rejectWithValue, dispatch }) => {
     try {
-      dispatch(setAuthFetching(true))
-      await delaySync(1)
+      dispatch(setAuthFetching(true));
+      await delaySync(1);
       const resp = await fetch(`${API.uri}/public/auth/login-with-token`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-type': 'application/json',
+          "Content-type": "application/json",
         },
         body: JSON.stringify(loginData),
-      })
-      const dataJson = await resp.json()
-      dispatch(setAuthFetching(false))
+      });
+      const dataJson = await resp.json();
+      dispatch(setAuthFetching(false));
 
       if (resp.status >= 300) {
         if (!dataJson?.valid) {
-          dispatch(setErrors(dataJson?.data))
-          return rejectWithValue('something error')
+          dispatch(setErrors(dataJson?.data));
+          return rejectWithValue("something error");
         }
-        Toast.show({
-          type: TOAST_ERROR,
-          text1: dataJson?.message[0],
-        })
-        dispatch(setErrors({}))
-        return rejectWithValue('something error')
+      
+        dispatch(setErrors({}));
+        return rejectWithValue("something error");
       }
-      setToken(dataJson?.data?.token)
-      await AsyncStorage.setItem('user', JSON.stringify(dataJson?.data?.user))
-      await AsyncStorage.setItem('auth', JSON.stringify(loginData))
-      dispatch(setUser(dataJson?.data?.user))
-      dispatch(setAccount(dataJson?.data))
-      dispatch(setLogged(true))
-      dispatch(setRefresh('home'))
+      setToken(dataJson?.data?.token);
+      await AsyncStorage.setItem("user", JSON.stringify(dataJson?.data?.user));
+      await AsyncStorage.setItem("auth", JSON.stringify(loginData));
+      dispatch(setUser(dataJson?.data?.user));
+      dispatch(setAccount(dataJson?.data));
+      dispatch(setLogged(true));
+      dispatch(setRefresh("home"));
     } catch (e) {
-      console.log("e", e)
+      console.log("e", e);
     }
-  },
-)
+  }
+);
 
 export const register = createAsyncThunk(
-  'register',
+  "register",
   async (regData, { dispatch, rejectWithValue }) => {
     try {
       const resp = await fetch(`${API.uri}/public/auth/register`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           username: regData.username,
           password: regData.password,
           confirmPassword: regData.confirmPassword,
         }),
-      })
-      const dataJson = await resp.json()
+      });
+      const dataJson = await resp.json();
       if (resp.status >= 300) {
         if (!dataJson?.valid) {
           Toast.show({
             type: TOAST_ERROR,
             text1: dataJson?.data,
-          })
-          return rejectWithValue('something error')
+          });
+          return rejectWithValue("something error");
         }
 
         Toast.show({
           type: TOAST_ERROR,
           text1: dataJson?.message[0],
-        })
+        });
 
-        return rejectWithValue('something error')
+        return rejectWithValue("something error");
       }
 
       Toast.show({
         type: TOAST_SUCCESS,
-        text1: 'Đăng ký thành công',
-      })
+        text1: "Đăng ký thành công",
+      });
 
-      return dataJson
+      return dataJson;
     } catch (e) {
-      console.log("e", e)
+      console.log("e", e);
     }
-  },
-)
+  }
+);
 
 export const createNewUser = createAsyncThunk(
-  'create-new-user',
+  "create-new-user",
   async (newUserData, { rejectWithValue, dispatch }) => {
     try {
-      await delaySync(1)
+      await delaySync(1);
       const avatarUrl = await FBStorageService.uploadFile(newUserData.avatar);
 
-      const token = await loadTokenFromStorage()
+      const token = await loadTokenFromStorage();
       if (!token) {
         // dispatch(setAuthFetching(true));
         Toast.show({
           type: TOAST_ERROR,
-          text1: 'Phiên bản hết hạn vui lòng đăng nhập lại',
-        })
-        rejectWithValue()
+          text1: "Phiên bản hết hạn vui lòng đăng nhập lại",
+        });
+        rejectWithValue();
       }
       const resp = await fetch(`${API.uri}/users`, {
-        method: 'POST',
+        method: "POST",
         headers: getHeaders(token),
-        body: JSON.stringify({ ...newUserData, avatar: avatarUrl} ),
-      })
+        body: JSON.stringify({ ...newUserData, avatar: avatarUrl }),
+      });
 
       // dispatch(setAuthFetching(false));
-      const dataJson = await resp.json()
+      const dataJson = await resp.json();
       if (resp.status >= 300) {
         if (!dataJson?.valid) {
           dispatch(setErrors(jsonData?.data));
-          return rejectWithValue()
+          return rejectWithValue();
         }
         Toast.show({
           type: TOAST_ERROR,
           text1: dataJson?.message[0],
-        })
-        return rejectWithValue()
+        });
+        return rejectWithValue();
       }
 
       Toast.show({
         type: TOAST_SUCCESS,
-        text1: 'Tạo người dùng thành công',
-      })
+        text1: "Tạo người dùng thành công",
+      });
 
-      await AsyncStorage.setItem('user', JSON.stringify(dataJson?.data))
-      dispatch(setUser(dataJson?.data))
+      await AsyncStorage.setItem("user", JSON.stringify(dataJson?.data));
+      dispatch(setUser(dataJson?.data));
       dispatch(setRefresh("/"));
     } catch (e) {
       // dispatch(setAuthFetching(true));
-      console.log("e", e)
+      console.log("e", e);
     }
-  },
-)
+  }
+);
 
 export const confirmAccount = createAsyncThunk(
-  'verify-email',
+  "verify-email",
   async (confirmData, { rejectWithValue, dispatch }) => {
     try {
       const resp = await fetch(`${API.uri}/public/auth/verify-email`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-type': 'application/json',
+          "Content-type": "application/json",
         },
         body: JSON.stringify(confirmData),
-      })
-      const dataJson = await resp.json()
+      });
+      const dataJson = await resp.json();
       if (resp.status >= 300) {
         Toast.show({
           type: TOAST_ERROR,
           text1: dataJson?.message[0],
-        })
-        return rejectWithValue('something error')
+        });
+        return rejectWithValue("something error");
       }
       Toast.show({
         type: TOAST_SUCCESS,
-        text1: 'Xác nhận thành công',
-      })
+        text1: "Xác nhận thành công",
+      });
 
-      dispatch(setRefresh(true))
-      return dataJson
+      dispatch(setRefresh(true));
+      return dataJson;
     } catch (e) {
-      console.log("e", e)
+      console.log("e", e);
     }
-  },
-)
+  }
+);
 
 export const requestNewCode = createAsyncThunk(
-  'request-new-code',
+  "request-new-code",
   async (email, { rejectWithValue, dispatch }) => {
     try {
       const resp = await fetch(
         `${API.uri}/public/auth/request-new-code?email=${email}`,
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-type': 'application/json',
+            "Content-type": "application/json",
           },
-        },
-      )
-      const dataJson = await resp.json()
+        }
+      );
+      const dataJson = await resp.json();
       if (resp.status >= 300) {
         Toast.show({
           type: TOAST_ERROR,
           text1: dataJson?.message[0],
-        })
-        return rejectWithValue('something error')
+        });
+        return rejectWithValue("something error");
       }
       Toast.show({
         type: TOAST_SUCCESS,
-        text1: 'Đã gửi mã mới',
-      })
+        text1: "Đã gửi mã mới",
+      });
     } catch (e) {
-      console.log("e", e)
+      console.log("e", e);
     }
-  },
-)
+  }
+);
 
 export const forgotPassword = createAsyncThunk(
-  'forgot-password',
+  "forgot-password",
   async (email, { rejectWithValue, dispatch }) => {
     try {
       const resp = await fetch(
         `${API.uri}/public/auth/forgot-password/${email}`,
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-type': 'application/json',
+            "Content-type": "application/json",
           },
-        },
-      )
-      const dataJson = await resp.json()
+        }
+      );
+      const dataJson = await resp.json();
       if (resp.status >= 300) {
         Toast.show({
           type: TOAST_ERROR,
           text1: dataJson?.message[0],
-        })
-        return rejectWithValue('something error')
+        });
+        return rejectWithValue("something error");
       }
       Toast.show({
         type: TOAST_SUCCESS,
-        text1: 'Đã gửi mã mới',
-      })
+        text1: "Đã gửi mã mới",
+      });
     } catch (e) {
-      console.log("e", e)
+      console.log("e", e);
     }
-  },
-)
+  }
+);
 
 export const confirmForgotPassword = createAsyncThunk(
-  'confirm-forgot-password',
+  "confirm-forgot-password",
   async (confirmData, { rejectWithValue, dispatch }) => {
     try {
       const resp = await fetch(
         `${API.uri}/public/auth/confirm-forgot-password/${confirmData?.email}/${confirmData?.code}`,
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-type': 'application/json',
+            "Content-type": "application/json",
           },
-        },
-      )
-      const dataJson = await resp.json()
+        }
+      );
+      const dataJson = await resp.json();
       if (resp.status >= 300) {
         Toast.show({
           type: TOAST_ERROR,
           text1: dataJson?.message[0],
+        });
+        return rejectWithValue("something error");
+      }
+      Toast.show({
+        type: TOAST_SUCCESS,
+        text1: "Xác nhận thành công",
+      });
+
+      return dataJson;
+    } catch (e) {
+      console.log("e", e);
+    }
+  }
+);
+
+export const changePasswordAuth = createAsyncThunk(
+  '/forgot-password',
+  async (data, { rejectWithValue, dispatch }) => {
+    try {
+      console.log("data", data)
+      const token = await loadTokenFromStorage()
+      const resp = await fetch(`${API.uri}/public/auth/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      })
+      const dataJson = await resp.json()
+      if (resp.status >= 300) {
+     
+        Toast.show({
+          type: TOAST_ERROR,
+          text1: dataJson.message[0],
         })
         return rejectWithValue('something error')
       }
       Toast.show({
         type: TOAST_SUCCESS,
-        text1: 'Xác nhận thành công',
+        text1: 'Đổi mật khẩu thành công',
       })
-
-      return dataJson
+      dispatch(logout())
     } catch (e) {
-      console.log("e", e)
+      console.log(e)
     }
   },
 )

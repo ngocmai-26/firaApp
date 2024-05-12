@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react'
+import { useLayoutEffect, useState } from "react";
 import {
   Image,
   StyleSheet,
@@ -6,47 +6,48 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native'
-import Icon from 'react-native-vector-icons/FontAwesome'
-import { useDispatch, useSelector } from 'react-redux'
-import { useNavigation } from '@react-navigation/native'
-import { login, loginWithAuthToken } from '../../thunks/AuthThunk'
-import { loadTokenFromStorage } from '../../services/AuthService'
+} from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigation } from "@react-navigation/native";
+import { login, loginWithAuthToken } from "../../thunks/AuthThunk";
+import { loadTokenFromStorage } from "../../services/AuthService";
+import { ActivityIndicator } from "react-native";
 
 function Login() {
-  const dispatch = useDispatch()
-  const navigation = useNavigation()
-  const [user, setUser] = useState({})
-  const { isFetching } = useSelector((state) => state.authReducer)
-  const { errors } = useSelector((state) => state.authReducer)
-  const authToken = loadTokenFromStorage()
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
+  const [user, setUser] = useState({});
+  const { isFetching } = useSelector((state) => state.authReducer);
+  const { errors } = useSelector((state) => state.authReducer);
+  const authToken = loadTokenFromStorage();
 
   useLayoutEffect(() => {
     if (authToken) {
-      dispatch(loginWithAuthToken({ token: authToken }))
+      dispatch(loginWithAuthToken({ token: authToken }));
     }
-  }, [])
+  }, []);
 
   const handleLogin = () => {
     if (!isFetching) {
-      dispatch(login(user))
+      dispatch(login(user));
     }
-  }
+  };
 
   return (
-    <View style={{ height: '100%' }}>
+    <View style={{ height: "100%" }}>
       <View
         style={{
           flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: 'auto',
+          alignItems: "center",
+          justifyContent: "center",
+          margin: "auto",
         }}
       >
         <View style={styles.card}>
           <View style={styles.logoContainer}>
             <Image
-              source={require('../../../assets/logo.png')}
+              source={require("../../../assets/logo.png")}
               style={styles.logo}
             />
           </View>
@@ -62,8 +63,10 @@ function Login() {
             <Icon name="user" size={20} color="#ccc" style={styles.icon} />
             <TextInput
               style={styles.input}
-              placeholder="Tên đăng nhập"
-              onChangeText={(text) => setUser({ ...user, username: text.trim() })}
+              placeholder="Email đăng nhập"
+              onChangeText={(text) =>
+                setUser({ ...user, username: text.trim() })
+              }
             />
           </View>
 
@@ -73,14 +76,16 @@ function Login() {
               style={styles.input}
               placeholder="Mật khẩu"
               secureTextEntry={true}
-              onChangeText={(text) => setUser({ ...user, password: text.trim() })}
+              onChangeText={(text) =>
+                setUser({ ...user, password: text.trim() })
+              }
             />
           </View>
 
           <TouchableOpacity>
             <Text
               style={styles.forgotPassword}
-              onPress={() => navigation.navigate('forgot-password')}
+              onPress={() => navigation.navigate("forgot-password")}
             >
               Quên mật khẩu?
             </Text>
@@ -89,20 +94,24 @@ function Login() {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.button}
-              onPress={() => navigation.navigate('register')}
+              onPress={() => navigation.navigate("register")}
             >
               <Text style={styles.buttonText}>Đăng Ký</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
-              <Text style={styles.buttonText}>Đăng nhập</Text>
+              {isFetching ? (
+                <ActivityIndicator color={"white"} size={20} />
+              ) : (
+                <Text style={styles.buttonText}>Đăng nhập</Text>
+              )}
             </TouchableOpacity>
           </View>
 
           <View style={styles.verifyContainer}>
             <Text style={styles.verifyText}>Chưa xác thực tài khoản?</Text>
             <TouchableOpacity
-              onPress={() => navigation.navigate('verify-email')}
+              onPress={() => navigation.navigate("verify-email")}
             >
               <Text style={styles.verifyLink}>Xác thực ngay</Text>
             </TouchableOpacity>
@@ -110,16 +119,16 @@ function Login() {
         </View>
       </View>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   card: {
-    width: '80%',
-    backgroundColor: 'white',
+    width: "80%",
+    backgroundColor: "white",
     borderRadius: 10,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -127,32 +136,32 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    justifyContent: 'center',
-    width: '100%',
-    flexDirection: 'row',
+    borderBottomColor: "#ccc",
+    justifyContent: "center",
+    width: "100%",
+    flexDirection: "row",
   },
   logo: {
     marginVertical: 10,
   },
   heading: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
-    color: '#367BD6',
-    textAlign: 'center',
+    color: "#367BD6",
+    textAlign: "center",
   },
   subHeading: {
     fontSize: 14,
-    color: '#777',
+    color: "#777",
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
     marginVertical: 10,
     paddingVertical: 5,
   },
@@ -164,45 +173,45 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 2,
     marginTop: 3,
-    width: '92%',
+    width: "92%",
   },
   forgotPassword: {
     fontSize: 14,
-    color: '#007bff',
-    textDecorationLine: 'underline',
-    textAlign: 'right',
+    color: "#007bff",
+    textDecorationLine: "underline",
+    textAlign: "right",
     marginTop: 10,
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 15,
   },
   button: {
     flex: 1,
-    backgroundColor: '#007bff',
+    backgroundColor: "#007bff",
     borderRadius: 5,
     padding: 10,
     marginHorizontal: 5,
   },
   buttonText: {
-    color: 'white',
-    textAlign: 'center',
+    color: "white",
+    textAlign: "center",
     fontSize: 16,
   },
   verifyContainer: {
     marginTop: 10,
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
   },
   verifyText: {
     fontSize: 14,
   },
   verifyLink: {
-    color: '#007bff',
+    color: "#007bff",
     fontSize: 14,
     marginLeft: 5,
   },
-})
+});
 
-export default Login
+export default Login;

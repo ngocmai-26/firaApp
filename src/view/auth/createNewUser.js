@@ -14,12 +14,19 @@ import { setLogged } from '../../slices/AuthSlice'
 import * as ImagePicker from 'expo-image-picker'
 import { useNavigation } from '@react-navigation/native'
 import { generateRandomCharacters, resolveFilename } from '../../app/ultis.js'
+import moment from 'moment'
+import Icon from 'react-native-vector-icons/FontAwesome6'
+import DateTimePicker from '@react-native-community/datetimepicker'
 
 function CreateNewUser() {
   const dispatch = useDispatch()
   const [newUserData, setNewUserData] = useState({})
   const [errors, setErrors] = useState({})
   const [image, setImage] = useState('')
+  const [birthday, setBirthday] = useState(new Date())
+  const [mode, setMode] = useState('date')
+  const [show, setShow] = useState(false)
+  
 
   const navigation = useNavigation()
   const pickImage = async () => {
@@ -80,10 +87,27 @@ function CreateNewUser() {
     }
 
     dispatch(createNewUser({ ...newUserData, avatar: image })).then((data) => {
-      if (!data) {
+      if (!data.error) {
         navigation.navigate('home')
       }
     })
+  }
+
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate
+    setShow(false)
+    setBirthday(currentDate)
+    setNewUserData({ ...newUserData, birthday: moment(currentDate).format('YYYY-MM-DD') })
+    
+  }
+
+  const showMode = (currentMode) => {
+    setShow(true)
+    setMode(currentMode)
+  }
+
+  const showDatepicker = () => {
+    showMode('date')
   }
 
   return (
@@ -249,25 +273,44 @@ function CreateNewUser() {
                 >
                   Birthday:
                 </Text>
-                <TextInput
+                 <View
                   style={{
-                    fontSize: 16,
-                    paddingHorizontal: 10,
-                    paddingVertical: 5,
-                    marginTop: 3,
-                    width: '100%',
+                    flexDirection: 'row',
                     borderWidth: 1,
-                    borderColor: errors.birthday ? 'red' : '#ccc',
+                    borderColor: '#CCCCCC',
                     borderRadius: 5,
-                    marginVertical: 5,
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
                   }}
-                  placeholder="VD: 2002-20-12"
-                  onChangeText={(value) =>
-                    setNewUserData({ ...newUserData, birthday: value })
-                  }
-                />
+                >
+                  <TextInput
+                    style={{
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                    }}
+                    placeholder="YYYY-MM-DD"
+                    defaultValue={moment(birthday).format('YYYY-MM-DD')}
+                   
+                  />
+                  <TouchableOpacity onPress={showDatepicker} style={{flexDirection: 'row', paddingHorizontal: 5}}>
+                    <Icon
+                      name="calendar-days"
+                      size={20}
+                      style={{ color: 'black', alignItems: 'center', marginVertical: 'auto' }}
+                    />
+                  </TouchableOpacity>
+                </View>
                 {errors.birthday && (
                   <Text style={{ color: 'red' }}>{errors.birthday}</Text>
+                )}
+                {show && (
+                  <DateTimePicker
+                    testID="dateTimePicker"
+                    value={birthday}
+                    mode={mode}
+                    is24Hour={true}
+                    onChange={onChange}
+                  />
                 )}
               </View>
 

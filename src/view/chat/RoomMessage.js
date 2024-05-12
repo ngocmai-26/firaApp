@@ -151,7 +151,7 @@ const RoomHeader = ({ room, handleCloseExpandBox, handleExpand }) => {
 const RoomMessageContent = ({ messages, contentRef }) => {
   
   return (
-    <View>
+    <View style={{zIndex: 1000}}>
       <ScrollView
         style={{
           maxHeight: Dimensions.get('window').height * 0.85,
@@ -261,6 +261,7 @@ const RoomInput = ({ room, contentRef }) => {
         bottom: 0,
         left: 0,
         right: 0,
+        zIndex: 1000,
       }}
     >
       <View

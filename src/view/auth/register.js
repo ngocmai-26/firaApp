@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native'
 import { useEffect, useState } from 'react'
-import { View, Text, TextInput, TouchableOpacity } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import { register } from '../../thunks/AuthThunk'
 import { useDispatch } from 'react-redux'
@@ -72,6 +72,7 @@ function Register() {
           justifyContent: 'center',
         }}
       >
+         
         <View
           style={{
             width: '80%',
@@ -86,6 +87,18 @@ function Register() {
             elevation: 5,
           }}
         >
+          <View style={
+          { borderBottomWidth: 1,
+            borderBottomColor: "#ccc",
+            justifyContent: "center",
+            width: "100%",
+            flexDirection: "row",}
+         }>
+            <Image
+              source={require("../../../assets/logo.png")}
+              style={{ marginVertical: 10,}}
+            />
+          </View>
           <View style={{ marginVertical: 10 }}>
             <Text
               style={{
@@ -139,7 +152,7 @@ function Register() {
                   marginTop: 3,
                   width: '92%',
                 }}
-                placeholder="Tên đăng nhập"
+                placeholder="Email"
                 onChangeText={(value) => setUsername(value)}
               />
             </View>

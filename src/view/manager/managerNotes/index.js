@@ -2,22 +2,23 @@ import { useLayoutEffect, useState } from 'react'
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Dimensions,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { Picker } from '@react-native-picker/picker'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   deletePlan,
   getAllPlan,
+  getPlanById,
   updateStatus,
 } from '../../../thunks/PlansThunk'
 import moment from 'moment'
-import CreatePlanModal from '../../../models/plan/CreatePlan'
-import DetailPlanModal from '../../../models/plan/DetailPlan'
+import Icon from 'react-native-vector-icons/FontAwesome6'
+import UpdatePlanModal from '../../../models/plan/UpdatePlanModal'
+import { useNavigation } from '@react-navigation/native'
 
 export default function NotesApp() {
   const { allPlan, singlePlan } = useSelector((state) => state.plansReducer)
@@ -28,44 +29,12 @@ export default function NotesApp() {
     }
   }, [])
 
-  const [plannedNotes, setPlannedNotes] = useState([])
+  const navigation = useNavigation()
+
   const [completedNotes, setCompletedNotes] = useState([])
   const [showAddBox, setShowAddBox] = useState(false)
+  const [showUpdateBox, setShowUpdateBox] = useState(false)
   const [showPlannedNotes, setShowPlannedNotes] = useState(true)
-  const [showOptions, setShowOptions] = useState({ index: null, show: false })
-  const [detailPlan, setDetailPlan] = useState(false)
-
-  const markAsCompleted = (index) => {
-    const completedNote = plannedNotes[index]
-    setCompletedNotes([...completedNotes, completedNote])
-    deleteNoteFromPlanned(index)
-    setShowOptions({ index: null, show: false })
-  }
-
-  const deleteNoteFromPlanned = (index) => {
-    const newPlannedNotes = [...plannedNotes]
-    newPlannedNotes.splice(index, 1)
-    setPlannedNotes(newPlannedNotes)
-    setShowOptions({ index: null, show: false })
-  }
-
-  const deleteNoteFromCompleted = (index) => {
-    const newCompletedNotes = [...completedNotes]
-    newCompletedNotes.splice(index, 1)
-    setCompletedNotes(newCompletedNotes)
-  }
-
-  const handleMoreOptions = (index, isCompleted) => {
-    if (!isCompleted) {
-      setShowOptions({ index, show: true })
-    } else {
-      deleteNoteFromCompleted(index)
-    }
-  }
-
-  const handleOutsidePress = () => {
-    setShowOptions({ ...showOptions, show: false })
-  }
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -80,8 +49,17 @@ export default function NotesApp() {
     }
   }
   const handleGetPlanById = (item) => {
-    setDetailPlan(!detailPlan)
-    dispatch(getPlanById(item))
+    dispatch(getPlanById(item.id)).then((reps) => {
+      if (!reps.error) {
+        navigation.navigate('Chi-tiet-ke-hoach')
+      }
+    })
+  }
+  const handleGetPlanByIdUpdate = (item) => {
+    dispatch(getPlanById(item.id)).then((data) => {
+      setDetailPlan(false)
+      setShowUpdateBox(!showUpdateBox)
+    })
   }
 
   return (
@@ -114,12 +92,45 @@ export default function NotesApp() {
                 key={index}
                 style={[
                   styles.note,
-                  { backgroundColor: getStatusColor(note.status) },
+                  // { backgroundColor: getStatusColor(note.status) },
                 ]}
                 onPress={() => handleGetPlanById(note)}
               >
-                <View>
-                  <Text style={styles.noteTitle}>{note.title}</Text>
+                <View style={{paddingVertical: 10,}}>
+                  <View
+                    style={[
+                      styles.noteTitle,
+                      {
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 16,
+                      }}
+                    >
+                      {note.title}
+                    </Text>
+                    <View
+                      style={{
+                        backgroundColor: getStatusColor(note.status),
+                        padding: 3,
+                        marginRight: 2,
+                        borderRadius: 5,
+                      }}
+                    >
+                      <Text style={{ color: 'white', fontSize: 10 }}>
+                      {note?.planDetail?.planType === 'ONCE'
+                    ? '1 LẦN'
+                    : note?.planDetail?.planType === 'LOOP'
+                    ? 'ĐỊNH KỲ'
+                    : ''}
+                      </Text>
+                    </View>
+                  </View>
                   <Text>{note.planDetail.description}</Text>
                   <Text style={styles.noteDate}>
                     Ngày tạo:
@@ -138,7 +149,7 @@ export default function NotesApp() {
                         )
                       }}
                     >
-                      <Ionicons name="pause" size={24} color="green" />
+                      <Ionicons name="pause" size={20} color="green" />
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity
@@ -151,14 +162,21 @@ export default function NotesApp() {
                         )
                       }}
                     >
-                      <Ionicons name="play" size={24} color="green" />
+                      <Ionicons name="play" size={20} color="green" />
                     </TouchableOpacity>
                   )}
 
                   <TouchableOpacity
                     onPress={() => dispatch(deletePlan(note.id))}
+                    style={{ paddingHorizontal: 2 }}
                   >
-                    <Ionicons name="trash-bin" size={24} color="red" />
+                    <Ionicons name="trash-bin" size={20} color="red" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleGetPlanByIdUpdate(note)}
+                    style={{ paddingLeft: 2 }}
+                  >
+                    <Icon name="pen-to-square" size={18} color="blue" />
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
@@ -174,19 +192,21 @@ export default function NotesApp() {
             ))}
       </ScrollView>
 
-      <View style={[styles.addBoxContainer, showAddBox && styles.centered]}>
+      <View style={[styles.addBoxContainer]}>
         <TouchableOpacity
-          onPress={() => setShowAddBox(true)}
+          onPress={() => navigation.navigate('Them-ke-hoach')}
           style={styles.addButton}
         >
-          <Ionicons name="add-circle" size={64} color="blue" />
+          <Ionicons name="add-circle" size={64} color="#2089dc" />
         </TouchableOpacity>
       </View>
       {/* Thêm kế hoạch */}
+
       <View style={styles.showAddBox}>
-        {showAddBox && <CreatePlanModal setShowAddBox={setShowAddBox} />}
+        {showUpdateBox && (
+          <UpdatePlanModal setShowUpdateBox={setShowUpdateBox} />
+        )}
       </View>
-      {detailPlan && <DetailPlanModal handleGetPlanById={handleGetPlanById} />}
     </View>
   )
 }
@@ -202,7 +222,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 20,
     borderBottomWidth: 1,
-    borderColor: 'grey',
+    borderColor: '#ccc',
     paddingVertical: 3,
   },
   headerButton: {
@@ -259,12 +279,18 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 5,
     paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: 10,
     marginBottom: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    elevation: 5,
   },
   noteTitle: {
-    fontWeight: 'bold',
     marginBottom: 5,
+    borderBottomWidth: 1,
+    width: Dimensions.get('window').width * 0.85,
+    borderColor: '#ccc',
+    paddingBottom: 10,
   },
   noteDate: {
     color: '#888',

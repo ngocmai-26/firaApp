@@ -24,6 +24,10 @@ import CheckInOutPage from '../view/checkin'
 import React from 'react'
 import ManagerJobs from '../view/manager/managerJobs'
 import DetailJob from '../view/manager/managerJobs/detail'
+import CreateJob from '../view/manager/managerJobs/create'
+import HomeApp from '../view/home'
+import CreatePlanModal from '../models/plan/CreatePlan'
+import DetailPlanModal from '../models/plan/DetailPlan'
 
 const Stack = createNativeStackNavigator()
 
@@ -99,7 +103,7 @@ const LoggedRoute = () => {
     <Stack.Navigator>
       <Stack.Screen
         name="home"
-        component={NavBar}
+        component={HomeApp}
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -154,32 +158,53 @@ const LoggedRoute = () => {
         }}
       />
       <Stack.Screen
+        name="Them-ke-hoach"
+        component={CreatePlanModal}
+        options={{
+          title: 'Thêm kế hoạch công việc',
+        }}
+      />
+      <Stack.Screen
+        name="Chi-tiet-ke-hoach"
+        component={DetailPlanModal}
+        options={{
+          title: 'chi tiết kế hoạch',
+        }}
+      />
+      <Stack.Screen
         name="quan-ly-cong-viec"
         component={ManagerJobs}
         options={{
           title: 'Quản lý công việc',
         }}
       />
-      {/* <Stack.Screen
+      <Stack.Screen
+        name="them-cong-viec"
+        component={CreateJob}
+        options={{
+          title: 'Thêm công việc mới',
+        }}
+      />
+      <Stack.Screen
         name="chi-tiet-cong-viec"
         component={DetailJob}
         options={{
-          title: 'Quản lý công việc',
+          title: 'Chi tiết công việc',
         }}
-      /> */}
+      />
       <Stack.Screen
         name="notification"
         component={Notification}
         options={{
-          headerShown: false,
+          title: 'Thông báo',
         }}
       />
       <Stack.Screen
         name="checkin"
         component={CheckInOutPage}
-        // options={{
-        //   headerShown: false,
-        // }}
+        options={{
+          title: 'Điểm danh',
+        }}
       />
     </Stack.Navigator>
   )

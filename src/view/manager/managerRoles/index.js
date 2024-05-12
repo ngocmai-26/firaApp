@@ -357,7 +357,6 @@ export default function ManagerRoles() {
             <View
               style={{
                 ...styles.tableRow,
-                backgroundColor: index % 2 == 1 ? '#F0FBFC' : 'white',
               }}
             >
               <Text style={{ ...styles.columnRowTxt, fontWeight: 'bold' }}>
@@ -402,25 +401,28 @@ export default function ManagerRoles() {
           )}
         />
       </ScrollView>
-      <View style={styles.containerPagination}>
-        <TouchableOpacity
-          onPress={handlePrevPage}
-          style={styles.buttonPagination}
-        >
-          <Text style={styles.buttonTextPagination}>Previous</Text>
-        </TouchableOpacity>
-        <Text style={styles.pageTextPagination}>
-          Page {paginationRole?.number + 1} of {paginationRole?.totalPages}
-        </Text>
-        <TouchableOpacity
-          onPress={handleNextPage}
-          style={styles.buttonPagination}
-        >
-          <Text style={styles.buttonTextPagination}>Next</Text>
-        </TouchableOpacity>
-      </View>
+      {paginationRole?.totalPages > 1 && (
+ <View style={styles.containerPagination}>
+ <TouchableOpacity
+   onPress={handlePrevPage}
+   style={styles.buttonPagination}
+ >
+   <Text style={styles.buttonTextPagination}>Previous</Text>
+ </TouchableOpacity>
+ <Text style={styles.pageTextPagination}>
+   Page {paginationRole?.number + 1} of {paginationRole?.totalPages}
+ </Text>
+ <TouchableOpacity
+   onPress={handleNextPage}
+   style={styles.buttonPagination}
+ >
+   <Text style={styles.buttonTextPagination}>Next</Text>
+ </TouchableOpacity>
+</View>
+      )}
+     
       <TouchableOpacity style={styles.addButton} onPress={handleAddRole}>
-        <MaterialCommunityIcons name="plus-circle" size={48} color="blue" />
+        <MaterialCommunityIcons name="plus-circle" size={64} color="#2089dc" />
       </TouchableOpacity>
       {showAddForm && renderAddForm()}
       {selectedRole && renderRoleDetailsForm()}
@@ -446,7 +448,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',
-    backgroundColor: '#37C2D0',
+    backgroundColor: '#2089dc',
     borderTopEndRadius: 10,
     borderTopStartRadius: 10,
     height: 50,

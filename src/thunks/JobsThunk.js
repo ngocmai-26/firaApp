@@ -78,6 +78,7 @@ export const deleteJob = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       })
+      console.log("aaaaaaaa", resp)
       if (resp.status < 200 || resp.status >= 400) {
         Toast.show({
           type: TOAST_ERROR,
@@ -87,14 +88,11 @@ export const deleteJob = createAsyncThunk(
       }
       Toast.show({
         type: TOAST_SUCCESS,
-        text1: 'Success',
+        text1: 'Bạn đã xóa công việc thành công',
       })
       dispatch(getAllJob())
     } catch (e) {
-      Toast.show({
-        type: TOAST_ERROR,
-        text1: 'Lỗi khi xóa công việc',
-      })
+      console.log(e)
     }
   },
 )
@@ -116,6 +114,152 @@ export const getJobById = createAsyncThunk(
       if (resp.status >= 200 && resp.status < 300) {
         const jsonData = await resp.json()
         dispatch(setSingleJob(jsonData?.data))
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  },
+)
+
+export const comFirmJob = createAsyncThunk(
+  '/jobs/id',
+  async (data, { dispatch, rejectWithValue }) => {
+    try {
+      const token = await loadTokenFromStorage()
+      const resp = await fetch(`${API.uri}/jobs/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data.data),
+      })
+      if (resp.status >= 200 && resp.status < 300) {
+        Toast.show({
+          type: TOAST_SUCCESS,
+          text1: resp.json()?.defaultMessage ?? 'Update job success',
+        })
+        dispatch(getAllJob())
+      } else {
+        Toast.show({
+          type: TOAST_ERROR,
+          text1: resp?.defaultMessage ?? 'Update job error ',
+        })
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  },
+)
+
+export const evaluateJob = createAsyncThunk(
+  '/jobsEvaluate/id',
+  async (data, { dispatch, rejectWithValue }) => {
+    try {
+      const token = await loadTokenFromStorage()
+      const resp = await fetch(`${API.uri}/jobs/job-detail/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data.data),
+      })
+      const dataJson = await resp.json()
+      if (resp.status >= 300) {
+        Toast.show({
+          type: TOAST_ERROR,
+          text1: dataJson.message[0],
+        })
+        return rejectWithValue()
+      }
+      Toast.show({
+        type: TOAST_SUCCESS,
+        text1: 'Đánh giá thành công',
+      })
+      dispatch(getAllJob())
+    } catch (e) {
+      console.log(e)
+    }
+  },
+)
+
+export const updateJob = createAsyncThunk(
+  '/jobsEvaluate/id',
+  async (data, { dispatch, rejectWithValue }) => {
+    try {
+      const token = await loadTokenFromStorage()
+      const resp = await fetch(`${API.uri}/jobs/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data.data),
+      })
+      const dataJson = await resp.json()
+      if (resp.status >= 300) {
+        Toast.show({
+          type: TOAST_ERROR,
+          text1: dataJson.message[0],
+        })
+        return rejectWithValue()
+      }
+
+      dispatch(getAllJob())
+    } catch (e) {
+      console.log(e)
+    }
+  },
+)
+
+export const updateDetailJob = createAsyncThunk(
+  '/jobDetail/id',
+  async (data, { dispatch, rejectWithValue }) => {
+    try {
+      const token = await loadTokenFromStorage()
+      const resp = await fetch(`${API.uri}/jobs/job-detail/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data.data),
+      })
+      const dataJson = await resp.json()
+      if (resp.status >= 300) {
+        Toast.show({
+          type: TOAST_ERROR,
+          text1: dataJson.message[0],
+        })
+        return rejectWithValue()
+      }
+      Toast.show({
+        type: TOAST_SUCCESS,
+        text1: 'Cập nhật thành công',
+      })
+      dispatch(getAllJob())
+    } catch (e) {
+      console.log(e)
+    }
+  },
+)
+
+export const searchJobAsync = createAsyncThunk(
+  '/search/jobs',
+  async (data, { dispatch, rejectWithValue }) => {
+    try {
+      const token = await loadTokenFromStorage()
+      const resp = await fetch(`${API.uri}/jobs/search?title=${data}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (resp.status >= 200 && resp.status < 300) {
+        const dataJson = await resp.json()
+        dispatch(setAllJob(dataJson.data.content))
       }
     } catch (e) {
       console.log(e)

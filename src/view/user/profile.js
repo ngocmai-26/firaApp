@@ -7,14 +7,20 @@ import {
   Modal,
   StyleSheet,
   Image,
+  Dimensions,
 } from 'react-native'
-import Icon from 'react-native-vector-icons/FontAwesome'
+import Icon from 'react-native-vector-icons/FontAwesome6'
 import { logout, setLogged } from '../../slices/AuthSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native'
 import * as ImagePicker from 'expo-image-picker'
 import { updateUser } from '../../thunks/UserThunk'
+import { changePasswordAuth } from '../../thunks/AuthThunk'
+import Toast from 'react-native-toast-message'
+import { TOAST_ERROR, TOAST_SUCCESS } from '../../constants/toast'
+import moment from 'moment'
+import DateTimePicker from '@react-native-community/datetimepicker'
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false)
@@ -22,28 +28,60 @@ const Profile = () => {
     isChangePasswordModalVisible,
     setIsChangePasswordModalVisible,
   ] = useState(false)
-  const [oldPassword, setOldPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [userData, setUserData] = useState({})
   const dispatch = useDispatch()
   const [image, setImage] = useState(null)
+  const { user } = useSelector((state) => state.authReducer)
+  const [newUserData, setNewUserData] = useState(user)
+  const [newDataPassword, setNewDataPassword] = useState({
+    email: newUserData?.email,
+    oldPassword: '',
+    newPassword: '',
+  })
 
-  const [changePassword, setChangePassword] = useState(false);
-  const { isFetching, errors, user } = useSelector(
-    (state) => state.authReducer
-  );
-  const [newUserData, setNewUserData] = useState(user);
-  const handleSubmit = () => {
-    console.log("newUserData", newUserData);
+  const isStrongPassword = (password) => {
+    // Độ dài ít nhất là 8 ký tự
+    const isLengthValid = password.length >= 8
+
+    // Kiểm tra xem mật khẩu có chứa ít nhất một chữ cái viết hoa, một chữ cái viết thường, một số và một ký tự đặc biệt hay không
+    const containsUpperCase = /[A-Z]/.test(password)
+    const containsLowerCase = /[a-z]/.test(password)
+    const containsDigit = /[0-9]/.test(password)
+    const containsSpecialCharacter = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(
+      password,
+    )
+
+    // Kiểm tra tất cả các tiêu chí
+    return (
+      isLengthValid &&
+      containsUpperCase &&
+      containsLowerCase &&
+      containsDigit &&
+      containsSpecialCharacter
+    )
+  }
+  const isAdult = (birthdate) => {
+    const today = moment();
+    const dob = moment(birthdate, 'YYYY-MM-DD');
+    const age = today.diff(dob, 'years');
+    return age >= 18;
   };
-
-
   const handleUpdate = () => {
-    setIsEditing(false)
-    console.log("newUserData", newUserData)
-    dispatch(updateUser(newUserData));
-  };
+    if (!isAdult(newUserData.birthday)) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: 'Bạn phải đủ 18 tuổi để cập nhật thông tin',
+      })
+      return
+    }
+
+    dispatch(updateUser(newUserData)).then((reps) => {
+      if (!reps.error) {
+        setIsEditing(false)
+      }
+    })
+  }
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -72,11 +110,6 @@ const Profile = () => {
     })
   }, [])
 
-  const handleSaveProfile = () => {
-    // Logic to save profile information
-    setIsEditing(false)
-  }
-
   const handleChangePassword = () => {
     setIsChangePasswordModalVisible(true)
   }
@@ -86,8 +119,60 @@ const Profile = () => {
   }
 
   const handleSavePassword = () => {
-    // Logic to save new password
-    setIsChangePasswordModalVisible(false)
+    if (
+      !newDataPassword?.oldPassword ||
+      !newDataPassword.newPassword ||
+      !confirmPassword
+    ) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1:
+          'Vui lòng nhập cả mật khẩu cũ, mật khẩu mới và xác nhận mật khẩu',
+      })
+      return
+    }
+
+    if (newDataPassword.newPassword !== confirmPassword) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: 'Mật khẩu mới và xác nhận mật khẩu không khớp',
+      })
+      return
+    }
+
+    // Kiểm tra mật khẩu mới có đủ mạnh không
+    if (!isStrongPassword(newDataPassword.newPassword)) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: 'Mật khẩu mới không đủ mạnh',
+      })
+      return
+    }
+
+    // Thực hiện thay đổi mật khẩu
+    dispatch(changePasswordAuth(newDataPassword))
+  }
+
+  const [birthday, setBirthday] = useState(new Date())
+  const [mode, setMode] = useState('date')
+  const [show, setShow] = useState(false)
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate
+    setShow(false)
+    setBirthday(currentDate)
+    setNewUserData({
+      ...newUserData,
+      birthday: moment(currentDate).format('YYYY-MM-DD'),
+    })
+  }
+
+  const showMode = (currentMode) => {
+    setShow(true)
+    setMode(currentMode)
+  }
+
+  const showDatepicker = () => {
+    showMode('date')
   }
 
   return (
@@ -98,31 +183,32 @@ const Profile = () => {
             source={{ uri: image || userData?.avatar }}
             style={{ width: 100, height: 100, borderRadius: 100 }}
           />
-          {isEditing && <TouchableOpacity
-            style={[
-              styles.avatarContainer,
-              {
-                flexDirection: 'row',
-                borderWidth: 1,
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-                borderRadius: 5,
-                borderColor: '#3498db',
-                marginVertical: 5,
-              },
-            ]}
-            onPress={pickImage}
-          >
-            <Icon name="upload" size={20} color="#3498db" />
-            <Text
-              style={{
-                marginLeft: 5,
-              }}
+          {/* {isEditing && (
+            <TouchableOpacity
+              style={[
+                styles.avatarContainer,
+                {
+                  flexDirection: 'row',
+                  borderWidth: 1,
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  borderRadius: 5,
+                  borderColor: '#3498db',
+                  marginVertical: 5,
+                },
+              ]}
+              onPress={pickImage}
             >
-              Upload ảnh
-            </Text>
-          </TouchableOpacity>}
-          
+              <Icon name="upload" size={20} color="#3498db" />
+              <Text
+                style={{
+                  marginLeft: 5,
+                }}
+              >
+                Upload ảnh
+              </Text>
+            </TouchableOpacity>
+          )} */}
         </View>
 
         <TouchableOpacity
@@ -196,7 +282,9 @@ const Profile = () => {
         <TextInput
           style={styles.input}
           value={newUserData?.address}
-          onChangeText={(value) => setNewUserData({ ...newUserData, address: value })}
+          onChangeText={(value) =>
+            setNewUserData({ ...newUserData, address: value })
+          }
           editable={isEditing}
           placeholder="Address"
         />
@@ -209,25 +297,87 @@ const Profile = () => {
           editable={isEditing}
           placeholder="Department"
         />
+
+        {!isEditing ? (
+          <TextInput
+            style={styles.input}
+            value={moment(newUserData?.birthday).format('DD-MM-YYYY')}
+            onChangeText={(value) =>
+              setNewUserData({ ...newUserData, department: value })
+            }
+            editable={isEditing}
+            placeholder="Department"
+          />
+        ) : (
+          <View style={{ marginBottom: 10 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                borderRadius: 5,
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottomWidth: 1,
+                borderColor: '#ccc',
+                marginBottom: 10,
+                paddingVertical: 8,
+              }}
+            >
+              <TextInput
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                }}
+                placeholder="DD-MM-YYYY"
+                defaultValue={moment(newUserData?.birthday).format(
+                  'DD-MM-YYYY',
+                )}
+              />
+              <TouchableOpacity
+                onPress={showDatepicker}
+                style={{ flexDirection: 'row', paddingHorizontal: 5 }}
+              >
+                <Icon
+                  name="calendar-days"
+                  size={20}
+                  style={{
+                    color: 'black',
+                    alignItems: 'center',
+                    marginVertical: 'auto',
+                  }}
+                />
+              </TouchableOpacity>
+            </View>
+            {show && (
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={birthday}
+                mode={mode}
+                is24Hour={true}
+                onChange={onChange}
+              />
+            )}
+          </View>
+        )}
         <TextInput
           style={styles.input}
           value={newUserData?.email}
-          onChangeText={(value) => setNewUserData({ ...newUserData, email: value })}
+          onChangeText={(value) =>
+            setNewUserData({ ...newUserData, email: value })
+          }
           editable={isEditing}
           placeholder="Email"
         />
         <TextInput
           style={styles.input}
           value={newUserData?.phone}
-          onChangeText={(value) => setNewUserData({ ...newUserData, phone: value })}
+          onChangeText={(value) =>
+            setNewUserData({ ...newUserData, phone: value })
+          }
           editable={isEditing}
           placeholder="Phone"
         />
         {isEditing && (
-          <TouchableOpacity
-            onPress={handleUpdate}
-            style={styles.saveButton}
-          >
+          <TouchableOpacity onPress={handleUpdate} style={styles.saveButton}>
             <Text style={styles.buttonText}>Save</Text>
           </TouchableOpacity>
         )}
@@ -244,45 +394,62 @@ const Profile = () => {
       >
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
-      <Modal visible={isChangePasswordModalVisible} animationType="slide">
+      <View
+        style={{
+          flex: 1,
+          borderWidth: 1,
+          borderColor: '#ccc',
+          borderRadius: 5,
+          padding: 10,
+          backgroundColor: 'white',
+          width: Dimensions.get('window').width,
+          position: 'absolute',
+          height: Dimensions.get('window').height,
+          display: isChangePasswordModalVisible ? 'flex' : 'none',
+        }}
+      >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <TextInput
               style={styles.input}
-              placeholder="Old Password"
+              placeholder="Mật khẩu cũ"
               secureTextEntry
-              value={oldPassword}
-              onChangeText={setOldPassword}
+              defaultValue={newDataPassword?.oldPassword}
+              onChangeText={(e) =>
+                setNewDataPassword({ ...newDataPassword, oldPassword: e })
+              }
             />
             <TextInput
               style={styles.input}
-              placeholder="New Password"
+              placeholder="Mật khẩu mới"
               secureTextEntry
-              value={newPassword}
-              onChangeText={setNewPassword}
+              defaultValue={newDataPassword?.newPassword}
+              onChangeText={(e) =>
+                setNewDataPassword({ ...newDataPassword, newPassword: e })
+              }
             />
             <TextInput
               style={styles.input}
-              placeholder="Confirm New Password"
+              placeholder="Nhập lại mật khẩu mới"
               secureTextEntry
-              value={confirmNewPassword}
-              onChangeText={setConfirmNewPassword}
+              defaultValue={confirmPassword}
+              onChangeText={(e) => setConfirmPassword(e)}
             />
             <TouchableOpacity
               onPress={handleSavePassword}
               style={styles.saveButton}
             >
-              <Text style={styles.buttonText}>Save</Text>
+              <Text style={styles.buttonText}>Lưu</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setIsChangePasswordModalVisible(false)}
               style={styles.cancelButton}
             >
-              <Text style={styles.buttonText}>Cancel</Text>
+              <Text style={styles.buttonText}>Hủy</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
+      </View>
     </View>
   )
 }
@@ -291,6 +458,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    position: 'relative',
   },
   avatarContainer: {
     alignItems: 'center',
@@ -327,11 +495,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  modal: {},
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
+    paddingTop: 50,
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
   },
   modalContent: {
     backgroundColor: '#fff',

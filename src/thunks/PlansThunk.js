@@ -141,8 +141,9 @@ export const getPlanById = createAsyncThunk(
   '/plans',
   async (data, { dispatch, rejectWithValue }) => {
     try {
+       console.log("data", data)
       const token = await loadTokenFromStorage()
-      const resp = await fetch(`${API.uri}/plans/${data.id}`, {
+      const resp = await fetch(`${API.uri}/plans/${data}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -159,3 +160,36 @@ export const getPlanById = createAsyncThunk(
     }
   },
 )
+
+export const updatePlan = createAsyncThunk(
+  '/plans/id',
+  async (data, { dispatch, rejectWithValue }) => {
+    try {
+      const token = await loadTokenFromStorage()
+      const resp = await fetch(`${API.uri}/plans/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data.data),
+      })
+      const dataJson = await resp.json()
+      if (resp.status >= 300) {
+        Toast.show({
+          type: TOAST_ERROR,
+          text1: resp?.defaultMessage ?? 'Update plan error ',
+        })
+        return rejectWithValue()
+      }
+      Toast.show({
+        type: TOAST_SUCCESS,
+        text1: 'Cập nhật kế hoạch thành công',
+      })
+      dispatch(getAllPlan())
+    } catch (e) {
+      console.log(e)
+    }
+  },
+)
+  

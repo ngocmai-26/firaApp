@@ -4,6 +4,7 @@ import { TOAST_ERROR, TOAST_SUCCESS } from '../constants/toast'
 import { loadTokenFromStorage } from '../services/AuthService'
 import { setAllUser, setPaginationUser, setSingleUser } from '../slices/UserSlice'
 import { createAsyncThunk } from '@reduxjs/toolkit'
+import { setUser } from '../slices/AuthSlice'
 
 export const getAllUsers = createAsyncThunk(
   '/users',
@@ -95,6 +96,7 @@ export const updateUser = createAsyncThunk(
   '/users/id',
   async (data, { dispatch, rejectWithValue }) => {
     try {
+      console.log(data)
       const token = await loadTokenFromStorage()
       const resp = await fetch(`${API.uri}/users/${data.id}`, {
         method: 'PUT',
@@ -116,6 +118,7 @@ export const updateUser = createAsyncThunk(
         type: TOAST_SUCCESS,
         text1: 'Cập nhật tài khoản thành công',
       })
+      dispatch(setUser(dataJson?.data));
       dispatch(getAllUsers())
     } catch (e) {
       console.log(e)

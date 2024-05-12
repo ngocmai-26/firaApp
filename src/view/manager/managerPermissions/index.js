@@ -209,8 +209,7 @@ export default function ManagerPermissions() {
           renderItem={({ item, index }) => (
             <View
               style={{
-                ...styles.tableRow,
-                backgroundColor: index % 2 == 1 ? '#F0FBFC' : 'white',
+                ...styles.tableRow
               }}
             >
               <Text style={{ ...styles.columnRowTxt, fontWeight: 'bold' }}>
@@ -236,8 +235,7 @@ export default function ManagerPermissions() {
           )}
         />
       </ScrollView>
-
-      <View style={styles.containerPagination}>
+{paginationPer?.totalPages > 1 && (  <View style={styles.containerPagination}>
         <TouchableOpacity
           onPress={handlePrevPage}
           style={styles.buttonPagination}
@@ -253,9 +251,10 @@ export default function ManagerPermissions() {
         >
           <Text style={styles.buttonTextPagination}>Next</Text>
         </TouchableOpacity>
-      </View>
+      </View>) }
+    
       <TouchableOpacity style={styles.addButton} onPress={handleAddPermission}>
-        <MaterialCommunityIcons name="plus-circle" size={64} color="blue" />
+        <MaterialCommunityIcons name="plus-circle" size={64} color="#2089dc" />
       </TouchableOpacity>
       <StatusBar style="auto" />
       {selectedPermission && renderPermissionDetailsForm()}
@@ -281,7 +280,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',
-    backgroundColor: '#37C2D0',
+    backgroundColor: '#2089dc',
     borderTopEndRadius: 10,
     borderTopStartRadius: 10,
     height: 50,

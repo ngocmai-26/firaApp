@@ -10,17 +10,27 @@ import {
   StyleSheet,
   Image,
   Dimensions,
+  Button,
 } from 'react-native'
 import { MaterialIcons } from '@expo/vector-icons'
 import { Picker } from '@react-native-picker/picker'
 import { useDispatch, useSelector } from 'react-redux'
-import { addNewJob, getAllJob, getJobById } from '../../../thunks/JobsThunk'
+import {
+  addNewJob,
+  deleteJob,
+  getAllJob,
+  getJobById,
+} from '../../../thunks/JobsThunk'
 import { getAllUsers } from '../../../thunks/UserThunk'
 import { getAllRole } from '../../../thunks/RolesThunk'
 import DetailJob from './detail'
+import DateTimePicker from '@react-native-community/datetimepicker'
+import Icon from 'react-native-vector-icons/FontAwesome6'
+import moment from 'moment'
+import CreateJob from './create'
+import { useNavigation } from '@react-navigation/native'
 
 const ManagerJobs = () => {
-  const [currentTab, setCurrentTab] = useState('allTasks')
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [isAddFormVisible, setIsAddFormVisible] = useState(false)
   const { allJob, paginationJob } = useSelector((state) => state.jobsReducer)
@@ -28,6 +38,7 @@ const ManagerJobs = () => {
   const { allRole } = useSelector((state) => state.rolesReducer)
 
   const { allUser } = useSelector((state) => state.usersReducer)
+  const navigation = useNavigation()
 
   const dispatch = useDispatch()
   useLayoutEffect(() => {
@@ -46,29 +57,8 @@ const ManagerJobs = () => {
     dispatch(getAllJob(0))
   }, [])
 
-  const [newJobData, setNewJobData] = useState({
-    title: '',
-    kpiCount: 0,
-    priority: 0,
-    userCreateJobId: account?.user?.id,
-    staffsGotJobId: [],
-    userCreateJobId: '',
-    description: '',
-    note: '',
-    target: '',
-    timeStart: '',
-    timeEnd: '',
-    additionInfo: '',
-    task: true,
-  })
 
-  const [selectedUsers, setSelectedUsers] = useState([])
-  const [showModal, setShowModal] = useState(false)
-  const [showModal2, setShowModal2] = useState(false)
-  const [searchKeyword, setSearchKeyword] = useState('')
-  const [staffs, setStaffs] = useState([])
 
-  const [errors, setErrors] = useState({})
   const [hiddenDetail, setHiddenDetail] = useState(false)
   const [currentPage, setCurrentPage] = useState(paginationJob?.number)
 
@@ -83,72 +73,6 @@ const ManagerJobs = () => {
   const handleTabChange = (tab) => {
     setCurrentTab(tab)
     setIsModalVisible(false)
-  }
-
-  const isValidDateFormat = (dateString) => {
-    const regex = /^\d{4}-\d{2}-\d{2}$/
-    return regex.test(dateString)
-  }
-  const handleCreateJob = () => {
-    const validationErrors = {}
-    if (!newJobData?.title) {
-      validationErrors.title = 'Không được bỏ trống'
-    }
-    if (!newJobData?.timeStart) {
-      validationErrors.timeStart = 'Không được bỏ trống'
-    }
-    if (!isValidDateFormat(newJobData?.timeStart)) {
-      validationErrors.timeStart = 'Định dạng ("YYYY-MM-DD")!'
-    }
-    if (!newJobData?.timeEnd) {
-      validationErrors.timeEnd = 'Không được bỏ trống'
-    }
-    if (!isValidDateFormat(newJobData?.timeEnd)) {
-      validationErrors.timeEnd = 'Định dạng ("YYYY-MM-DD")!'
-    }
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
-    }
-    setErrors()
-
-    // toggleAddForm()
-    setNewJobData({ ...newJobData, staffsGotJobId: staffs })
-    console.log('newJobData', newJobData)
-    dispatch(addNewJob(newJobData)).then((resp) => {
-      if (!resp?.error) {
-        setIsAddFormVisible(!isAddFormVisible)
-      }
-    })
-  }
-
-  const toggleUserSelection = (userId) => {
-    if (allUser.includes(userId)) {
-      setStaffs(staffs.filter((id) => id !== userId))
-    } else {
-      setStaffs([...staffs, userId])
-    }
-  }
-
-  const toggleAddForm = () => {
-    setIsAddFormVisible(!isAddFormVisible)
-    setNewJobData({
-      title: '',
-      kpiCount: 0,
-      priority: 0,
-      userCreateJobId: account?.user?.id,
-      staffsGotJobId: [],
-      userCreateJobId: '',
-      description: '',
-      note: '',
-      target: '',
-      timeStart: '',
-      timeEnd: '',
-      additionInfo: '',
-      task: true,
-      status: 1,
-    })
-    setStaffs([])
   }
 
   const handlePrevPage = () => {
@@ -166,14 +90,22 @@ const ManagerJobs = () => {
   }
 
   const handleDetailJob = (item) => {
-    console.log("item",item)
     dispatch(getJobById(item)).then((reps) => {
-    
       if (!reps.error) {
-        console.log("a")
-        setHiddenDetail(true)
-      }})
+        navigation.navigate('chi-tiet-cong-viec')
+      }
+    })
   }
+  const filteredJobs = allJob.filter((item) => {
+    if (account.role.roleName === 'ROLE_ADMIN') {
+      return true
+    } else if (account.role.roleName === 'ROLE_MANAGER') {
+      return item.manager.id === account.user.id
+    } else {
+      return item.staffs.some((staff) => staff.id === account.user.id)
+    }
+  })
+
   return (
     <View style={styles.container}>
       <View style={styles.tabBar}>
@@ -181,59 +113,93 @@ const ManagerJobs = () => {
           style={styles.tabButton}
           onPress={() => setIsModalVisible(true)}
         >
-          <Text style={styles.tabText}>Chọn chức năng</Text>
+          <Icon
+            name="filter"
+            size={23}
+            style={{
+              color: '#bdc6cf',
+              alignItems: 'center',
+              marginVertical: 'auto',
+            }}
+          />
         </TouchableOpacity>
       </View>
       <View style={styles.taskContainer}>
         <View style={[styles.content, { height: '90%' }]}>
           <ScrollView style={[styles.taskContainer, { height: '100%' }]}>
-            {allJob.map((item, index) => (
+            {filteredJobs?.map((item, index) => (
               <TouchableOpacity
                 style={[styles.job, styles.jobContainer]}
-                onPress={() => handleDetailJob(item.id)}
+                onPress={() =>handleDetailJob(item.id) }
               >
-                <View>
-                  <Text style={styles.jobTitle}>{item.title}</Text>
-                  <Text style={{ fontSize: 10 }}>
+                <View style={{ width: Dimensions.get('window').width * 0.8 }}>
+                  <Text style={[styles.jobTitle, styles.lineJob]}>
+                    {item?.title}
+                  </Text>
+                  <Text style={[styles.lineJob, { fontSize: 10 }]}>
                     {item?.jobDetail?.description}
                   </Text>
-                  <View style={{ flexDirection: 'row', gap: 2 }}>
-                    <Text style={{ fontWeight: 500, fontSize: 15 }}>
+                  <View
+                    style={[styles.lineJob, { flexDirection: 'row', gap: 2 }]}
+                  >
+                    <Text
+                      style={[
+                        styles.lineJob,
+                        { fontWeight: 500, fontSize: 15 },
+                      ]}
+                    >
                       Người phụ trách:
                     </Text>
-                    <Text style={{ color: 'red' }}>
+                    <Text style={[styles.lineJob, { color: 'red' }]}>
                       {item.manager.fullName}
                     </Text>
                   </View>
                   <View style={{ gap: 2 }}>
-                    <Text style={{ fontWeight: 500, fontSize: 15 }}>
+                    <Text
+                      style={[
+                        styles.lineJob,
+                        { fontWeight: 500, fontSize: 15 },
+                      ]}
+                    >
                       Người thực hiện:
                     </Text>
-                    <Text style={{}}>
+                    <Text
+                      style={[
+                        styles.lineJob,
+                        { fontWeight: 400, fontSize: 15 },
+                      ]}
+                    >
                       {item.staffs.length !== 0
                         ? item.staffs.map((props) => props.fullName)
                         : 'Chưa có người thực hiện'}
                     </Text>
                   </View>
-                  <View style={{ gap: 4, flexDirection: 'row' }}>
+                  <View
+                    style={[
+                      styles.lineJob,
+                      {
+                        gap: 4,
+                        flexDirection: 'row',
+                        borderTopWidth: 1,
+                        borderColor: '#ccc',
+                        paddingTop: 10,
+                        marginTop: 10,
+                      },
+                    ]}
+                  >
                     <Text style={{ fontSize: 12, color: '#888' }}>
                       Từ ngày:{' '}
                       {
-                        new Date(item?.jobDetail?.timeStart)
-                          .toISOString()
-                          .split('T')[0]
+                        moment(item?.jobDetail?.timeStart).format('DD-MM-YYYY')
                       }
                     </Text>
                     <Text style={{ fontSize: 12, color: '#888' }}>
                       Đến ngày:{' '}
                       {
-                        new Date(item?.jobDetail?.timeStart)
-                          .toISOString()
-                          .split('T')[0]
+                        moment(item?.jobDetail?.timeStart).format('DD-MM-YYYY')
                       }
                     </Text>
                   </View>
-                  <Text style={styles.jobDate}>{item.priority}</Text>
                 </View>
                 <View style={styles.optionsBox}>
                   <TouchableOpacity>
@@ -243,16 +209,17 @@ const ManagerJobs = () => {
                       color="green"
                     /> */}
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => deletejobFromPlanned(index)}>
+                  {/* <TouchableOpacity 
+                  onPress={() => dispatch(deleteJob(item.id))}>
                     <Text>X</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
       </View>
-      <TouchableOpacity style={styles.addButton} onPress={toggleAddForm}>
+      <TouchableOpacity style={styles.addButton} onPress={()=> navigation.navigate('them-cong-viec')}>
         <MaterialIcons name="add" size={36} color="#fff" />
       </TouchableOpacity>
       <Modal
@@ -278,281 +245,29 @@ const ManagerJobs = () => {
           </View>
         </View>
       </Modal>
+      {hiddenDetail && <DetailJob handleDetailJob={handleDetailJob} />}
+      {/* <DetailJob setHiddenDetail={setHiddenDetail} /> */}
 
-      {isAddFormVisible && (
-        <View style={styles.addFormContainer}>
-          <Text style={styles.addFormHeading}>Thêm công việc mới</Text>
-          <ScrollView>
-            <View style={{ width: Dimensions.get('window').width * 0.95 }}>
-              <Text style={styles.label}>Khung thời gian</Text>
-              <View style={{ flexDirection: 'row', gap: 2 }}>
-                <View>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="YYYY-MM-DD"
-                    value={newJobData?.timeStart}
-                    onChangeText={(text) =>
-                      setNewJobData({ ...newJobData, timeStart: text })
-                    }
-                  />
-                  {errors?.timeStart && (
-                    <Text style={{ color: 'red' }}>{errors?.timeStart}</Text>
-                  )}
-                </View>
-
-                <View>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="YYYY-MM-DD"
-                    value={newJobData?.timeEnd}
-                    onChangeText={(text) =>
-                      setNewJobData({ ...newJobData, timeEnd: text })
-                    }
-                  />
-                  {errors?.timeEnd && (
-                    <Text style={{ color: 'red' }}>{errors?.timeEnd}</Text>
-                  )}
-                </View>
-              </View>
-            </View>
-            <View>
-              <Text style={styles.label}>Chi tiết công việc</Text>
-              <View>
-                <View
-                  style={[
-                    styles.informationPlanContainer,
-                    { flexDirection: 'row', gap: 2 },
-                  ]}
-                >
-                  <View style={[{ flex: 5 }]}>
-                    <TextInput
-                      style={[styles.input]}
-                      placeholder="Tên công việc"
-                      value={newJobData.title}
-                      onChangeText={(text) =>
-                        setNewJobData({ ...newJobData, title: text })
-                      }
-                    />
-                  </View>
-                  <View>
-                    <TextInput
-                      style={[styles.input, { flex: 1 }]}
-                      placeholder="Chỉ tiêu"
-                      keyboardType="numeric"
-                    />
-                  </View>
-                </View>
-
-                {errors.title && (
-                  <Text style={{ color: 'red' }}>{errors.title}</Text>
-                )}
-              </View>
-              <Picker
-                selectedValue={newJobData.priority}
-                style={[
-                  styles.select,
-                  { borderWidth: 1, borderColor: 'gray', flex: 1 },
-                ]}
-                onValueChange={(value) =>
-                  setNewJobData({ ...newJobData, priority: value })
-                }
-              >
-                <Picker.Item label="Mức độ" value={0} />
-                <Picker.Item label="Cần gấp" value={1} />
-                <Picker.Item label="Quan trọng" value={2} />
-                <Picker.Item label="Bình thường" value={3} />
-                <Picker.Item label="Ưu tiên sau" value={4} />
-              </Picker>
-              <TextInput
-                style={[styles.input, styles.descriptionInput]}
-                placeholder="Mô tả công việc"
-                value={newJobData.description}
-                onChangeText={(text) =>
-                  setNewJobData({ ...newJobData, description: text })
-                }
-                multiline
-              />
-              <View style={styles.usersSelectionListWrapper}>
-                <View>
-                  <Text style={styles.label}>Phân công</Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => setShowModal(true)}
-                  style={styles.selectUserButton}
-                >
-                  <Text>Chọn thành viên</Text>
-                </TouchableOpacity>
-                <Modal
-                  visible={showModal}
-                  transparent
-                  animationType="slide"
-                  onRequestClose={() => setShowModal(false)}
-                >
-                  <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                      <TextInput
-                        style={styles.searchInput}
-                        placeholder="Tìm kiếm"
-                        value={searchKeyword}
-                        onChangeText={setSearchKeyword}
-                      />
-                      <ScrollView style={styles.scrollContentContainer}>
-                        {allUser.map((item) => (
-                          <TouchableOpacity
-                            key={item?.id}
-                            onPress={() => toggleUserSelection(item?.id)}
-                            style={[
-                              styles.usersItem,
-                              {
-                                backgroundColor: staffs.includes(item?.id)
-                                  ? '#ccc'
-                                  : 'transparent',
-                              },
-                            ]}
-                          >
-                            <View style={styles.avatarContainer}>
-                              <Image
-                                source={{ uri: item?.avatar }}
-                                style={styles.avatar}
-                              />
-                            </View>
-                            <View style={styles.nameContainer}>
-                              <Text style={styles.fullName}>
-                                {item?.fullName}
-                              </Text>
-                            </View>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                      <TouchableOpacity
-                        onPress={() => setShowModal(false)}
-                        style={styles.closeButton}
-                      >
-                        <Text>Đóng</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </Modal>
-              </View>
-              <View style={styles.usersSelectionListWrapper}>
-                <View>
-                  <Text style={styles.label}>Người chịu trách nhiệm</Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => setShowModal2(true)}
-                  style={styles.selectUserButton}
-                >
-                  <Text>Chọn thành viên</Text>
-                </TouchableOpacity>
-                <Modal
-                  visible={showModal2}
-                  transparent
-                  animationType="slide"
-                  onRequestClose={() => setShowModal2(false)}
-                >
-                  <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                      <TextInput
-                        style={styles.searchInput}
-                        placeholder="Tìm kiếm"
-                        value={searchKeyword}
-                        onChangeText={setSearchKeyword}
-                      />
-                      <ScrollView style={styles.scrollContentContainer}>
-                        {allUser.map((item, key) => (
-                          <TouchableOpacity
-                            key={key}
-                            onPress={() =>
-                              setNewJobData({
-                                userCreateJobId: item?.id,
-                              })
-                            }
-                            style={[
-                              styles.usersItem,
-                              {
-                                backgroundColor:
-                                  item?.id === newJobData?.userCreateJobId
-                                    ? '#ccc'
-                                    : 'transparent',
-                              },
-                            ]}
-                          >
-                            <View style={styles.avatarContainer}>
-                              <Image
-                                source={{ uri: item?.avatar }}
-                                style={styles.avatar}
-                              />
-                            </View>
-                            <View style={styles.nameContainer}>
-                              <Text style={styles.fullName}>
-                                {item?.fullName}
-                              </Text>
-                            </View>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                      <TouchableOpacity
-                        onPress={() => setShowModal2(false)}
-                        style={styles.closeButton}
-                      >
-                        <Text>Đóng</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </Modal>
-              </View>
-              <View style={styles.usersSelectionListWrapper}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Đường dẫn File"
-                  value={newJobData.additionInfo}
-                  onChangeText={(text) =>
-                    setNewJobData({ ...newJobData, additionInfo: text })
-                  }
-                />
-              </View>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                gap: 3,
-              }}
-            >
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setIsAddFormVisible(!isAddFormVisible)}
-              >
-                <Text style={styles.createButtonText}>Hủy</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.createButton}
-                onPress={handleCreateJob}
-              >
-                <Text style={styles.createButtonText}>Lưu công việc</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
+  
+      {paginationJob?.totalPages > 1 && (
+        <View style={styles.containerPagination}>
+          <TouchableOpacity
+            onPress={handlePrevPage}
+            style={styles.buttonPagination}
+          >
+            <Text style={styles.buttonTextPagination}>Previous</Text>
+          </TouchableOpacity>
+          <Text style={styles.pageTextPagination}>
+            Page {paginationJob?.number + 1} of {paginationJob?.totalPages}
+          </Text>
+          <TouchableOpacity
+            onPress={handleNextPage}
+            style={styles.buttonPagination}
+          >
+            <Text style={styles.buttonTextPagination}>Next</Text>
+          </TouchableOpacity>
         </View>
       )}
-      {hiddenDetail && <DetailJob setHiddenDetail={setHiddenDetail} />}
-      <View style={styles.containerPagination}>
-        <TouchableOpacity
-          onPress={handlePrevPage}
-          style={styles.buttonPagination}
-        >
-          <Text style={styles.buttonTextPagination}>Previous</Text>
-        </TouchableOpacity>
-        <Text style={styles.pageTextPagination}>
-          Page {paginationJob?.number + 1} of {paginationJob?.totalPages}
-        </Text>
-        <TouchableOpacity
-          onPress={handleNextPage}
-          style={styles.buttonPagination}
-        >
-          <Text style={styles.buttonTextPagination}>Next</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   )
 }
@@ -560,7 +275,7 @@ const ManagerJobs = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f0f0f0',
   },
   tabBar: {
     flexDirection: 'row',
@@ -568,19 +283,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingRight: 20,
     paddingTop: 20,
+    marginVertical: 5,
   },
   tabButton: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    // borderWidth: 1,
+    // borderColor: '#ccc',
     borderRadius: 5,
+    // borderBottomWidth: 1,
+    marginBottom: 10,
+    backgroundColor: "white",
+    paddingVertical: 5,
   },
   tabText: {
     fontSize: 16,
   },
   taskContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
   },
   content: {
     alignItems: 'center',
@@ -594,7 +313,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
-    backgroundColor: 'blue',
+    backgroundColor: "#2089dc",
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -626,6 +345,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    zIndex: 1000,
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
@@ -646,24 +366,6 @@ const styles = StyleSheet.create({
   descriptionInput: {
     height: 100,
     textAlignVertical: 'top',
-  },
-  createButton: {
-    width: '45%',
-    backgroundColor: 'blue',
-    padding: 12,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    width: '45%',
-    backgroundColor: 'gray',
-    padding: 12,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  createButtonText: {
-    color: '#fff',
-    fontSize: 16,
   },
   usersSelectionListWrapper: {
     marginTop: 20,
@@ -722,14 +424,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginBottom: 10,
+    borderRadius: 15,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    marginBottom: 15,
+
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+    elevation: 5,
   },
   jobTitle: {
     fontWeight: 'bold',
     fontSize: 18,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    paddingBottom: 10,
+    marginBottom: 10,
   },
   jobDate: {
     color: '#888',
@@ -760,6 +471,9 @@ const styles = StyleSheet.create({
   pageTextPagination: {
     marginHorizontal: 10,
     fontSize: 16,
+  },
+  lineJob: {
+    marginVertical: 2,
   },
 })
 
