@@ -6,6 +6,7 @@ const initState = {
   singleKPI: {},
   paginationKPI: {},
   listKPI: [],
+  listKPIHistory: [],
 }
 const KPIsSlice = createSlice({
   name: 'KPIs',
@@ -26,9 +27,12 @@ const KPIsSlice = createSlice({
     setListKPI: (state, {payload}) => {
       state.listKPI = payload
     },
+    setListKPIHistory: (state, {payload}) => {
+      state.listKPIHistory = payload
+    },
   },
 })
 
-export const { setAllKPI, setSearchKPI, setSingleKPI, setPaginationKPI, setListKPI } = KPIsSlice.actions
+export const { setAllKPI, setSearchKPI, setSingleKPI, setPaginationKPI, setListKPI, setListKPIHistory } = KPIsSlice.actions
 
 export default KPIsSlice.reducer

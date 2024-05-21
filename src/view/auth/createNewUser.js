@@ -288,8 +288,8 @@ function CreateNewUser() {
                       paddingHorizontal: 10,
                       paddingVertical: 5,
                     }}
-                    placeholder="YYYY-MM-DD"
-                    defaultValue={moment(birthday).format('YYYY-MM-DD')}
+                    placeholder="DD-MM-YYYY"
+                    defaultValue={moment(birthday).format('DD-MM-YYYY')}
                    
                   />
                   <TouchableOpacity onPress={showDatepicker} style={{flexDirection: 'row', paddingHorizontal: 5}}>

@@ -44,8 +44,9 @@ const ADMIN_NAVBAR_ITEMS = [
     "users-gear",
     'Quản lý lịch chức năng',
   ),
-  new AdminSideNavItem(7, '/quan-ly-danh-muc-kpi', "square-pen", ' Quản lý danh mục kpi'),
-  new AdminSideNavItem(8, 'checkin', "right-to-bracket", ' Checkin'),
+  // new AdminSideNavItem(7, 'quan-ly-danh-muc-kpi', "square-pen", ' Quản lý danh mục kpi'),
+  new AdminSideNavItem(8, 'quan-ly-kpi', "square-pen", ' Quản lý kpi'),
+  new AdminSideNavItem(9, 'checkin', "right-to-bracket", ' Checkin'),
 
 ]
 
@@ -64,8 +65,9 @@ const ANONYMOUS = [
     "calendar",
     'Quản lý lịch làm việc',
   ),
-  new AdminSideNavItem(7, '/quan-ly-danh-muc-kpi', "square-pen", ' Quản lý danh mục kpi'),
-  new AdminSideNavItem(8, 'checkin', "right-to-bracket", ' Checkin'),
+  // new AdminSideNavItem(7, 'quan-ly-danh-muc-kpi', "square-pen", ' Quản lý danh mục kpi'),
+  new AdminSideNavItem(8, 'quan-ly-kpi', "square-pen", ' Quản lý kpi'),
+  new AdminSideNavItem(9, 'checkin', "right-to-bracket", ' Checkin'),
 ]
 const MANAGER_NAVBAR_ITEMS = [
   new AdminSideNavItem(1, '', "chart-pie", 'Dashboards'),
@@ -81,8 +83,9 @@ const MANAGER_NAVBAR_ITEMS = [
     "calendar",
     'Quản lý lịch làm việc',
   ),
-  new AdminSideNavItem(7, '/quan-ly-danh-muc-kpi', "square-pen", ' Quản lý danh mục kpi'),
-  new AdminSideNavItem(8, 'checkin', "right-to-bracket", ' Checkin'),
+  // new AdminSideNavItem(7, 'quan-ly-danh-muc-kpi', "square-pen", ' Quản lý danh mục kpi'),
+  new AdminSideNavItem(8, 'quan-ly-kpi', "square-pen", ' Quản lý kpi'),
+  new AdminSideNavItem(9, 'checkin', "right-to-bracket", ' Checkin'),
 ]
 const STAFF_NAVBAR_ITEMS = [
   new AdminSideNavItem(1, '', "chart-pie", 'Dashboards'),
@@ -98,8 +101,9 @@ const STAFF_NAVBAR_ITEMS = [
     "calendar",
     'Quản lý lịch làm việc',
   ),
-  new AdminSideNavItem(7, '/quan-ly-danh-muc-kpi', "square-pen", ' Quản lý danh mục kpi'),
-  new AdminSideNavItem(8, 'checkin', "right-to-bracket", ' Checkin'),
+  // new AdminSideNavItem(7, 'quan-ly-danh-muc-kpi', "square-pen", ' Quản lý danh mục kpi'),
+  new AdminSideNavItem(8, 'quan-ly-kpi', "square-pen", ' Quản lý kpi'),
+  new AdminSideNavItem(9, 'checkin', "right-to-bracket", ' Checkin'),
 ]
 
 export { ADMIN_NAVBAR_ITEMS, ANONYMOUS, MANAGER_NAVBAR_ITEMS, STAFF_NAVBAR_ITEMS }

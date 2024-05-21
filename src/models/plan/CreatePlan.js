@@ -76,7 +76,6 @@ function CreatePlanModal({ setShowAddBox }) {
         timeEnd: moment(currentDate).format('YYYY-MM-DD'),
       },
     })
-    // setNewJobData({ ...newJobData, timeEnd: moment(currentDate).format('YYYY-MM-DD') })
   }
 
   const onChangeTimeStart = (event, selectedDate) => {
@@ -90,7 +89,6 @@ function CreatePlanModal({ setShowAddBox }) {
         timeStart: moment(currentDate).format('YYYY-MM-DD'),
       },
     })
-    // setNewJobData({ ...newJobData, timeStart: moment(currentDate).format('YYYY-MM-DD') })
   }
 
   const showMode = (currentMode) => {
@@ -258,8 +256,8 @@ function CreatePlanModal({ setShowAddBox }) {
                   paddingHorizontal: 10,
                   paddingVertical: 5,
                 }}
-                placeholder="YYYY-MM-DD"
-                defaultValue={moment(timeStart).format('YYYY-MM-DD')}
+                placeholder="DD-MM-YYYY"
+                defaultValue={moment(timeStart).format('DD-MM-YYYY')}
               />
               <TouchableOpacity
                 onPress={showDatepickerStart}
@@ -294,8 +292,8 @@ function CreatePlanModal({ setShowAddBox }) {
                   paddingHorizontal: 10,
                   paddingVertical: 5,
                 }}
-                placeholder="YYYY-MM-DD"
-                defaultValue={moment(timeEnd).format('YYYY-MM-DD')}
+                placeholder="DD-MM-YYYY"
+                defaultValue={moment(timeEnd).format('DD-MM-YYYY')}
               />
               <TouchableOpacity
                 onPress={showDatepicker}
@@ -463,6 +461,8 @@ function CreatePlanModal({ setShowAddBox }) {
                     backgroundColor: dataPlan.planJob.includes(item.id)
                       ? '#e8f0fe'
                       : 'transparent',
+                    borderBottomColor: "#ccc",
+                    borderBottomWidth: 1  
                   }}
                 >
                   <View style={{ width: '75%' }}>
@@ -474,12 +474,7 @@ function CreatePlanModal({ setShowAddBox }) {
           </View>
         </View>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            onPress={() => setShowAddBox(false)}
-            style={[styles.button, { backgroundColor: '#bebebe' }]}
-          >
-            <Text style={styles.buttonText}>Hủy</Text>
-          </TouchableOpacity>
+          
           <TouchableOpacity
             onPress={addNote}
             style={[styles.button, { backgroundColor: '#2089dc' }]}

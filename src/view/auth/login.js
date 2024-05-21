@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    backgroundColor: "#007bff",
+    backgroundColor: "#3498db",
     borderRadius: 5,
     padding: 10,
     marginHorizontal: 5,

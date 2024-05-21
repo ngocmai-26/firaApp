@@ -9,7 +9,7 @@ import {
   Dimensions,
   TextInput,
 } from 'react-native'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { MaterialIcons } from '@expo/vector-icons'
 import _ from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 import Icon from 'react-native-vector-icons/FontAwesome6'
@@ -20,8 +20,8 @@ import {
   getAllAccount,
 } from '../../../thunks/AccountsThunk'
 import { getAllRole } from '../../../thunks/RolesThunk'
-import Select from 'react-select'
 import { Dropdown } from 'react-native-element-dropdown'
+import moment from 'moment'
 
 export default function ManagerAccount() {
   const { allAccount, singleAccount, paginationAccount } = useSelector(
@@ -119,53 +119,63 @@ export default function ManagerAccount() {
   }
 
   const renderAddForm = () => (
-    <View style={styles.addFormContainer}>
-      <Text style={styles.formTitle}>Thêm tài khoản</Text>
-      {Object.keys(newAccountData).map((key, index) => {
-        return (
-          <View>
-            <TextInput
-              key={index}
-              style={styles.input}
-              placeholder={key}
-              value={newAccountData[key]}
-              onChangeText={(text) => handleInputChange(key, text)}
-            />
-          </View>
-        )
-      })}
-      <Dropdown
-        style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
-        iconStyle={styles.iconStyle}
-        data={data}
-        maxHeight={300}
-        labelField="label"
-        valueField="value"
-        value={newAccountData.roleId}
-        onFocus={() => setIsFocus(true)}
-        onBlur={() => setIsFocus(false)}
-        onChange={(item) => {
-          setNewAccountData({ ...newAccountData, roleId: item.value })
-          setIsFocus(false)
-        }}
-      />
-
-      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-        <TouchableOpacity
-          style={[styles.cancelButton, { marginHorizontal: 3 }]}
-          onPress={() => setShowAddForm(false)}
+    <View style={styles.formCreate}>
+      <View style={styles.addFormContainer}>
+        <View
+          style={{
+            borderBottomWidth: 1,
+            borderBottomColor: '#ccc',
+            marginVertical: 5,
+          }}
         >
-          <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
-        </TouchableOpacity>
+          <Text style={styles.formTitle}>Thêm tài khoản</Text>
+        </View>
+        {Object.keys(newAccountData).map((key, index) => {
+          return (
+            <View>
+              <TextInput
+                key={index}
+                style={styles.input}
+                placeholder={key}
+                value={newAccountData[key]}
+                onChangeText={(text) => handleInputChange(key, text)}
+              />
+            </View>
+          )
+        })}
+        <Dropdown
+          style={[styles.dropdown, isFocus && { borderColor: '#ccc' }]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          iconStyle={styles.iconStyle}
+          data={data}
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          value={newAccountData.roleId}
+          onFocus={() => setIsFocus(true)}
+          onBlur={() => setIsFocus(false)}
+          onChange={(item) => {
+            setNewAccountData({ ...newAccountData, roleId: item.value })
+            setIsFocus(false)
+          }}
+        />
 
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={handleSaveNewAccount}
-        >
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          <TouchableOpacity
+            style={[styles.cancelButton, { marginHorizontal: 3 }]}
+            onPress={() => setShowAddForm(false)}
+          >
+            <Text style={{ color: 'white', fontWeight: '600' }}>Hủy</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSaveNewAccount}
+          >
+            <Text style={styles.saveButtonText}>Lưu</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   )
@@ -179,71 +189,95 @@ export default function ManagerAccount() {
 
   const renderAccountDetailsForm = () => {
     return (
-      <View style={styles.addFormContainer}>
-        <Text style={styles.formTitle}>Thông tin tài khoản </Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginVertical: 5,
-          }}
-        >
-          <Text style={{ flex: 1 }}>Họ và tên: </Text>
-          <TextInput
-            style={[styles.input, { flex: 2 }]}
-            value={singleAccount?.user?.fullName}
-            editable={false}
-          />
-        </View>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginVertical: 5,
-          }}
-        >
-          <Text style={{ flex: 1 }}>Username: </Text>
-          <TextInput
-            style={[styles.input, { flex: 2 }]}
-            value={singleAccount?.username}
-            editable={false}
-          />
-        </View>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginVertical: 5,
-          }}
-        >
-          <Text style={{ flex: 1 }}>Số điện thoại: </Text>
-          <TextInput
-            style={[styles.input, { flex: 2 }]}
-            value={singleAccount?.user?.phone}
-            editable={false}
-          />
-        </View>
-
-        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-          <TouchableOpacity
+      <View style={styles.formCreate}>
+        <View style={styles.addFormContainer}>
+          <Text style={styles.formTitle}>Thông tin tài khoản </Text>
+          <View
             style={{
-              backgroundColor: 'gray',
-              paddingHorizontal: 5,
-              paddingVertical: 5,
-              borderRadius: 3,
+              marginVertical: 5,
             }}
-            onPress={handleViewAccountDetails}
           >
-            <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
-          </TouchableOpacity>
+            <Text style={{fontSize: 16,}}>Họ và tên: </Text>
+            <TextInput
+              style={[styles.input]}
+              value={singleAccount?.user?.fullName ||
+                "Người dùng chưa cập nhập dữ liệu"}
+              editable={false}
+            />
+          </View>
+
+          <View
+            style={{
+              marginVertical: 5,
+            }}
+          >
+            <Text style={{fontSize: 16,}}>Email: </Text>
+            <TextInput
+              style={[styles.input]}
+              value= {singleAccount?.user?.email ||
+                "Người dùng chưa cập nhập dữ liệu"}
+              editable={false}
+            />
+          </View>
+
+          <View
+            style={{
+              marginVertical: 5,
+            }}
+          >
+            <Text style={{fontSize: 16,}} >Số điện thoại: </Text>
+            <TextInput
+              style={[styles.input]}
+              value={singleAccount?.user?.phone ||
+                "Người dùng chưa cập nhập dữ liệu"}
+              editable={false}
+            />
+          </View>
+
+          <View
+            style={{
+              marginVertical: 5,
+            }}
+          >
+            <Text style={{fontSize: 16,}} >Ngày sinh: </Text>
+            <TextInput
+              style={[styles.input]}
+              value= {moment(singleAccount?.user?.birthday).format(
+                "DD-MM-YYYY"
+              ) || "Người dùng chưa cập nhập dữ liệu"}
+              editable={false}
+            />
+          </View>
+
+          <View
+            style={{
+              marginVertical: 5,
+            }}
+          >
+            <Text style={{fontSize: 16,}} >Phòng ban: </Text>
+            <TextInput
+              style={[styles.input]}
+              value={singleAccount?.user?.department ||
+                "Người dùng chưa cập nhập dữ liệu"}
+              editable={false}
+            />
+          </View>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <TouchableOpacity
+              
+            style={[styles.cancelButton, { marginHorizontal: 3 }]}
+              onPress={handleViewAccountDetails}
+            >
+              <Text style={{ color: 'white', fontWeight: '600' }}>Đóng</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     )
   }
 
-  const [currentPage, setCurrentPage] = useState(paginationAccount?.number)
+  const [currentPage, setCurrentPage] = useState(paginationAccount.number)
 
   const handlePrevPage = () => {
     if (currentPage > 0) {
@@ -314,7 +348,7 @@ export default function ManagerAccount() {
             onPress={handlePrevPage}
             style={styles.buttonPagination}
           >
-            <Text style={styles.buttonTextPagination}>Previous</Text>
+            <Text style={styles.buttonTextPagination}>&#60;</Text>
           </TouchableOpacity>
           <Text style={styles.pageTextPagination}>
             Page {paginationAccount?.number + 1} of{' '}
@@ -324,13 +358,15 @@ export default function ManagerAccount() {
             onPress={handleNextPage}
             style={styles.buttonPagination}
           >
-            <Text style={styles.buttonTextPagination}>Next</Text>
+            <Text style={styles.buttonTextPagination}>&#62;</Text>
           </TouchableOpacity>
         </View>
       )}
-
-      <TouchableOpacity style={styles.addButton} onPress={handleAddAccount}>
-        <MaterialCommunityIcons name="plus-circle" size={64} color="#2089dc" />
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={handleAddAccount}
+      >
+        <MaterialIcons name="add" size={36} color="#fff" />
       </TouchableOpacity>
       {showAddForm && renderAddForm()}
       {showRoleById && renderAccountDetailsForm()}
@@ -355,19 +391,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',
-    backgroundColor: '#2089dc',
+    backgroundColor: '#6a9cfd',
     borderTopEndRadius: 10,
     borderTopStartRadius: 10,
     height: 50,
   },
   tableRow: {
     flexDirection: 'row',
-    height: 40,
+    height: 55,
     alignItems: 'center',
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
   },
   columnHeader: {
-    minWidth: windowWidth * 0.3,
-    maxWidth: windowWidth * 0.3,
+    minWidth: windowWidth * 0.4,
+    maxWidth: windowWidth * 0.4,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -376,48 +414,57 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   columnRowTxt: {
-    minWidth: windowWidth * 0.3,
-    maxWidth: windowWidth * 0.3,
+    minWidth: windowWidth * 0.4,
+    maxWidth: windowWidth * 0.4,
     textAlign: 'center',
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
-  addButton: {
+  formCreate: {
     position: 'absolute',
-    bottom: 20,
-    right: 20,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: '#cccccc84',
   },
   addFormContainer: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
+    marginVertical: 20,
+    marginHorizontal: 20,
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#ccc',
-    width: '100%',
+    width: '90%',
   },
   formTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
     padding: 10,
+    marginVertical: 5,
+    width: "100%"
   },
   saveButton: {
-    backgroundColor: 'blue',
+    backgroundColor: '#0ea5e9',
     borderRadius: 5,
     padding: 10,
+    paddingHorizontal: 15,
     alignItems: 'center',
   },
   cancelButton: {
-    backgroundColor: 'gray',
+    backgroundColor: '#cbd5e1',
     borderRadius: 5,
     padding: 10,
+    paddingHorizontal: 15,
     alignItems: 'center',
   },
   saveButtonText: {
@@ -470,7 +517,7 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     height: 50,
-    borderColor: 'gray',
+    borderColor: '#ccc',
     borderWidth: 0.5,
     borderRadius: 8,
     paddingHorizontal: 8,
@@ -479,6 +526,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
     borderRadius: 5,
     fontSize: 12,
+    marginBottom: 10,
   },
 
   containerPagination: {
@@ -488,19 +536,32 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   buttonPagination: {
-    padding: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     marginHorizontal: 5,
     borderWidth: 1,
     borderRadius: 5,
     borderColor: '#ccc',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: 'white',
   },
   buttonTextPagination: {
     color: '#000',
-    fontSize: 16,
+    fontSize: 14,
   },
   pageTextPagination: {
     marginHorizontal: 10,
-    fontSize: 16,
+    fontSize: 14,
+  },
+  addButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#2089dc',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
   },
 })

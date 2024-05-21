@@ -12,55 +12,32 @@ import {
 import { MaterialIcons } from '@expo/vector-icons'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllJob, getJobById } from '../../../thunks/JobsThunk'
-import { getAllUsers } from '../../../thunks/UserThunk'
-import { getAllRole } from '../../../thunks/RolesThunk'
-import DetailJob from './detail'
-import Icon from 'react-native-vector-icons/FontAwesome6'
 import moment from 'moment'
 import { useNavigation } from '@react-navigation/native'
+import { getAllKPI, getKpisById } from '../../../thunks/KPIsThunk'
+import EvaluateKPIModal from '../../../models/kpi/EvaluateKPIModal'
+import DetailKPI from './detail'
 
-const ManagerJobs = () => {
+const ManagerKPIs = () => {
+  const { allKPI, paginationKPI } = useSelector((state) => state.kpisReducer);
+  const { account } = useSelector((state) => state.authReducer);
   const [isModalVisible, setIsModalVisible] = useState(false)
-  const { allJob, paginationJob } = useSelector((state) => state.jobsReducer)
-  const { account } = useSelector((state) => state.authReducer)
-  const { allRole } = useSelector((state) => state.rolesReducer)
-
-  const { allUser } = useSelector((state) => state.usersReducer)
+  const [isModalDetail, setIsModalDetail] = useState(false)
+  
+  useLayoutEffect(() => {
+    if (allKPI?.length <= 0) {
+      dispatch(getAllKPI());
+    }
+  }, []);
   const navigation = useNavigation()
 
   const dispatch = useDispatch()
-  useLayoutEffect(() => {
-    if (allJob.length <= 0) {
-      dispatch(getAllJob())
-    }
-    if (allUser?.length <= 0) {
-      dispatch(getAllUsers())
-    }
-    if (allRole?.length <= 0) {
-      dispatch(getAllRole())
-    }
-  }, [])
 
   useLayoutEffect(() => {
     dispatch(getAllJob(0))
   }, [])
 
-  const [hiddenDetail, setHiddenDetail] = useState(false)
-  const [currentPage, setCurrentPage] = useState(paginationJob.number)
-  const [currentTab, setCurrentTab] = useState({})
-
-  const tabs = [
-    { id: 'allTasks', label: 'Tất cả công việc' },
-    { id: 'plan', label: 'Kế hoạch' },
-    { id: 'due', label: 'Đến hạn' },
-    { id: 'inProgress', label: 'Đang tiến hành' },
-    { id: 'completed', label: 'Đã hoàn thành' },
-  ]
-
-  const handleTabChange = (tab) => {
-    setCurrentTab(tab)
-    setIsModalVisible(false)
-  }
+  const [currentPage, setCurrentPage] = useState(paginationKPI.number)
 
   const handlePrevPage = () => {
     if (currentPage > 0) {
@@ -70,27 +47,24 @@ const ManagerJobs = () => {
   }
 
   const handleNextPage = () => {
-    if (currentPage < paginationJob?.totalPages) {
+    if (currentPage < paginationKPI?.totalPages) {
       dispatch(getAllJob(currentPage + 1))
       setCurrentPage(currentPage + 1)
     }
   }
 
-  const handleDetailJob = (item) => {
-    dispatch(getJobById(item)).then((reps) => {
-      if (!reps.error) {
-        navigation.navigate('chi-tiet-cong-viec')
+  const handleDetailModal = (item) => {
+    dispatch(getKpisById(item)).then((reps) => {
+      if(!reps.error) {
+        setIsModalDetail(true)
       }
     })
   }
-  const filteredJobs = allJob.filter((item) => {
-    if (account?.role?.roleName === 'ROLE_ADMIN') {
+  const filteredKPIs = allKPI.filter((item) => {
+    if (account.role.roleName === 'ROLE_ADMIN' || account.role.roleName === 'ROLE_MANAGER') {
       return true
     } else {
-      return (
-        item.staffs.some((staff) => staff.id === account?.user?.id) ||
-        item.manager.id === account?.user?.id
-      )
+      return item.user.id === account.user.id
     }
   })
 
@@ -99,28 +73,27 @@ const ManagerJobs = () => {
       <View style={styles.tabBar}>
         <TouchableOpacity
           style={styles.tabButton}
-          onPress={() => setIsModalVisible(true)}
+          onPress={() => navigation.navigate('quan-ly-kpi')}
+          // onPress={() => setIsModalVisible(true)}
         >
-          <Icon
-            name="filter"
-            size={23}
-            style={{
-              color: '#bdc6cf',
-              alignItems: 'center',
-              marginVertical: 'auto',
-            }}
-          />
+          <Text>Tất cả</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.tabButton}
+          onPress={() => navigation.navigate('danh-sach-kpi-danh-gia')}
+        >
+          <Text>DS KPI cần thẩm định</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.taskContainer}>
         <View style={[styles.content, { height: '90%' }]}>
           <ScrollView style={[styles.taskContainer, { height: '100%' }]}>
-            {filteredJobs?.map((item, index) => (
+            {filteredKPIs?.map((item, index) => (
               <TouchableOpacity
                 style={[styles.job, styles.jobContainer]}
-                onPress={() => handleDetailJob(item.id)}
+                onPress={() => handleDetailModal(item.id)}
               >
-                {item.manager.id === account.user.id && (
+                {/* {item.manager.id === account.user.id && (
                   <View style={{ position: 'absolute', top: 0, right: 0 }}>
                     <Icon
                       name="crown"
@@ -132,22 +105,14 @@ const ManagerJobs = () => {
                       }}
                     />
                   </View>
-                )}
+                )} */}
 
                 <View style={{ width: Dimensions.get('window').width * 0.8 }}>
-                  <Text
-                    style={[styles.jobTitle, styles.lineJob]}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    {item?.title}
+                  <Text style={[styles.jobTitle, styles.lineJob]}>
+                    {item?.name}
                   </Text>
-                  <Text
-                    style={[styles.lineJob, { fontSize: 10 }]}
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                  >
-                    {item?.jobDetail?.description}
+                  <Text style={[styles.lineJob, { fontSize: 10 }]}>
+                  {item.user.department}
                   </Text>
                   <View
                     style={[styles.lineJob, { flexDirection: 'row', gap: 2 }]}
@@ -161,17 +126,17 @@ const ManagerJobs = () => {
                       Người phụ trách:
                     </Text>
                     <Text style={[styles.lineJob, { color: 'red' }]}>
-                      {item.manager.fullName}
+                      {item.user.fullName}
                     </Text>
                   </View>
-                  <View style={{ gap: 2 }}>
+                  <View style={{ flexDirection: 'row',gap: 2 }}>
                     <Text
                       style={[
                         styles.lineJob,
                         { fontWeight: 500, fontSize: 15 },
                       ]}
                     >
-                      Người thực hiện:
+                      Email:
                     </Text>
                     <Text
                       style={[
@@ -179,9 +144,7 @@ const ManagerJobs = () => {
                         { fontWeight: 400, fontSize: 15 },
                       ]}
                     >
-                      {item.staffs.length !== 0
-                        ? item.staffs.map((props) => props.fullName)
-                        : 'Chưa có người thực hiện'}
+                      {item.user.email}
                     </Text>
                   </View>
                   <View
@@ -199,11 +162,15 @@ const ManagerJobs = () => {
                   >
                     <Text style={{ fontSize: 12, color: '#888' }}>
                       Từ ngày:{' '}
-                      {moment(item?.jobDetail?.timeStart).format('DD-MM-YYYY')}
+                      {moment(item?.detail?.timeStart).format(
+                                        "DD-MM-YYYY"
+                                      )}
                     </Text>
                     <Text style={{ fontSize: 12, color: '#888' }}>
                       Đến ngày:{' '}
-                      {moment(item?.jobDetail?.timeStart).format('DD-MM-YYYY')}
+                      {moment(item?.detail?.timeEnd).format(
+                                        "DD-MM-YYYY"
+                                      )}
                     </Text>
                   </View>
                 </View>
@@ -227,38 +194,13 @@ const ManagerJobs = () => {
       </View>
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('them-cong-viec')}
+        onPress={() => setIsModalVisible(true)}
       >
         <MaterialIcons name="add" size={36} color="#fff" />
       </TouchableOpacity>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isModalVisible}
-        onRequestClose={() => setIsModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <FlatList
-              data={tabs}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.modalItem}
-                  onPress={() => handleTabChange(item?.id)}
-                >
-                  <Text>{item.label}</Text>
-                </TouchableOpacity>
-              )}
-              keyExtractor={(item) => item?.id}
-            />
-          </View>
-        </View>
-      </Modal>
-
-      {hiddenDetail && <DetailJob handleDetailJob={handleDetailJob} />}
-      {/* <DetailJob setHiddenDetail={setHiddenDetail} /> */}
-
-      {paginationJob?.totalPages > 1 && (
+      {isModalVisible && <EvaluateKPIModal setIsModalVisible={setIsModalVisible} />}
+{isModalDetail && <DetailKPI setIsModalDetail={setIsModalDetail}/>}
+      {paginationKPI?.totalPages > 1 && (
         <View style={styles.containerPagination}>
           <TouchableOpacity
             onPress={handlePrevPage}
@@ -267,7 +209,7 @@ const ManagerJobs = () => {
             <Text style={styles.buttonTextPagination}>&#60;</Text>
           </TouchableOpacity>
           <Text style={styles.pageTextPagination}>
-            Page {paginationJob?.number + 1} of {paginationJob?.totalPages}
+            Page {paginationKPI?.number + 1} of {paginationKPI?.totalPages}
           </Text>
           <TouchableOpacity
             onPress={handleNextPage}
@@ -342,7 +284,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
-    width: '80%',
+    width: '90%',
   },
   modalItem: {
     paddingVertical: 10,
@@ -489,4 +431,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default ManagerJobs
+export default ManagerKPIs

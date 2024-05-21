@@ -14,6 +14,7 @@ const RoomItem = ({ room, activeRoom }) => {
         justifyContent: 'space-between',
         alignItems: 'center',
         marginVertical: 4,
+        flex: 1,
       }}>
       <View style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', marginRight: 8 }}>
         <Image

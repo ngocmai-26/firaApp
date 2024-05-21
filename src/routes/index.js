@@ -28,6 +28,8 @@ import CreateJob from '../view/manager/managerJobs/create'
 import HomeApp from '../view/home'
 import CreatePlanModal from '../models/plan/CreatePlan'
 import DetailPlanModal from '../models/plan/DetailPlan'
+import ManagerKPIs from '../view/manager/managerKPIs'
+import ListExpertise from '../view/manager/managerKPIs/ListExpertise'
 
 const Stack = createNativeStackNavigator()
 
@@ -190,6 +192,20 @@ const LoggedRoute = () => {
         component={DetailJob}
         options={{
           title: 'Chi tiết công việc',
+        }}
+      />
+      <Stack.Screen
+        name="quan-ly-kpi"
+        component={ManagerKPIs}
+        options={{
+          title: 'Quản lý KPI',
+        }}
+      />
+      <Stack.Screen
+        name="danh-sach-kpi-danh-gia"
+        component={ListExpertise}
+        options={{
+          title: 'Quản lý KPI',
         }}
       />
       <Stack.Screen

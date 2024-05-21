@@ -1,28 +1,55 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { useDispatch } from 'react-redux';
-import { updateDetailJob, updateJob } from '../../thunks/JobsThunk';
+import React, { useState } from 'react'
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native'
+import { useDispatch } from 'react-redux'
+import { updateDetailJob, updateJob } from '../../thunks/JobsThunk'
 
 const ReportJobModel = ({ handleHiddenReport, report }) => {
   const [dataReportJob, setDataReportJob] = useState({
     note: '',
     progress: 0,
-    instructionLink: ''
-  });
+    instructionLink: '',
+  })
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
 
   const handleSubmit = () => {
-    dispatch(updateJob({ id: report.id, data: { progress: dataReportJob?.progress, status: "DONE" } }));
-    dispatch(updateDetailJob({ id: report.id, data: { note: dataReportJob?.note, instructionLink: dataReportJob?.instructionLink } }));
-  };
+    dispatch(
+      updateJob({
+        id: report.id,
+        data: { progress: dataReportJob?.progress, status: 'PROCESSING' },
+      }),
+    ).then((reps) => {
+      if (!reps.error) {
+        dispatch(
+          updateDetailJob({
+            id: report.id,
+            data: {
+              note: dataReportJob?.note,
+              instructionLink: dataReportJob?.instructionLink,
+            },
+          }),
+        ).then((reps) => {
+          handleHiddenReport()
+        })
+      }
+    })
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.modalContent}>
         <View style={styles.header}>
           <Text style={styles.title}>Báo cáo tiến độ công việc</Text>
-          <TouchableOpacity onPress={handleHiddenReport} style={styles.closeButton}>
+          <TouchableOpacity
+            onPress={handleHiddenReport}
+            style={styles.closeButton}
+          >
             <Text style={styles.closeButtonText}>Đóng</Text>
           </TouchableOpacity>
         </View>
@@ -32,19 +59,25 @@ const ReportJobModel = ({ handleHiddenReport, report }) => {
               style={styles.input}
               placeholder="Công việc đã hoàn thành"
               value={dataReportJob.note}
-              onChangeText={(text) => setDataReportJob({ ...dataReportJob, note: text })}
+              onChangeText={(text) =>
+                setDataReportJob({ ...dataReportJob, note: text })
+              }
             />
             <TextInput
               style={styles.input}
               placeholder="Đường dẫn tài liệu báo cáo"
               value={dataReportJob.instructionLink}
-              onChangeText={(text) => setDataReportJob({ ...dataReportJob, instructionLink: text })}
+              onChangeText={(text) =>
+                setDataReportJob({ ...dataReportJob, instructionLink: text })
+              }
             />
             <TextInput
               style={styles.input}
               placeholder="Cập nhật mức độ hoàn thành"
-              value={dataReportJob.progress.toString()}
-              onChangeText={(text) => setDataReportJob({ ...dataReportJob, progress: parseInt(text) })}
+              value={dataReportJob.progress}
+              onChangeText={(text) =>
+                setDataReportJob({ ...dataReportJob, progress: parseInt(text) })
+              }
               keyboardType="numeric"
             />
           </View>
@@ -54,12 +87,16 @@ const ReportJobModel = ({ handleHiddenReport, report }) => {
         </View>
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
+    left: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -113,6 +150,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-});
+})
 
-export default ReportJobModel;
+export default ReportJobModel

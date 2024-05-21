@@ -29,7 +29,6 @@ export const getAllPermissions = createAsyncThunk(
       dispatch(setAllPermissions(dataJson.data.content))
       dispatch(setPaginationPer(dataJson.data))
     } catch (e) {
-      // dispatch(setAuthFetching(true));
       console.log("e", e)
     }
   },

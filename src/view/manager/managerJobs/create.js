@@ -187,8 +187,8 @@ function CreateJob() {
               }}
             >
               <TextInput
-                placeholder="YYYY-MM-DD"
-                defaultValue={moment(timeStart).format('YYYY-MM-DD')}
+                placeholder="DD-MM-YYYY"
+                defaultValue={moment(timeStart).format('DD-MM-YYYY')}
               />
               <TouchableOpacity
                 onPress={showDatepickerStart}
@@ -219,8 +219,8 @@ function CreateJob() {
               }}
             >
               <TextInput
-                placeholder="YYYY-MM-DD"
-                defaultValue={moment(timeEnd).format('YYYY-MM-DD')}
+                placeholder="DD-MM-YYYY"
+                defaultValue={moment(timeEnd).format('DD-MM-YYYY')}
               />
               <TouchableOpacity
                 onPress={showDatepicker}

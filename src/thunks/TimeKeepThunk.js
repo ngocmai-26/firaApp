@@ -58,10 +58,10 @@ export const CheckIn = createAsyncThunk(
         type: TOAST_SUCCESS,
         text1: 'Checkin thành công',
       })
-      dispatch(getAllTimeKeep())
+      // dispatch(getAllTimeKeep())
     } else {
       Toast.show({
-        type: TOAST_SUCCESS,
+        type: TOAST_ERROR,
         text1: 'Hãy kiểm tra lại dữ liệu',
       })
     }
@@ -70,6 +70,7 @@ export const CheckIn = createAsyncThunk(
 export const CheckOut = createAsyncThunk(
   '/checkIn',
   async (data, { dispatch, rejectWithValue }) => {
+    console.log("data",data)
     const token = await loadTokenFromStorage()
     if (!token) {
       Toast.show({
@@ -93,10 +94,10 @@ export const CheckOut = createAsyncThunk(
         type: TOAST_SUCCESS,
         text1: 'Check out thành công',
       })
-      dispatch(getAllTimeKeep())
+      // dispatch(getAllTimeKeep())
     } else {
       Toast.show({
-        type: TOAST_SUCCESS,
+        type: TOAST_ERROR,
         text1: 'Hãy kiểm tra lại dữ liệu',
       })
     }
@@ -151,3 +152,29 @@ export const getUserManagerTimeKeep = createAsyncThunk(
     }
   },
 )
+
+export const getAllByUserToday = createAsyncThunk(
+  '/time-keeper/by-user',
+  async (data, { dispatch, rejectWithValue }) => {
+    try {
+      const token = await loadTokenFromStorage()
+      const resp = await fetch(`${API.uri}/time-keeper/get-all-by-user-today/${data.id}?shift=${data.shift}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      const dataJson = await resp.json()
+      if (resp.status >= 200 && resp.status < 300) {
+        const contents = dataJson?.data || dataJson?.response
+        dispatch(setAllTimeKeep(contents))
+        dispatch(setPaginationTimeKeep(dataJson?.data))
+      }
+      console.log('contents', dataJson)
+    } catch (e) {
+      console.log(e)
+    }
+  },
+)
+

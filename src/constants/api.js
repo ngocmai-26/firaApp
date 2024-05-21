@@ -1,5 +1,5 @@
 export const API = {
-  uri: "http://192.168.1.9:8082/api",
+  uri: "http://192.168.1.6:8082/api",
 };
 export const API_KEY_NAME = "auth_token";
 export const AUTH_KEY_NAME = "auth_info";

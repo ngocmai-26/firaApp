@@ -111,6 +111,7 @@ function DetailJob({ handleDetailJob }) {
                   padding: 5,
                   marginRight: 2,
                   borderRadius: 5,
+                  
                 }}
               >
                 <Text style={{ color: 'white', fontSize: 12 }}>
@@ -124,7 +125,9 @@ function DetailJob({ handleDetailJob }) {
                 </Text>
               </View>
             </View>
-            <Text style={{ fontSize: 20, fontWeight: '600' }}>{singleJob?.title}</Text>
+            <Text style={{ fontSize: 20, fontWeight: '600', marginTop: 15, }}>
+              {singleJob?.title}
+            </Text>
           </View>
 
           <View
@@ -138,9 +141,6 @@ function DetailJob({ handleDetailJob }) {
               <Text style={styles.textTitle}>Thời gian bắt đầu:</Text>
               <Text style={{ fontSize: 16 }}>
                 {
-                  // new Date(singleJob?.jobDetail?.timeStart)
-                  //   .toISOString()
-                  //   .split('T')[0]
                   moment(singleJob?.jobDetail?.timeStart).format('DD-MM-YYYY')
                 }
               </Text>
@@ -288,12 +288,65 @@ function DetailJob({ handleDetailJob }) {
             ) : null}
           </View>
         </View>
+        {singleJob.status === 'DONE' && (
+          <View
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 10,
+              padding: 10,
+              elevation: 5,
+              marginBottom: 25,
+            }}
+          >
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+              Kết quả đánh giá
+            </Text>
+            <View
+              style={{
+                borderTopWidth: 1,
+                borderColor: '#ccc',
+                marginTop: 10,
+                paddingTop: 10,
+                flexDirection: 'row',
+              }}
+            >
+              <View style={{ marginBottom: 20 }}>
+                <Text style={styles.textTitle}>
+                  Điểm tự đánh giá:{' '}
+                  <Text style={{ color: '#000' }}>
+                    {singleJob?.cachedProgress}
+                  </Text>
+                </Text>
+                <Text style={styles.textTitle}>
+                  Điểm đánh giá:{' '}
+                  <Text style={{ color: '#000' }}>{singleJob?.progress}</Text>
+                </Text>
+                <View>
+                  <Text style={styles.textTitle}>Link minh chứng: </Text>
+                  <Text style={{ color: '#000' }}>
+                    {singleJob?.jobDetail?.verifyLink ||
+                      'Chưa upload link minh chứng'}
+                  </Text>
+                </View>
+                <Text style={styles.textTitle}>
+                  Xếp loại:{' '}
+                  <Text style={{ color: '#000' }}>
+                    {singleJob?.jobDetail?.jobEvaluate ||
+                      'Chưa có đánh giá xếp loại công việc'}
+                  </Text>
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+
         <View
           style={{
             backgroundColor: 'white',
             borderRadius: 10,
             padding: 10,
             elevation: 5,
+            marginBottom: 25,
           }}
         >
           <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Thao tác</Text>
@@ -306,63 +359,59 @@ function DetailJob({ handleDetailJob }) {
               flexDirection: 'row',
             }}
           >
-            {account?.role?.id === 1 ? (
+            {account?.role?.id === 3 || account?.role?.id === 1 ? (
               singleJob.status === 'DONE' &&
               singleJob?.jobDetail?.jobEvaluate !== null ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: '#f8dea7',
-                      padding: 7,
-                      borderRadius: 5,
-                    }}
-                  >
-                    <Text style={{ color: 'white', fontSize: 12 }}>
-                      Chi tiết
-                    </Text>
-                  </TouchableOpacity>
+                 
                 </View>
               ) : (
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  {singleJob?.progress !== 0 &&
-                  singleJob?.jobDetail?.note &&
-                  singleJob?.jobDetail?.instructionLink ? (
+                  {(singleJob.jobDetail.note !== '' &&
+                    singleJob.cachedProgress !== 0 &&
+                    singleJob.jobDetail.instructionLink !== '' &&
+                    singleJob.jobDetail.jobEvaluate === null &&
+                    singleJob.status === 'DONE' &&
+                    singleJob.manager.id === account.user.id) ||
+                  account.role.roleName === 'ROLE_ADMIN' ? (
                     <TouchableOpacity
                       style={{
-                        backgroundColor: '##e1e8f6',
+                        backgroundColor: 'white',
                         padding: 7,
                         borderRadius: 5,
                         elevation: 5,
                         marginLeft: 5,
+                        borderColor: '#17103a',
+                        borderWidth: 1,
                       }}
-                      onPress={() => handleHiddenEValue(item)}
+                      onPress={() => handleHiddenEValue(singleJob)}
                     >
-                      <Text style={{ color: 'white', fontSize: 12 }}>
+                      <Text style={{ color: '#17103a', fontSize: 12 }}>
                         Đánh giá
                       </Text>
                     </TouchableOpacity>
                   ) : null}
                   <TouchableOpacity
                     style={{
-                      backgroundColor: '#2089dc',
+                      backgroundColor: 'white',
                       borderWidth: 1,
-                      borderColor: "#2089dc",
+                      borderColor: '#3b82f6',
                       padding: 7,
                       marginLeft: 5,
                       borderRadius: 5,
                       elevation: 5,
                     }}
                   >
-                    <Text style={{ color: 'white', fontSize: 12 }}>
+                    <Text style={{ color: '#3b82f6', fontSize: 12 }}>
                       Chỉnh sửa
                     </Text>
                   </TouchableOpacity>
                   {singleJob?.status === null ? (
                     <TouchableOpacity
                       style={{
-                        backgroundColor: '#1890ff',
+                        backgroundColor: 'white',
                         borderWidth: 1,
-                        borderColor: "#1890ff",
+                        borderColor: '#ffd273',
                         padding: 7,
                         marginLeft: 5,
                         borderRadius: 5,
@@ -377,8 +426,8 @@ function DetailJob({ handleDetailJob }) {
                         )
                       }
                     >
-                      <Text style={{ color: 'white', fontSize: 12 }}>
-                        Đổi trạng thái
+                      <Text style={{ color: '#ffd273', fontSize: 12 }}>
+                      PENDING
                       </Text>
                     </TouchableOpacity>
                   ) : null}
@@ -386,49 +435,25 @@ function DetailJob({ handleDetailJob }) {
               )
             ) : (
               <View>
-                {singleJob?.jobDetail?.denyReason?.length > 0 ? (
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: 'blue',
-                      padding: 5,
-                      marginRight: 2,
-                    }}
-                    // onPress={() => handleShowReason(item)}
-                  >
-                    <Text style={{ color: 'white', fontSize: 12 }}>
-                      Xem lý do
-                    </Text>
-                  </TouchableOpacity>
-                ) : singleJob?.status === 'PENDING' ? (
-                  <View style={{ flexDirection: 'row' }}>
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: 'blue',
-                        padding: 5,
-                        marginRight: 2,
-                      }}
-                      onPress={() => handleConfirm(singleJob.id)}
-                    >
-                      <Text style={{ color: 'white', fontSize: 12 }}>
-                        Xác nhận
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : null}
                 {singleJob?.status === 'PROCESSING' &&
+                  singleJob.cachedProgress === 0 &&
                   singleJob?.staffs.map((staff) => (
                     <View key={staff.id}>
                       {staff.id === account?.user?.id ? (
                         <View style={{ flexDirection: 'row' }}>
                           <TouchableOpacity
                             style={{
-                              backgroundColor: 'blue',
-                              padding: 5,
-                              marginRight: 2,
+                              backgroundColor: 'white',
+                              borderWidth: 1,
+                              borderColor: '#e97254',
+                              padding: 7,
+                              marginLeft: 5,
+                              borderRadius: 5,
+                              elevation: 5,
                             }}
                             onPress={() => handleHiddenReport(singleJob)}
                           >
-                            <Text style={{ color: 'white', fontSize: 12 }}>
+                            <Text style={{ color: '#e97254', fontSize: 12 }}>
                               Báo cáo
                             </Text>
                           </TouchableOpacity>
@@ -439,10 +464,22 @@ function DetailJob({ handleDetailJob }) {
               </View>
             )}
 
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 5, }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginHorizontal: 5,
+              }}
+            >
               <TouchableOpacity
-                style={{ borderColor: 'red', padding: 7, borderRadius: 5,  borderWidth: 1, backgroundColor: "white",
-                elevation: 5, }}
+                style={{
+                  borderColor: 'red',
+                  padding: 5,
+                  borderRadius: 5,
+                  borderWidth: 1,
+                  backgroundColor: 'white',
+                  elevation: 5,
+                }}
                 onPress={() => handleDelete(singleJob?.id)}
               >
                 <Text style={{ color: 'red', fontSize: 12 }}>Xóa</Text>
@@ -450,6 +487,43 @@ function DetailJob({ handleDetailJob }) {
             </View>
           </View>
         </View>
+        {(singleJob.jobDetail.note &&
+          singleJob.cachedProgress !== 0 &&
+          singleJob.jobDetail.instructionLink &&
+          singleJob.manager.id === account.user.id) ||
+          (account.role.roleName === 'ROLE_ADMIN' && (
+            <View
+              style={{
+                backgroundColor: 'white',
+                borderRadius: 10,
+                padding: 10,
+                elevation: 5,
+                marginBottom: 25,
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                Thao tác đánh giá
+              </Text>
+              <View
+                style={{
+                  borderTopWidth: 1,
+                  borderColor: '#ccc',
+                  marginTop: 10,
+                  paddingTop: 10,
+                  flexDirection: 'row',
+                }}
+              >
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={styles.textTitle}>
+                    Điểm tự đánh giá:{' '}
+                    <Text style={{ color: '#000' }}>
+                      {singleJob?.cachedProgress}
+                    </Text>
+                  </Text>
+                </View>
+              </View>
+            </View>
+          ))}
       </ScrollView>
 
       {hiddenEValue && (

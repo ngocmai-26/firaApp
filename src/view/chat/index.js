@@ -28,7 +28,6 @@ import AddMember from '../../models/AddMember'
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    flex: 1,
     paddingTop: 20,
     height: Dimensions.get('window').height,
   },

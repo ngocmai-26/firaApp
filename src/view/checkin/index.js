@@ -6,19 +6,20 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  Modal,
 } from 'react-native'
 import NetInfo from '@react-native-community/netinfo'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   CheckIn,
   CheckOut,
-  getAllTimeKeep,
-  getUserManagerTimeKeep,
+  getAllByUserToday,
   getUserTimeKeep,
 } from '../../thunks/TimeKeepThunk'
 import Toast from 'react-native-toast-message'
 import { TOAST_ERROR } from '../../constants/toast'
 import moment from 'moment/moment'
+import Icon from 'react-native-vector-icons/FontAwesome6'
 
 const CheckInOutPage = () => {
   const { allTimeKeep } = useSelector((state) => state.timeKeepsReducer)
@@ -27,42 +28,44 @@ const CheckInOutPage = () => {
   const [disabledCheckout, setDisabledCheckout] = useState(false)
   const dispatch = useDispatch()
   const [check, setCheck] = useState(2)
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [typeData, setTypeData] = useState(1)
 
   useLayoutEffect(() => {
     if (allTimeKeep?.length <= 0) {
-      if (account.role.roleName === 'ROLE_ADMIN') {
-        dispatch(getAllTimeKeep())
-      } else if (account.role.roleName === 'ROLE_MANAGER') {
-        setCheck(1)
-      } else {
+      // if (account.role.roleName === 'ROLE_ADMIN') {
+      //   dispatch(getAllTimeKeep())
+      // } else if (account.role.roleName === 'ROLE_MANAGER') {
+      //   setCheck(1)
+      // } else {
+      //   dispatch(getUserTimeKeep({ id: user?.id, data: 0 }))
+      // }
+      if(typeData === 2 ) {
+        dispatch(getAllByUserToday({ id: user?.id, shift: 'MORNING' }))
+        
+      } else if (typeData === 1 ) {
         dispatch(getUserTimeKeep({ id: user?.id, data: 0 }))
       }
     }
   }, [])
   useLayoutEffect(() => {
-    if (account.role.roleName === 'ROLE_ADMIN') {
-      dispatch(getAllTimeKeep())
-    } else if (account.role.roleName === 'ROLE_MANAGER') {
-      setCheck(2)
-    } else {
+    if(typeData === 2 ) {
+      dispatch(getAllByUserToday({ id: user?.id, shift: 'MORNING' }))
+      
+    } else if (typeData === 1 ) {
       dispatch(getUserTimeKeep({ id: user?.id, data: 0 }))
     }
   }, [])
-  console.log('allTimeKeep', allTimeKeep)
-
-  console.log('account', account)
-  console.log('account', check)
   useEffect(() => {
-    if (account?.role?.roleName === 'ROLE_MANAGER') {
-      if (check === 1) {
-        console.log('â')
-        dispatch(getUserManagerTimeKeep({ id: user?.id, data: 0 }))
-      } else {
-        console.log('âdd')
-        dispatch(getUserTimeKeep({ id: user?.id, data: 0 }))
-      }
+    if(typeData === 2 ) {
+      dispatch(getAllByUserToday({ id: user?.id, shift: 'MORNING' }))
+      
+    } else if (typeData === 1 ) {
+      dispatch(getUserTimeKeep({ id: user?.id, data: 0 }))
     }
-  }, [check])
+  }, [typeData])
+
+  
 
   useEffect(() => {
     const checkNetworkInRange = async () => {
@@ -84,20 +87,15 @@ const CheckInOutPage = () => {
             type: TOAST_ERROR,
             text1: 'Checkin sẽ mở lúc 6h',
           })
-        } else if (hours < 12) {
+        } else if (hours > 8 && hours < 12) {
           Toast.show({
             type: TOAST_ERROR,
             text1: 'Checkin sẽ mở lúc 12h',
           })
-        } else if (hours < 15) {
+        } else if (hours > 13 && hours < 15) {
           Toast.show({
             type: TOAST_ERROR,
             text1: 'Checkin sẽ mở lúc 16h',
-          })
-        } else {
-          Toast.show({
-            type: TOAST_ERROR,
-            text1: 'Checkin đã đóng',
           })
         }
 
@@ -123,66 +121,130 @@ const CheckInOutPage = () => {
     checkNetworkInRange()
   }, [])
 
+  const [canCheckOut, setCanCheckOut] = useState(false)
+  const [canCheckIn, setCanCheckIn] = useState(false)
+
   const handleCheckin = () => {
     const now = new Date()
     const hours = now.getHours()
-    if (
-      (hours >= 7 && hours < 8) ||
-      (hours >= 13 && hours < 14) ||
-      (hours >= 17 && hours < 19)
-    ) {
+
+    // Kiểm tra xem người dùng đã checkin trong ca làm việc hiện tại chưa
+    const isAlreadyCheckedIn = allTimeKeep.some(
+      (item) =>
+        moment(now).format('DD-MM-YYYY') ===
+          moment(item.checkInTime).format('DD-MM-YYYY') &&
+        item.status === 'CHECKIN' &&
+        item.shift === getShiftByHour(hours),
+    )
+
+    if (isAlreadyCheckedIn) {
       Toast.show({
         type: TOAST_ERROR,
-        text1: 'Đi trễ',
+        text1: 'Bạn đã checkin trong ca làm việc này.',
       })
-      console.log('Đi trễ')
-    }
+      const isAlreadyCheckedOut = allTimeKeep.some(
+        (item) =>
+          moment(now).format('DD-MM-YYYY') ===
+            moment(item.checkInTime).format('DD-MM-YYYY') &&
+          item.status === 'CHECKOUT' &&
+          item.shift === getShiftByHour(hours),
+      )
 
-    if (hours < 7) {
+      if (isAlreadyCheckedOut) {
+        setCanCheckOut(false)
+        return // Không thực hiện thêm hành động
+      }
+      return // Không thực hiện thêm hành động
+    }
+    setCanCheckOut(false)
+    setCanCheckIn(true)
+    setDisabled(false)
+
+    // Tiếp tục thực hiện checkin
+    if (hours < 8) {
+      setDisabled(true)
       dispatch(CheckIn({ userId: account?.user?.id, shift: 'MORNING' }))
       console.log('MORNING')
-    } else if (hours < 13) {
+    } else if (hours >= 12 && hours < 14) {
+      setDisabled(true)
       dispatch(CheckIn({ userId: account?.user?.id, shift: 'AFTERNOON' }))
       console.log('AFTERNOON')
-    } else if (hours < 19) {
+    } else if (hours >= 17 && hours < 19) {
+      setDisabled(true)
       dispatch(CheckIn({ userId: account?.user?.id, shift: 'NIGHT' }))
       console.log('NIGHT')
     } else {
+      setDisabled(false)
       console.log('Checkin đã đóng')
     }
-
-    setDisabled(true)
 
     setTimeout(() => {
       setDisabled(false)
     }, 3600000) // 1 giờ
   }
 
-  const [isCheckedOut, setIsCheckedOut] = useState(false)
+  const getShiftByHour = (hour) => {
+    if (hour >= 6 && hour < 12) {
+      return 'MORNING'
+    } else if (hour >= 12 && hour < 17) {
+      return 'AFTERNOON'
+    } else if (hour >= 17 && hour < 21) {
+      return 'NIGHT'
+    }
+  }
+
+  const tabs = [
+    { id: 1, label: 'Tất cả' },
+    { id: 2, label: 'Chấm công theo ngày' },
+  ]
 
   const handleCheckout = () => {
     const now = new Date()
     const hour = now.getHours()
+    // Kiểm tra xem người dùng đã checkout trong ca làm việc hiện tại chưa
+    const isAlreadyCheckedOut = allTimeKeep.some(
+      (item) =>
+        moment(now).format('DD-MM-YYYY') ===
+          moment(item.checkoutTime).format('DD-MM-YYYY') &&
+        item.status === 'CHECKOUT' &&
+        item.shift === getShiftByHour(hour),
+    )
 
-    if (hour < 13) {
-      dispatch(CheckOut({ userId: account?.user?.id, shift: 'MORNING' }))
-      console.log('MORNING')
-    } else if (hour < 17) {
-      dispatch(Checkout({ userId: account?.user?.id, shift: 'AFTERNOON' }))
-      console.log('AFTERNOON')
-    } else if (hour < 24) {
-      dispatch(Checkout({ userId: account?.user?.id, shift: 'EVENING' }))
-      console.log('NIGHT')
+    if (isAlreadyCheckedOut) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: 'Bạn đã checkout trong ca làm việc này.',
+      })
+      return // Không thực hiện thêm hành động
     } else {
-      console.log('Quá giờ checkout')
+      // Tiếp tục thực hiện checkout
+      if (hour < 13) {
+        dispatch(CheckOut({ userId: account?.user?.id, shift: 'MORNING' }))
+        console.log('MORNING')
+      } else if (hour < 17) {
+        dispatch(CheckOut({ userId: account?.user?.id, shift: 'AFTERNOON' }))
+        console.log('AFTERNOON')
+      } else if (hour < 24) {
+        dispatch(CheckOut({ userId: account?.user?.id, shift: 'NIGHT' }))
+        console.log('NIGHT')
+      } else {
+        console.log('Quá giờ checkout')
+      }
     }
 
-    setIsCheckedOut(true)
+    setCanCheckOut(false)
+    setDisabledCheckout(true)
+  }
+
+  const handleTabChange = (item) => {
+    setTypeData(item)
+    setIsModalVisible(false)
+
   }
 
   return (
     <View style={styles.container}>
-      {account?.role?.roleName === 'ROLE_MANAGER' && (
+      {/* {account?.role?.roleName === 'ROLE_MANAGER' && (
         <View
           style={{
             flexDirection: 'row',
@@ -218,31 +280,54 @@ const CheckInOutPage = () => {
             <Text style={{ color: 'white', fontSize: 14 }}>Cá nhân</Text>
           </TouchableOpacity>
         </View>
-      )}
+      )} */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={{
-            backgroundColor: disabled ? '#ccc' : '#2089dc',
+            backgroundColor: '#2089dc',
             paddingHorizontal: 20,
             paddingVertical: 10,
             borderRadius: 10,
             elevation: 5,
           }}
           onPress={handleCheckin}
+          disabled={disabled}
         >
           <Text style={{ color: 'white', fontWeight: '600' }}>Checkin</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{
-            backgroundColor: disabledCheckout ? '#ccc' : '#2089dc',
+            backgroundColor: canCheckOut ? '#2089dc' : '#ccc',
             paddingHorizontal: 20,
             paddingVertical: 10,
             borderRadius: 10,
             elevation: 5,
           }}
           onPress={handleCheckout}
+          disabled={disabledCheckout}
         >
           <Text style={{ color: 'white', fontWeight: '600' }}>Checkout</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            paddingHorizontal: 20,
+            borderRadius: 5,
+            backgroundColor: 'white',
+            paddingVertical: 10,
+            elevation: 5,
+            marginLeft: 2,
+          }}
+          onPress={() => setIsModalVisible(true)}
+        >
+          <Icon
+            name="filter"
+            size={23}
+            style={{
+              color: '#bdc6cf',
+              alignItems: 'center',
+              marginVertical: 'auto',
+            }}
+          />
         </TouchableOpacity>
       </View>
 
@@ -260,13 +345,12 @@ const CheckInOutPage = () => {
                 IP Address: {item.ipAddress}
               </Text> */}
               <View style={{ flexDirection: 'row', gap: 3, marginVertical: 4 }}>
-              <Text style={styles.historyText}>Type: </Text>
+                <Text style={styles.historyText}>Type: </Text>
                 <Text>{item?.type}</Text>
               </View>
               <View style={{ flexDirection: 'row', gap: 3, marginVertical: 4 }}>
                 <Text style={styles.historyText}>Time:</Text>
-                <Text>
-                {moment(item?.checkInTime).format('DD-MM-YYYY')}</Text>
+                <Text>{moment(item?.checkInTime).format('DD-MM-YYYY')}</Text>
               </View>
               <View style={{ flexDirection: 'row', gap: 3, marginVertical: 4 }}>
                 <Text style={styles.historyText}>Checkin Type:</Text>
@@ -276,37 +360,70 @@ const CheckInOutPage = () => {
                 <Text style={styles.historyText}>Shift:</Text>
                 <Text>{item?.shift}</Text>
               </View>
-              
             </View>
           )}
           keyExtractor={(item, index) => index.toString()}
         />
       </View>
-      {/* <View style={styles.summaryContainer}>
-        <Text style={styles.summaryTitle}>Shift Summary:</Text>
-        <FlatList
-          data={summary}
-          renderItem={({ item }) => (
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryText}>Shift: {item[0]}</Text>
-              {item[1].checkin && (
-                <Text style={styles.summaryText}>
-                  Checkin Time: {item[1].checkin.checkinTime}
-                </Text>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <FlatList
+              data={tabs}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.modalItem}
+                  onPress={() => handleTabChange(item?.id)}
+                >
+                  <Text>{item.label}</Text>
+                </TouchableOpacity>
               )}
-              {item[1].checkout && (
-                <Text style={styles.summaryText}>
-                  Checkout Time: {item[1].checkout.checkinTime}
-                </Text>
-              )}
-              <Text style={styles.summaryText}>
-                Total Working Time: {typeof item[1].totalWorkingTime === 'number' ? item[1]?.totalWorkingTime?.toFixed(2) : 'N/A'} hours
-              </Text>
+              keyExtractor={(item) => item?.id}
+            />
+            <View
+              style={{
+                paddingVertical: 5,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'flex-end',
+                  marginVertical: 15,
+                }}
+              >
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#ccc',
+                    borderWidth: 1,
+                    borderColor: '#ccc',
+                    padding: 5,
+                    marginLeft: 5,
+                    borderRadius: 5,
+                    elevation: 5,
+                  }}
+                  onPress={() => setIsModalVisible(false)}
+                >
+                  <Text
+                    style={{
+                      color: 'white',
+                      fontSize: 16,
+                    }}
+                  >
+                    Đóng
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          )}
-          keyExtractor={(item, index) => index.toString()}
-        />
-      </View> */}
+          </View>
+        </View>
+      </Modal>
     </View>
   )
 }
@@ -348,7 +465,7 @@ const styles = StyleSheet.create({
   },
   historyText: {
     fontSize: 16,
-    color: "#b2b4b6"
+    color: '#b2b4b6',
   },
   summaryContainer: {
     flex: 1,
@@ -366,6 +483,24 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     fontSize: 16,
+  },
+  modalContainer: {
+    flex: 1,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+  },
+  modalItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
 })
 

@@ -7,7 +7,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+import { Ionicons, MaterialIcons } from '@expo/vector-icons'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   deletePlan,
@@ -39,11 +39,9 @@ export default function NotesApp() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'ACTIVE':
-        return '#FFEFD5' // Màu vàng nhạt
+        return '#FEA837' // Màu vàng nhạt
       case 'DISABLE':
-        return '#90EE90' // Màu xanh lá
-      case 3:
-        return '#ADD8E6' // Màu xanh dương
+        return '#A4C3A2' // Màu xanh lá
       default:
         return '#fff'
     }
@@ -92,7 +90,7 @@ export default function NotesApp() {
                 key={index}
                 style={[
                   styles.note,
-                  // { backgroundColor: getStatusColor(note.status) },
+                 
                 ]}
                 onPress={() => handleGetPlanById(note)}
               >
@@ -116,13 +114,15 @@ export default function NotesApp() {
                     </Text>
                     <View
                       style={{
-                        backgroundColor: getStatusColor(note.status),
+                        borderColor: getStatusColor(note.status),
+                        borderWidth: 1,
+
                         padding: 3,
                         marginRight: 2,
                         borderRadius: 5,
                       }}
                     >
-                      <Text style={{ color: 'white', fontSize: 10 }}>
+                      <Text style={{ color: getStatusColor(note.status), fontSize: 10 }}>
                       {note?.planDetail?.planType === 'ONCE'
                     ? '1 LẦN'
                     : note?.planDetail?.planType === 'LOOP'
@@ -193,12 +193,10 @@ export default function NotesApp() {
       </ScrollView>
 
       <View style={[styles.addBoxContainer]}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Them-ke-hoach')}
-          style={styles.addButton}
-        >
-          <Ionicons name="add-circle" size={64} color="#2089dc" />
-        </TouchableOpacity>
+     
+      <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('Them-ke-hoach')}>
+        <MaterialIcons name="add" size={36} color="#fff" />
+      </TouchableOpacity>
       </View>
       {/* Thêm kế hoạch */}
 
@@ -300,6 +298,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
+    backgroundColor: '#2089dc',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
   },
   option: {
     position: 'relative',

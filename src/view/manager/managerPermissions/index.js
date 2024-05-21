@@ -10,7 +10,7 @@ import {
   Dimensions,
   TextInput,
 } from 'react-native'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { MaterialIcons } from '@expo/vector-icons'
 import _ from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -35,8 +35,8 @@ export default function ManagerPermissions() {
   }, [])
 
   useLayoutEffect(() => {
-    dispatch(getAllPermissions(0));
-  }, []);
+    dispatch(getAllPermissions(0))
+  }, [])
 
   useEffect(() => {
     setPermissions(allPermission)
@@ -110,34 +110,36 @@ export default function ManagerPermissions() {
   }
 
   const renderAddForm = () => (
-    <View style={styles.addFormContainer}>
-      <Text style={styles.formTitle}>Add New Permission</Text>
-      {Object.keys(newPermissionData).map((key, index) => {
-        return (
-          <TextInput
-            key={index}
-            style={styles.input}
-            placeholder={key}
-            value={newPermissionData[key]}
-            onChangeText={(text) => handleInputChange(key, text)}
-          />
-        )
-      })}
+    <View style={styles.formCreate}>
+      <View style={styles.addFormContainer}>
+        <Text style={styles.formTitle}>Thêm chức năng</Text>
+        {Object.keys(newPermissionData).map((key, index) => {
+          return (
+            <TextInput
+              key={index}
+              style={styles.input}
+              placeholder={key}
+              value={newPermissionData[key]}
+              onChangeText={(text) => handleInputChange(key, text)}
+            />
+          )
+        })}
 
-      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-        <TouchableOpacity
-          style={[styles.cancelButton, { marginHorizontal: 3 }]}
-          onPress={() => setShowAddForm(false)}
-        >
-          <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          <TouchableOpacity
+            style={[styles.cancelButton, { marginHorizontal: 3 }]}
+            onPress={() => setShowAddForm(false)}
+          >
+            <Text style={{ color: 'white', fontWeight: '600' }}>Hủy</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={handleSaveNewPermission}
-        >
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSaveNewPermission}
+          >
+            <Text style={styles.saveButtonText}>Lưu</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   )
@@ -150,38 +152,35 @@ export default function ManagerPermissions() {
 
   const renderPermissionDetailsForm = () => {
     return (
-      <View style={styles.addFormContainer}>
-        <Text style={styles.formTitle}>Role Details</Text>
-        <TextInput
-          style={styles.input}
-          value={selectedPermission?.name}
-          editable={false} // Không cho phép chỉnh sửa
-        />
-        <TextInput
-          style={styles.input}
-          value={selectedPermission?.description}
-          editable={false} // Không cho phép chỉnh sửa
-        />
-        88
-        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-          <TouchableOpacity
-            style={{
-              backgroundColor: 'gray',
-              paddingHorizontal: 5,
-              paddingVertical: 5,
-              borderRadius: 3,
-            }}
+      <View style={styles.formCreate}>
+        <View style={styles.addFormContainer}>
+          <Text style={styles.formTitle}>Role Details</Text>
+          <TextInput
+            style={styles.input}
+            value={selectedPermission?.name}
+            editable={false} 
+          />
+          <TextInput
+            style={styles.input}
+            value={selectedPermission?.description}
+            editable={false} 
+            placeholder='Mô tả'
+          />
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          
+            <TouchableOpacity
+            style={[styles.cancelButton, { marginHorizontal: 3 }]}
             onPress={() => setSelectedPermission(null)}
           >
-            <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
+            <Text style={{ color: 'white', fontWeight: '600' }}>Hủy</Text>
           </TouchableOpacity>
+          </View>
         </View>
       </View>
     )
   }
 
-  const [currentPage, setCurrentPage] = useState(paginationPer?.number)
-
+  const [currentPage, setCurrentPage] = useState(paginationPer.number )
 
   const handlePrevPage = () => {
     if (currentPage > 0) {
@@ -209,14 +208,14 @@ export default function ManagerPermissions() {
           renderItem={({ item, index }) => (
             <View
               style={{
-                ...styles.tableRow
+                ...styles.tableRow,
               }}
             >
               <Text style={{ ...styles.columnRowTxt, fontWeight: 'bold' }}>
-                {item.id}
+                {item?.id}
               </Text>
-              <Text style={styles.columnRowTxt}>{item.name}</Text>
-              <Text style={styles.columnRowTxt}>{item.description}</Text>
+              <Text style={styles.columnRowTxt}>{item?.name}</Text>
+              <Text style={styles.columnRowTxt}>{item?.description}</Text>
               <View style={[styles.columnRowTxt, { flexDirection: 'row' }]}>
                 <TouchableOpacity
                   style={{ paddingHorizontal: 10 }}
@@ -226,7 +225,7 @@ export default function ManagerPermissions() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ paddingHorizontal: 10 }}
-                  onPress={() => dispatch(deletePermissions(item.id))}
+                  onPress={() => dispatch(deletePermissions(item?.id))}
                 >
                   <Icon name="trash-can" size={20} color="#3498db" />
                 </TouchableOpacity>
@@ -235,30 +234,33 @@ export default function ManagerPermissions() {
           )}
         />
       </ScrollView>
-{paginationPer?.totalPages > 1 && (  <View style={styles.containerPagination}>
-        <TouchableOpacity
-          onPress={handlePrevPage}
-          style={styles.buttonPagination}
-        >
-          <Text style={styles.buttonTextPagination}>Previous</Text>
-        </TouchableOpacity>
-        <Text style={styles.pageTextPagination}>
-          Page {paginationPer?.number + 1} of {paginationPer?.totalPages}
-        </Text>
-        <TouchableOpacity
-          onPress={handleNextPage}
-          style={styles.buttonPagination}
-        >
-          <Text style={styles.buttonTextPagination}>Next</Text>
-        </TouchableOpacity>
-      </View>) }
-    
-      <TouchableOpacity style={styles.addButton} onPress={handleAddPermission}>
-        <MaterialCommunityIcons name="plus-circle" size={64} color="#2089dc" />
-      </TouchableOpacity>
+      {paginationPer?.totalPages > 1 && (
+        <View style={styles.containerPagination}>
+          <TouchableOpacity
+            onPress={handlePrevPage}
+            style={styles.buttonPagination}
+          >
+            <Text style={styles.buttonTextPagination}>&#60;</Text>
+          </TouchableOpacity>
+          <Text style={styles.pageTextPagination}>
+            Page {paginationPer?.number + 1} of {paginationPer?.totalPages}
+          </Text>
+          <TouchableOpacity
+            onPress={handleNextPage}
+            style={styles.buttonPagination}
+          >
+            <Text style={styles.buttonTextPagination}>&#62;</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <StatusBar style="auto" />
       {selectedPermission && renderPermissionDetailsForm()}
       {showAddForm && renderAddForm()}
+      
+      <TouchableOpacity style={styles.addButton} onPress={handleAddPermission}>
+        <MaterialIcons name="add" size={36} color="#fff" />
+      </TouchableOpacity>
     </View>
   )
 }
@@ -280,7 +282,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',
-    backgroundColor: '#2089dc',
+    backgroundColor: '#6a9cfd',
     borderTopEndRadius: 10,
     borderTopStartRadius: 10,
     height: 50,
@@ -309,22 +311,39 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
+    backgroundColor: '#2089dc',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+  },
+  formCreate: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: '#cccccc84',
   },
   addFormContainer: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
+    marginVertical: 20,
+    marginHorizontal: 20,
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#ccc',
-    width: '100%',
+    width: '90%',
   },
   formTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
+    borderBottomColor: "#ccc",
+    borderBottomWidth: 1,
+    paddingBottom: 10,
   },
   input: {
     borderWidth: 1,
@@ -335,15 +354,17 @@ const styles = StyleSheet.create({
   },
 
   saveButton: {
-    backgroundColor: 'blue',
+    backgroundColor: '#0ea5e9',
     borderRadius: 5,
     padding: 10,
+    paddingHorizontal: 15,
     alignItems: 'center',
   },
   cancelButton: {
-    backgroundColor: 'gray',
+    backgroundColor: '#cbd5e1',
     borderRadius: 5,
     padding: 10,
+    paddingHorizontal: 15,
     alignItems: 'center',
   },
   saveButtonText: {
@@ -358,19 +379,20 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   buttonPagination: {
-    padding: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     marginHorizontal: 5,
     borderWidth: 1,
     borderRadius: 5,
     borderColor: '#ccc',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: 'white',
   },
   buttonTextPagination: {
     color: '#000',
-    fontSize: 16,
+    fontSize: 14,
   },
   pageTextPagination: {
     marginHorizontal: 10,
-    fontSize: 16,
+    fontSize: 14,
   },
 })

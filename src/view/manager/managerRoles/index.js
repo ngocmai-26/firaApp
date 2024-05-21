@@ -9,7 +9,7 @@ import {
   Dimensions,
   TextInput,
 } from 'react-native'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { MaterialIcons } from '@expo/vector-icons'
 import _ from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -45,8 +45,8 @@ export default function ManagerRoles() {
   }, [])
 
   useLayoutEffect(() => {
-    dispatch(getAllRole(0));
-  }, []);
+    dispatch(getAllRole(0))
+  }, [])
 
   useEffect(() => {
     setRoles(allRole)
@@ -127,32 +127,34 @@ export default function ManagerRoles() {
     }
   }
 
-  const handleRemoveTaskList = (item) => {
+  // const handleRemoveTaskList = (item) => {
+  //   const newTaskList = taskList.filter((e) => e !== item)
+  //   setTaskList(newTaskList)
+  // }
+
+  // const handlePermissionSelection = (permission) => {
+  //   if (!newRoleData.permissionIds.includes(permission.id)) {
+  //     const updatedPermissions = [...newRoleData.permissionIds, permission.id]
+  //     setNewRoleData({ ...newRoleData, permissionIds: updatedPermissions })
+  //   }
+  // }
+
+  const handleRemovePermission = (item) => {
+    dispatch(removePermission({ id: perUpdate.id, list: { ids: [item] } }))
     const newTaskList = taskList.filter((e) => e !== item)
     setTaskList(newTaskList)
   }
 
-  const handlePermissionSelection = (permission) => {
-    if (!newRoleData.permissionIds.includes(permission.id)) {
-      const updatedPermissions = [...newRoleData.permissionIds, permission.id]
-      setNewRoleData({ ...newRoleData, permissionIds: updatedPermissions })
-    }
-  }
-
-  const handleRemovePermission = (item) => {
-    dispatch(removePermission({ id: perUpdate.id, list: { ids: [item] } }));
-    const newTaskList = taskList.filter((e) => e !== item);
-    setTaskList(newTaskList);
-  }
-
   const handleViewRoleDetails = (role) => {
-    setSelectedRole(role) 
+    setSelectedRole(role)
   }
 
   const renderRoleDetailsForm = () => {
     return (
-      <View style={styles.addFormContainer}>
-        <Text style={styles.formTitle}>Role Details</Text>
+      
+    <View style={styles.formCreate}>
+ <View style={styles.addFormContainer}>
+        <Text style={styles.formTitle}>Chi tiết chức vụ</Text>
         <TextInput
           style={styles.input}
           placeholder="Role Name"
@@ -171,99 +173,54 @@ export default function ManagerRoles() {
         </Text> */}
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
           <TouchableOpacity
-            style={{
-              backgroundColor: 'gray',
-              paddingHorizontal: 5,
-              paddingVertical: 5,
-              borderRadius: 3,
-            }}
+            style={[styles.cancelButton, { marginHorizontal: 3 }]}
             onPress={() => setSelectedRole(null)}
           >
-            <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
+            <Text style={{ color: 'white', fontWeight: '600' }}>Hủy</Text>
           </TouchableOpacity>
         </View>
       </View>
+    </View>
+     
     )
   }
 
   const renderAddForm = () => (
-    <View style={styles.addFormContainer}>
-      <Text style={styles.formTitle}>Add New Role</Text>
-      {Object.keys(newRoleData).map((key, index) => {
-        if (key === 'permissionIds') {
+    <View style={styles.formCreate}>
+      <View style={styles.addFormContainer}>
+        <Text style={styles.formTitle}>Thêm chức vụ</Text>
+        {Object.keys(newRoleData).map((key, index) => {
+          if (key === 'permissionIds') {
+            return (
+              <View></View>
+            )
+          }
           return (
-            <View></View>
-            // <View key={index}>
-            //   <Text style={styles.input}>
-            //     {newRoleData.permissionIds
-            //       .map((permissionId) => {
-            //         const foundPermission = allPermission.find(
-            //           (permission) => permission.id === permissionId,
-            //         )
-            //         return foundPermission ? foundPermission.name : ''
-            //       })
-            //       .join(', ')}
-            //   </Text>
-            // </View>
+            <TextInput
+              key={index}
+              style={styles.input}
+              placeholder={key}
+              value={newRoleData[key]}
+              onChangeText={(text) => handleInputChange(key, text)}
+            />
           )
-        }
-        return (
-          <TextInput
-            key={index}
-            style={styles.input}
-            placeholder={key}
-            value={newRoleData[key]}
-            onChangeText={(text) => handleInputChange(key, text)}
-          />
-        )
-      })}
-      <View style={styles.permissionsContainer}>
-        <View style={styles.permissionList}>
-          <Text style={styles.permissionsTitle}>Available Permissions</Text>
-          <ScrollView style={styles.permissionsScrollView}>
-            {allPermission?.map((permission) => (
-              <TouchableOpacity
-                key={permission.id}
-                style={styles.permissionItem}
-                onPress={() => handlePermissionSelection(permission)}
-              >
-                <Text>{permission.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-        <View style={styles.permissionList}>
-          <Text style={styles.permissionsTitle}>Selected Permissions</Text>
-          <ScrollView style={styles.permissionsScrollView}>
-            {allPermission?.map((pre, key) =>
-              taskList?.map((item) =>
-                pre.id === item ? (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.permissionItem}
-                    onPress={() => handleRemovePermission(permissionId)}
-                  >
-                    <Text>{foundPermission ? foundPermission.name : ''}</Text>
-                  </TouchableOpacity>
-                ) : (
-                  <></>
-                ),
-              ),
-            )}
-          </ScrollView>
-        </View>
-      </View>
-      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-        <TouchableOpacity
-          style={[styles.cancelButton, { marginHorizontal: 3 }]}
-          onPress={() => setShowAddForm(false)}
-        >
-          <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
-        </TouchableOpacity>
+        })}
+       
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          <TouchableOpacity
+            style={[styles.cancelButton, { marginHorizontal: 3 }]}
+            onPress={() => setShowAddForm(false)}
+          >
+            <Text style={{ color: 'white', fontWeight: '600' }}>Hủy</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSaveNewRole}>
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSaveNewRole}
+          >
+            <Text style={styles.saveButtonText}>Lưu</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   )
@@ -274,61 +231,63 @@ export default function ManagerRoles() {
   }
 
   const renderUpdatePerForm = () => (
-    <View style={styles.addFormContainer}>
-      <Text style={styles.formTitle}>Cấp chức năng</Text>
+    <View style={styles.formCreate}>
+      <View style={styles.addFormContainer}>
+        <Text style={styles.formTitle}>Cấp chức năng</Text>
 
-      <View style={styles.permissionsContainer}>
-        <View style={styles.permissionList}>
-          <Text style={styles.permissionsTitle}>Available Permissions</Text>
-          <ScrollView style={styles.permissionsScrollView}>
-            {allPermission?.map((permission) => (
-              <TouchableOpacity
-                key={permission.id}
-                style={styles.permissionItem}
-                onPress={() => handleAddTaskList(permission.id)}
-              >
-                <Text>{permission.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-        <View style={styles.permissionList}>
-          <Text style={styles.permissionsTitle}>Selected Permissions</Text>
-          <ScrollView style={styles.permissionsScrollView}>
-            {allPermission?.map((pre, key) =>
-              taskList?.map((item, index) =>
-                pre.id === item ? (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.permissionItem}
-                    onPress={() => handleRemovePermission(pre?.id)}
-                  >
-                    <Text>{pre.name}</Text>
-                  </TouchableOpacity>
-                ) : (
-                  <></>
+        <View style={styles.permissionsContainer}>
+          <View style={styles.permissionList}>
+            <Text style={styles.permissionsTitle}>Chức năng hiện có</Text>
+            <ScrollView style={styles.permissionsScrollView}>
+              {allPermission?.map((permission) => (
+                <TouchableOpacity
+                  key={permission?.id}
+                  style={styles.permissionItem}
+                  onPress={() => handleAddTaskList(permission?.id)}
+                >
+                  <Text>{permission?.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+          <View style={styles.permissionList}>
+            <Text style={styles.permissionsTitle}>Chức năng được cấp</Text>
+            <ScrollView style={styles.permissionsScrollView}>
+              {allPermission?.map((pre, key) =>
+                taskList?.map((item, index) =>
+                  pre?.id === item ? (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.permissionItem}
+                      onPress={() => handleRemovePermission(pre?.id)}
+                    >
+                      <Text>{pre?.name}</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <></>
+                  ),
                 ),
-              ),
-            )}
-          </ScrollView>
+              )}
+            </ScrollView>
+          </View>
         </View>
-      </View>
-      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-        <TouchableOpacity
-          style={[styles.cancelButton, { marginHorizontal: 3 }]}
-          onPress={() => setIsHiddenPer(!isHiddenPer)}
-        >
-          <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          <TouchableOpacity
+            style={[styles.cancelButton, { marginHorizontal: 3 }]}
+            onPress={() => setIsHiddenPer(!isHiddenPer)}
+          >
+            <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleUpdatePer}>
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.saveButton} onPress={handleUpdatePer}>
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   )
 
-  const [currentPage, setCurrentPage] = useState(paginationRole?.number)
+  const [currentPage, setCurrentPage] = useState(paginationRole.number)
 
   const handlePrevPage = () => {
     if (currentPage > 0) {
@@ -378,7 +337,7 @@ export default function ManagerRoles() {
                 >
                   <Icon name="trash-can" size={20} color="#3498db" />
                 </TouchableOpacity>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={{ paddingHorizontal: 10 }}
                   onPress={() => {
                     setIsHiddenPer(!isHiddenPer)
@@ -395,34 +354,34 @@ export default function ManagerRoles() {
                   }}
                 >
                   <Icon name="pen-to-square" size={20} color="#3498db" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             </View>
           )}
         />
       </ScrollView>
       {paginationRole?.totalPages > 1 && (
- <View style={styles.containerPagination}>
- <TouchableOpacity
-   onPress={handlePrevPage}
-   style={styles.buttonPagination}
- >
-   <Text style={styles.buttonTextPagination}>Previous</Text>
- </TouchableOpacity>
- <Text style={styles.pageTextPagination}>
-   Page {paginationRole?.number + 1} of {paginationRole?.totalPages}
- </Text>
- <TouchableOpacity
-   onPress={handleNextPage}
-   style={styles.buttonPagination}
- >
-   <Text style={styles.buttonTextPagination}>Next</Text>
- </TouchableOpacity>
-</View>
+        <View style={styles.containerPagination}>
+          <TouchableOpacity
+            onPress={handlePrevPage}
+            style={styles.buttonPagination}
+          >
+            <Text style={styles.buttonTextPagination}>&#60;</Text>
+          </TouchableOpacity>
+          <Text style={styles.pageTextPagination}>
+            Page {paginationRole?.number + 1} of {paginationRole?.totalPages}
+          </Text>
+          <TouchableOpacity
+            onPress={handleNextPage}
+            style={styles.buttonPagination}
+          >
+            <Text style={styles.buttonTextPagination}>&#62;</Text>
+          </TouchableOpacity>
+        </View>
       )}
-     
+
       <TouchableOpacity style={styles.addButton} onPress={handleAddRole}>
-        <MaterialCommunityIcons name="plus-circle" size={64} color="#2089dc" />
+        <MaterialIcons name="add" size={36} color="#fff" />
       </TouchableOpacity>
       {showAddForm && renderAddForm()}
       {selectedRole && renderRoleDetailsForm()}
@@ -448,7 +407,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',
-    backgroundColor: '#2089dc',
+    backgroundColor: '#6a9cfd',
     borderTopEndRadius: 10,
     borderTopStartRadius: 10,
     height: 50,
@@ -459,8 +418,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   columnHeader: {
-    minWidth: windowWidth * 0.3,
-    maxWidth: windowWidth * 0.3,
+    minWidth: windowWidth * 0.4,
+    maxWidth: windowWidth * 0.4,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -469,26 +428,42 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   columnRowTxt: {
-    minWidth: windowWidth * 0.3,
-    maxWidth: windowWidth * 0.3,
+    minWidth: windowWidth * 0.4,
+    maxWidth: windowWidth * 0.4,
     textAlign: 'center',
     alignItems: 'center',
+    display: 'row',
+    justifyContent: "center"
   },
   addButton: {
     position: 'absolute',
     bottom: 20,
     right: 20,
+    backgroundColor: '#2089dc',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+  },
+  formCreate: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: '#cccccc84',
   },
   addFormContainer: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
+    marginVertical: 20,
+    marginHorizontal: 20,
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#ccc',
-    width: '100%',
+    width: '90%',
   },
   formTitle: {
     fontSize: 18,
@@ -503,15 +478,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   saveButton: {
-    backgroundColor: 'blue',
+    backgroundColor: '#0ea5e9',
     borderRadius: 5,
     padding: 10,
+    paddingHorizontal: 15,
     alignItems: 'center',
   },
   cancelButton: {
-    backgroundColor: 'gray',
+    backgroundColor: '#cbd5e1',
     borderRadius: 5,
     padding: 10,
+    paddingHorizontal: 15,
     alignItems: 'center',
   },
   saveButtonText: {
@@ -519,21 +496,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   permissionsContainer: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
   },
   permissionList: {
-    width: '48%',
+    width: '100%',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
     padding: 5,
+    marginVertical: 15,
   },
   permissionsTitle: {
     textAlign: 'center',
     fontWeight: 'bold',
     marginBottom: 5,
     marginTop: 5,
+    
   },
   permissionsScrollView: {
     maxHeight: 150,
@@ -551,19 +529,20 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   buttonPagination: {
-    padding: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     marginHorizontal: 5,
     borderWidth: 1,
     borderRadius: 5,
     borderColor: '#ccc',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: 'white',
   },
   buttonTextPagination: {
     color: '#000',
-    fontSize: 16,
+    fontSize: 14,
   },
   pageTextPagination: {
     marginHorizontal: 10,
-    fontSize: 16,
+    fontSize: 14,
   },
 })

@@ -2,7 +2,8 @@ import { createAsyncThunk } from "@reduxjs/toolkit"
 import { API } from "../constants/api"
 import Toast from "react-native-toast-message"
 import { TOAST_ERROR } from "../constants/toast"
-import { setAllKPI, setPaginationKPI, setSingleKPI } from "../slices/KPIsSlice"
+import { setAllKPI, setListKPIHistory, setPaginationKPI, setSingleKPI } from "../slices/KPIsSlice"
+import { loadTokenFromStorage } from "../services/AuthService"
 
 
 export const getAllKPI = createAsyncThunk(
@@ -118,7 +119,7 @@ export const getKpisById = createAsyncThunk(
       if (resp.status >= 200 && resp.status < 300) {
         const jsonData = await resp.json()
         dispatch(setSingleKPI(jsonData?.data))
-      }
+      } 
     } catch (e) {
       console.log(e)
     }
@@ -177,3 +178,34 @@ export const updateKPI = createAsyncThunk(
       }
     },
   )
+
+
+  export const GetKPIHistory = createAsyncThunk(
+    '/kpi-histories/by-user-in-month/id',
+    async (id, { dispatch, rejectWithValue }) => {
+      try {
+        const token = await loadTokenFromStorage()
+        const resp = await fetch(`${API.uri}/kpi-histories/by-user-in-month/${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        
+        const dataJson = await resp.json()
+        if (resp.status >= 300) {
+          Toast.show({
+            type: TOAST_ERROR,
+            text1: dataJson.message[0]
+          })
+          return rejectWithValue()
+        }
+        dispatch(setListKPIHistory(dataJson.data.body.data.content))
+      } catch (e) {
+        console.log(e)
+      }
+    },
+)
+
+

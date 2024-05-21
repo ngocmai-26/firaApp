@@ -1,33 +1,112 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
-import { useDispatch } from 'react-redux';
-import { evaluateJob } from '../../thunks/JobsThunk';
+import React, { useEffect, useState } from 'react'
+import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native'
+import { useDispatch } from 'react-redux'
+import {
+  ReassessJob,
+  evaluateJob,
+  updateEvaluateJob,
+  updateJob,
+  verifyProgress,
+} from '../../thunks/JobsThunk'
 
 const EValueJobModal = ({ handleHiddenEValue, evaluateData }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
   const eValueList = [
-    { id: 1, value: "BAD", eValuate: "Xấu", bg: "red" },
-    { id: 2, value: "MEDIUM", eValuate: "Trung Bình", bg: "amber" },
-    { id: 3, value: "GOOD", eValuate: "Tốt", bg: "green" },
-  ];
+    { id: 1, value: 'BAD', eValuate: 'Xấu', bg: 'red' },
+    { id: 2, value: 'MEDIUM', eValuate: 'Trung Bình', bg: 'amber' },
+    { id: 3, value: 'GOOD', eValuate: 'Tốt', bg: 'green' },
+  ]
+  const [evaluateJobData, setEvaluateJobData] = useState({})
+  const [evaluateDetailData, setEvaluateDetailData] = useState({})
 
-  const [eValuate, setEValuate] = useState(
-    evaluateData?.jobDetail?.jobEvaluate ? evaluateData?.jobDetail?.jobEvaluate : ""
-  );
+  useEffect(() => {
+    setEvaluateJobData({
+      id: evaluateData?.id,
+      title: evaluateData?.title,
+      kpiCount: evaluateData?.kpiCount,
+      progress: evaluateData?.progress,
+      priority: evaluateData?.priority,
+      status: evaluateData?.status,
+      pointPerJob: evaluateData?.pointPerJob,
+      task: true,
+    })
+    setEvaluateDetailData({
+      description: evaluateData?.jobDetail?.description,
+      verifyLink: evaluateData?.jobDetail?.verifyLink,
+      note: evaluateData?.jobDetail?.note,
+      instructionLink: evaluateData?.jobDetail?.instructionLink,
+      denyReason: evaluateData?.jobDetail?.denyReason,
+      target: evaluateData?.jobDetail?.target,
+      timeStart: evaluateData?.jobDetail?.timeStart,
+      timeEnd: evaluateData?.jobDetail?.timeEnd,
+      additionInfo: evaluateData?.jobDetail?.additionInfo,
+      jobEvaluate: evaluateData?.jobDetail?.jobEvaluate,
+    })
+  }, [])
+
+  // const [eValuate, setEValuate] = useState(
+  //   evaluateData?.jobDetail?.jobEvaluate ? evaluateData?.jobDetail?.jobEvaluate : ""
+  // );
 
   const handleEValuate = (item) => {
-    setEValuate(item);
-  };
+    setEvaluateDetailData({
+      ...evaluateDetailData,
+      jobEvaluate: item,
+    })
+  }
 
   const handleSubmitEvaluate = () => {
-    dispatch(
-      evaluateJob({ id: evaluateData.id, data: { jobEvaluate: eValuate, status: "DONE" } })
-    ).then((reps) => {
-      if (!reps.error) {
-        handleHiddenEValue();
+    evaluateJobData.status = 'DONE'
+    dispatch(verifyProgress(evaluateJobData.id)).then((reps) => {
+      if (!reps?.error) {
+        dispatch(
+          updateJob({ id: evaluateJobData.id, data: evaluateJobData }),
+        ).then((resp) => {
+          if (!resp?.error) {
+            dispatch(
+              updateEvaluateJob({
+                id: evaluateJobData.id,
+                data: evaluateDetailData,
+              }),
+            ).then((resp) => {
+              if (!resp?.error) {
+                handleHiddenEValue()
+              }
+            })
+          }
+        })
       }
-    });
-  };
+    })
+  }
+
+  const handleReassess = () => {
+    const updatedStatus = {
+      ...evaluateJobData,
+      progress: 0,
+      status: 'PROCESSING',
+    }
+    const updatedDetailStatus = {
+      ...evaluateDetailData,
+      note: '',
+      verifyLink: '',
+    }
+    dispatch(
+      updateEvaluateJob({
+        id: evaluateJobData.id,
+        data: updatedDetailStatus,
+      }),
+    ).then((resp) => {
+      if (!resp?.error) {
+        dispatch(
+          ReassessJob({ id: evaluateJobData.id, data: updatedStatus }),
+        ).then((resp) => {
+          if (!resp?.error) {
+            handleHiddenEValue()
+          }
+        })
+      }
+    })
+  }
 
   return (
     <Modal visible={true} transparent={true} animationType="slide">
@@ -35,22 +114,35 @@ const EValueJobModal = ({ handleHiddenEValue, evaluateData }) => {
         <View style={styles.modalContent}>
           <View style={styles.header}>
             <Text style={styles.title}>Chi tiết tiến độ công việc</Text>
-            <TouchableOpacity onPress={() => handleHiddenEValue()} style={styles.closeButton}>
+            <TouchableOpacity
+              onPress={() => handleHiddenEValue()}
+              style={styles.closeButton}
+            >
               <Text style={styles.closeButtonText}>Đóng</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.content}>
             <Text style={styles.subtitle}>Mô tả công việc đã hoàn thành</Text>
-            <Text>{evaluateData?.jobDetail?.note || "chưa có báo cáo"}</Text>
+            <Text>{evaluateData?.jobDetail?.note || 'chưa có báo cáo'}</Text>
             <Text style={styles.subtitle}>Tiến độ hoàn thành</Text>
             <Text style={styles.progress}>{evaluateData?.progress}%</Text>
             <Text style={styles.subtitle}>Đường link tài liệu báo cáo</Text>
-            <Text style={styles.link}>{evaluateData?.jobDetail?.instructionLink || "Chưa có báo cáo"}</Text>
+            <Text style={styles.link}>
+              {evaluateData?.jobDetail?.instructionLink || 'Chưa có báo cáo'}
+            </Text>
             <View style={styles.eValueButtons}>
               {eValueList.map((item, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={[styles.eValueButton, { backgroundColor: eValuate === item.value ? item.bg : 'gray' }]}
+                  style={[
+                    styles.eValueButton,
+                    {
+                      backgroundColor:
+                        evaluateDetailData?.jobEvaluate === item.value
+                          ? 'blue'
+                          : 'gray',
+                    },
+                  ]}
                   onPress={() => handleEValuate(item.value)}
                 >
                   <Text style={styles.eValueButtonText}>{item.eValuate}</Text>
@@ -59,18 +151,24 @@ const EValueJobModal = ({ handleHiddenEValue, evaluateData }) => {
             </View>
           </View>
           <View style={styles.footer}>
-            <TouchableOpacity style={styles.reassessButton} onPress={() => handleReassess()}>
+            <TouchableOpacity
+              style={styles.reassessButton}
+              onPress={() => handleReassess()}
+            >
               <Text style={styles.reassessButtonText}>Đánh giá lại</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.confirmButton} onPress={handleSubmitEvaluate}>
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={handleSubmitEvaluate}
+            >
               <Text style={styles.confirmButtonText}>Xác nhận</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
     </Modal>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -161,6 +259,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
   },
-});
+})
 
-export default EValueJobModal;
+export default EValueJobModal

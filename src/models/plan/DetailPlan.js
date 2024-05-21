@@ -9,9 +9,31 @@ import {
   FlatList,
 } from 'react-native'
 import moment from 'moment'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { getJobById } from '../../thunks/JobsThunk'
+import { useNavigation } from '@react-navigation/native'
 function DetailPlanModal({ handleGetPlanById }) {
   const { singlePlan } = useSelector((state) => state.plansReducer)
+  const dispatch = useDispatch()
+  const navigation = useNavigation()
+  const handleDetailJob = (item) => {
+    dispatch(getJobById(item)).then((reps) => {
+      if (!reps.error) {
+        navigation.navigate('chi-tiet-cong-viec')
+      }
+    })
+  }
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'ONCE':
+        return '#FEA837' // Màu vàng nhạt
+      case 'LOOP':
+        return '#A4C3A2' // Màu xanh lá
+      default:
+        return '#fff'
+    }
+  }
   return (
     <View
       style={{
@@ -55,18 +77,20 @@ function DetailPlanModal({ handleGetPlanById }) {
               </Text>
               <View
                 style={{
-                  backgroundColor:
-                    singlePlan?.planDetail?.planType === 'ONCE'
-                      ? '#e5e5e5'
-                      : singlePlan?.planDetail?.planType === 'LOOP'
-                      ? '#c6e2c6'
-                      : '',
+                  borderColor: getStatusColor(singlePlan?.planDetail?.planType),
+
+                  borderWidth: 1,
                   padding: 5,
                   marginRight: 2,
                   borderRadius: 5,
                 }}
               >
-                <Text style={{ color: 'white', fontSize: 12 }}>
+                <Text
+                  style={{
+                    color: getStatusColor(singlePlan?.planDetail?.planType),
+                    fontSize: 12,
+                  }}
+                >
                   {singlePlan?.planDetail?.planType === 'ONCE'
                     ? '1 LẦN'
                     : singlePlan?.planDetail?.planType === 'LOOP'
@@ -179,7 +203,7 @@ function DetailPlanModal({ handleGetPlanById }) {
             >
               {singlePlan?.planJobs?.length > 0 ? (
                 singlePlan?.planJobs?.map((item) => (
-                  <View
+                  <TouchableOpacity
                     key={item.id}
                     style={{
                       borderWidth: 1,
@@ -188,16 +212,32 @@ function DetailPlanModal({ handleGetPlanById }) {
                       marginBottom: 16,
                       padding: 16,
                     }}
+                    
+                onPress={() => handleDetailJob(item.id)}
                   >
                     <View
                       style={{ width: Dimensions.get('window').width * 0.8 }}
                     >
-                      <Text style={[styles.jobTitle, styles.lineJob]}>
+                      <View style={{borderBottomColor: "#ccc", borderBottomWidth: 1, paddingBottom: 5, marginBottom: 5}}>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 600,
+                          paddingVertical: 5,
+                        }}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
                         {item?.title}
                       </Text>
-                      <Text style={[styles.lineJob, { fontSize: 10 }]}>
+                      <Text
+                        style={[styles.lineJob, { fontSize: 12 }]}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
                         {item?.jobDetail?.description}
                       </Text>
+                      </View>
                       <View
                         style={[
                           styles.lineJob,
@@ -267,7 +307,7 @@ function DetailPlanModal({ handleGetPlanById }) {
                         </Text>
                       </View>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 ))
               ) : (
                 <Text style={{ color: 'red' }}>

@@ -59,7 +59,6 @@ function UpdatePlanModal({setShowUpdateBox}) {
           timeEnd: moment(currentDate).format('YYYY-MM-DD'),
         },
       })
-    // setNewJobData({ ...newJobData, timeEnd: moment(currentDate).format('YYYY-MM-DD') })
   }
 
   const onChangeTimeStart = (event, selectedDate) => {
@@ -73,7 +72,6 @@ function UpdatePlanModal({setShowUpdateBox}) {
           timeStart:moment(currentDate).format('YYYY-MM-DD'),
         },
       })
-    // setNewJobData({ ...newJobData, timeStart: moment(currentDate).format('YYYY-MM-DD') })
   }
 
   const showMode = (currentMode) => {
@@ -181,8 +179,8 @@ function UpdatePlanModal({setShowUpdateBox}) {
                         paddingHorizontal: 10,
                         paddingVertical: 5,
                       }}
-                      placeholder="YYYY-MM-DD"
-                      defaultValue={moment(dataPlan?.planDetailRequest?.timeStart).format('YYYY-MM-DD')}
+                      placeholder="DD-MM-YYYY"
+                      defaultValue={moment(dataPlan?.planDetailRequest?.timeStart).format('DD-MM-YYYY')}
                      
                     />
                     <TouchableOpacity onPress={showDatepickerStart} style={{flexDirection: 'row', paddingHorizontal: 5}}>
@@ -208,9 +206,8 @@ function UpdatePlanModal({setShowUpdateBox}) {
                         paddingHorizontal: 10,
                         paddingVertical: 5,
                       }}
-                      placeholder="YYYY-MM-DD"
-                    //   defaultValue={moment(timeEnd).format('YYYY-MM-DD')}
-                      defaultValue={moment(dataPlan?.planDetailRequest?.timeEnd).format('YYYY-MM-DD')}
+                      placeholder="DD-MM-YYYY"
+                      defaultValue={moment(dataPlan?.planDetailRequest?.timeEnd).format('DD-MM-YYYY')}
                       
                     />
                     <TouchableOpacity onPress={showDatepicker} style={{flexDirection: 'row', paddingHorizontal: 5}}>

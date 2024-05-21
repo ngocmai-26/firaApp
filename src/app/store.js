@@ -34,8 +34,8 @@ export const store = configureStore({
     timeKeepsReducer: TimeKeepsSlice,
     plansReducer: PlansSlice,
     
-    kpisSlice: KPIsSlice,
-    kpiCategoriesSlice: KPICategoriesSlice,
+    kpisReducer: KPIsSlice,
+    kpiCategoriesReducer: KPICategoriesSlice,
     notificationReducer: NotificationSlice,
   },
   middleware: (getDefaultMiddleware) =>
