@@ -118,7 +118,7 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                   <Text style={{ color: '#AAAAAA' }}>
                     {account?.role?.roleName === 'ROLE_ADMIN'
                       ? 'Quản trị viên'
-                      : account?.role?.roleName === 'ROLE_MANAGE'
+                      : account?.role?.roleName === 'ROLE_MANAGER'
                       ? 'Quản Lý'
                       : account?.role?.roleName === 'ROLE_STAFF'
                       ? 'Nhân viên'

@@ -15,10 +15,15 @@ import { addNewPlan } from '../../thunks/PlansThunk'
 import moment from 'moment'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import Icon from 'react-native-vector-icons/FontAwesome6'
+import Toast from 'react-native-toast-message'
+import { TOAST_ERROR } from '../../constants/toast'
+import { useNavigation } from '@react-navigation/native'
 
 function CreatePlanModal({ setShowAddBox }) {
   const { allJob } = useSelector((state) => state.jobsReducer)
   const dispatch = useDispatch()
+  
+  const navigation = useNavigation()
   useLayoutEffect(() => {
     if (allJob?.length <= 0) {
       dispatch(getAllJob())
@@ -203,10 +208,57 @@ function CreatePlanModal({ setShowAddBox }) {
   }, [selectedDates, selectedMonths])
 
   const addNote = () => {
+    // Lấy thời gian hiện tại
+    const currentTime = new Date()
+
+    // Kiểm tra xem timeStart có trước timeEnd không
+    if (
+      new Date(dataPlan?.planDetailRequest?.timeStart) >=
+      new Date(dataPlan?.planDetailRequest?.timeEnd)
+    ) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: 'Thời gian kết thúc phải sau thời gian bắt đầu',
+      })
+      return
+    }
+
+    // Kiểm tra xem timeEnd có sau thời gian hiện tại không
+    if (new Date(dataPlan?.planDetailRequest?.timeEnd) < currentTime) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: 'Thời gian kết thúc không được trước thời gian hiện tại',
+      })
+      return
+    }
+
     dispatch(addNewPlan(dataPlan)).then((reps) => {
-      setShowAddBox(false)
+      if(!reps.error) {
+        
+        navigation.navigate('notesApp')
+      }
     })
   }
+
+  const { account } = useSelector((state) => state.authReducer)
+  const filteredJobs = allJob.filter((item) => {
+    // Lọc công việc nếu tài khoản đang đăng nhập là admin
+    if (account.role.roleName === 'ROLE_ADMIN') {
+      return true
+    }
+
+    // Lọc công việc nếu người dùng là quản lý của công việc
+    if (item.manager.id === account.user.id) {
+      return true
+    }
+
+    // Lọc công việc nếu người dùng là một trong các nhân viên của công việc
+    if (item.userJobs.some((userJob) => userJob.user.id === account.user.id)) {
+      return true
+    }
+
+    return false
+  })
 
   return (
     <View
@@ -429,10 +481,15 @@ function CreatePlanModal({ setShowAddBox }) {
           </View>
         </View>
 
-        <View style={{ marginVertical: 2, borderBottomWidth: 1,
+        <View
+          style={{
+            marginVertical: 2,
+            borderBottomWidth: 1,
             borderColor: '#ccc',
             marginBottom: 15,
-            paddingBottom: 15, }}>
+            paddingBottom: 15,
+          }}
+        >
           <Text style={styles.label}>Công việc liên quan</Text>
           <View
             style={{
@@ -448,7 +505,7 @@ function CreatePlanModal({ setShowAddBox }) {
               contentContainerStyle={{ paddingBottom: 20 }}
               showsVerticalScrollIndicator={false}
             >
-              {allJob?.map((item) => (
+              {filteredJobs.map((item) => (
                 <TouchableOpacity
                   key={item.id}
                   onPress={() => handleJobIdClick(item)}
@@ -461,8 +518,8 @@ function CreatePlanModal({ setShowAddBox }) {
                     backgroundColor: dataPlan.planJob.includes(item.id)
                       ? '#e8f0fe'
                       : 'transparent',
-                    borderBottomColor: "#ccc",
-                    borderBottomWidth: 1  
+                    borderBottomColor: '#ccc',
+                    borderBottomWidth: 1,
                   }}
                 >
                   <View style={{ width: '75%' }}>
@@ -474,7 +531,6 @@ function CreatePlanModal({ setShowAddBox }) {
           </View>
         </View>
         <View style={styles.buttonContainer}>
-          
           <TouchableOpacity
             onPress={addNote}
             style={[styles.button, { backgroundColor: '#2089dc' }]}

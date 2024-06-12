@@ -265,16 +265,18 @@ function DetailPlanModal({ handleGetPlanById }) {
                         >
                           Người thực hiện:
                         </Text>
-                        <Text
+                       <View style={{flexDirection: 'column'}}>
+                       <Text
                           style={[
                             styles.lineJob,
-                            { fontWeight: 400, fontSize: 15 },
+                            { fontWeight: 400, fontSize: 15, width: "100%" },
                           ]}
                         >
-                          {item.staffs.length !== 0
-                            ? item.staffs.map((props) => props.fullName)
+                          {item?.userJobs?.length !== 0
+                            ? item.userJobs.map((props) => props.user.fullName)
                             : 'Chưa có người thực hiện'}
                         </Text>
+                       </View>
                       </View>
                       <View
                         style={[

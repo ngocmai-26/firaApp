@@ -62,7 +62,6 @@ function NavBar({ children, hidden }) {
     } else {
       // If the user is not an admin, check permissions to render items accordingly
       const permissions = account?.role?.permissions
-      console.log('permissions', permissions?.includes('MANAGE_JOB_READ'))
       return ADMIN_NAVBAR_ITEMS.map((item) => {
         if (
           item.id === 3 &&
@@ -114,12 +113,11 @@ function NavBar({ children, hidden }) {
   }, [])
 
   useLayoutEffect(() => {
-    const ws = new SockJS('http://192.168.1.6:8082/ws')
+    const ws = new SockJS('http://192.168.110.48:8082/ws')
     const client = Stomp.over(ws)
     client.connect(
       {},
       function () {
-        console.log('connected')
         client.subscribe('/contact', (resp) => {
           const respBody = JSON.parse(resp.body)
           if (respBody?.type == CONTACT_NOTI_EVENT_TYPE.NEW_REQUEST) {
@@ -260,8 +258,9 @@ function NavBar({ children, hidden }) {
                     top: -10,
                     right: -10,
                     backgroundColor: 'red',
-                    paddingHorizontal: 4,
+                    alignItems: 'center',
                     borderRadius: 20,
+                     width: 20
                   }}
                 >
                   <Text style={{ color: 'white' }}>{unreadCount}</Text>

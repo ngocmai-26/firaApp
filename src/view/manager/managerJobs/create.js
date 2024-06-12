@@ -22,15 +22,18 @@ import moment from 'moment'
 import { useNavigation } from '@react-navigation/native'
 import Toast from 'react-native-toast-message'
 import { TOAST_ERROR } from '../../../constants/toast'
+import { getAllAccount } from '../../../thunks/AccountsThunk'
+
 function CreateJob() {
   const [isAddFormVisible, setIsAddFormVisible] = useState(false)
   const { allJob } = useSelector((state) => state.jobsReducer)
   const { account } = useSelector((state) => state.authReducer)
   const { allRole } = useSelector((state) => state.rolesReducer)
-
   const { allUser } = useSelector((state) => state.usersReducer)
 
+  const { allAccount } = useSelector((state) => state.accountsReducer)
   const dispatch = useDispatch()
+
   useLayoutEffect(() => {
     if (allJob.length <= 0) {
       dispatch(getAllJob())
@@ -40,6 +43,11 @@ function CreateJob() {
     }
     if (allRole?.length <= 0) {
       dispatch(getAllRole())
+    }
+    if (account?.role?.roleName === 'ROLE_ADMIN') {
+      if (allAccount?.length <= 0) {
+        dispatch(getAllAccount())
+      }
     }
   }, [])
 
@@ -68,9 +76,7 @@ function CreateJob() {
   const [showModal2, setShowModal2] = useState(false)
   const [searchKeyword, setSearchKeyword] = useState('')
   const [staffs, setStaffs] = useState([])
-
   const [errors, setErrors] = useState({})
-
   const [timeEnd, setTimeEnd] = useState(new Date())
   const [timeStart, setTimeStart] = useState(new Date())
   const [mode, setMode] = useState('date')
@@ -80,35 +86,46 @@ function CreateJob() {
   const navigation = useNavigation()
 
   const handleCreateJob = () => {
-    const validationErrors = {};
-  if (!newJobData?.title) {
-    validationErrors.title = 'Không được bỏ trống';
-  }
-  if (moment(newJobData.timeEnd).isBefore(newJobData.timeStart)) {
-    Toast.show({
-      type: TOAST_ERROR,
-      text1: 'Thời gian kết thúc phải sau thời gian bắt đầu'
-    })
-    validationErrors.timeEnd = 'Thời gian kết thúc phải sau thời gian bắt đầu';
-  }
+    const validationErrors = {}
+    const now = moment()
 
-  if (Object.keys(validationErrors).length > 0) {
-    setErrors(validationErrors);
-    return;
-  }
-  setErrors();
-
-  // toggleAddForm()
-  setNewJobData({ ...newJobData, staffsGotJobId: staffs });
-  dispatch(addNewJob({ ...newJobData, staffsGotJobId: staffs })).then((resp) => {
-    if (!resp?.error) {
-      navigation.navigate('quan-ly-cong-viec');
+    if (!newJobData?.title) {
+      validationErrors.title = 'Không được bỏ trống'
     }
-  });
+    if (moment(newJobData.timeEnd).isBefore(newJobData.timeStart)) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: 'Thời gian kết thúc phải sau thời gian bắt đầu',
+      })
+      validationErrors.timeEnd = 'Thời gian kết thúc phải sau thời gian bắt đầu'
+    }
+    if (moment(newJobData.timeEnd).isBefore(now)) {
+      Toast.show({
+        type: TOAST_ERROR,
+        text1: 'Thời gian kết thúc không được trước thời gian hiện tại',
+      })
+      validationErrors.timeEnd =
+        'Thời gian kết thúc không được trước thời gian hiện tại'
+    }
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors)
+      return
+    }
+    setErrors({})
+
+    setNewJobData({ ...newJobData, staffsGotJobId: staffs })
+    dispatch(addNewJob({ ...newJobData, staffsGotJobId: staffs })).then(
+      (resp) => {
+        if (!resp?.error) {
+          navigation.navigate('quan-ly-cong-viec')
+        }
+      },
+    )
   }
 
   const toggleUserSelection = (userId) => {
-    if (allUser.includes(userId)) {
+    if (staffs.includes(userId)) {
       setStaffs(staffs.filter((id) => id !== userId))
     } else {
       setStaffs([...staffs, userId])
@@ -141,6 +158,7 @@ function CreateJob() {
     setShow(true)
     setMode(currentMode)
   }
+
   const showModeStart = (currentMode) => {
     setShowStart(true)
     setModeStart(currentMode)
@@ -149,6 +167,7 @@ function CreateJob() {
   const showDatepicker = () => {
     showMode('date')
   }
+
   const showDatepickerStart = () => {
     showModeStart('date')
   }
@@ -263,6 +282,7 @@ function CreateJob() {
               borderBottomWidth: 1,
               borderColor: '#CCCCCC',
               marginBottom: 15,
+
               paddingBottom: 15,
             }}
           >
@@ -300,37 +320,39 @@ function CreateJob() {
                 <Text style={{ color: 'red' }}>{errors?.title}</Text>
               )}
             </View>
-            <View 
-                style={[
-                  styles.informationPlanContainer,
-                  { flexDirection: 'row', gap: 2 },
-                ]}>
             <View
-              style={{
-                borderWidth: 1,
-                marginVertical: 10,
-                borderRadius: 10,
-                borderColor: '#CCCCCC',
-                flex:5
-              }}
+              style={[
+                styles.informationPlanContainer,
+                { flexDirection: 'row', gap: 2 },
+              ]}
             >
-              <Picker
-                selectedValue={newJobData.priority}
-                onValueChange={(value) =>
-                  setNewJobData({ ...newJobData, priority: value })
-                }
+              <View
+                style={{
+                  borderWidth: 1,
+                  marginVertical: 10,
+                  borderRadius: 10,
+                  borderColor: '#CCCCCC',
+                  flex: 5,
+                }}
               >
-                <Picker.Item label="Mức độ" value={0} />
-                <Picker.Item label="Cần gấp" value={1} />
-                <Picker.Item label="Quan trọng" value={2} />
-                <Picker.Item label="Bình thường" value={3} />
-                <Picker.Item label="Ưu tiên sau" value={4} />
-              </Picker>
-              
-            </View>
-            <View>
-                  <TextInput
-                    style={[ { flex: 1, 
+                <Picker
+                  selectedValue={newJobData.priority}
+                  onValueChange={(value) =>
+                    setNewJobData({ ...newJobData, priority: value })
+                  }
+                >
+                  <Picker.Item label="Mức độ" value={0} />
+                  <Picker.Item label="Cần gấp" value={1} />
+                  <Picker.Item label="Quan trọng" value={2} />
+                  <Picker.Item label="Bình thường" value={3} />
+                  <Picker.Item label="Ưu tiên sau" value={4} />
+                </Picker>
+              </View>
+              <View>
+                <TextInput
+                  style={[
+                    {
+                      flex: 1,
                       borderWidth: 1,
                       borderColor: '#CCCCCC',
                       borderRadius: 10,
@@ -338,17 +360,17 @@ function CreateJob() {
                       marginBottom: 10,
                       marginTop: 10,
                       fontSize: 16,
-                   }]}
-                    placeholder="Điểm CV"
-                    keyboardType="numeric"
-                    
-                    onChangeText={(text) =>
-                      setNewJobData({ ...newJobData, pointPerJob: text })
-                    }
-                  />
-                </View>
+                    },
+                  ]}
+                  placeholder="Điểm CV"
+                  keyboardType="numeric"
+                  onChangeText={(text) =>
+                    setNewJobData({ ...newJobData, pointPerJob: text })
+                  }
+                />
+              </View>
             </View>
-          
+
             <View
               style={{
                 marginVertical: 10,
@@ -408,32 +430,50 @@ function CreateJob() {
                       onChangeText={setSearchKeyword}
                     />
                     <ScrollView style={styles.scrollContentContainer}>
-                      {allUser.map((item) => (
-                        <TouchableOpacity
-                          key={item?.id}
-                          onPress={() => toggleUserSelection(item?.id)}
-                          style={[
-                            styles.usersItem,
-                            {
-                              backgroundColor: staffs.includes(item?.id)
-                                ? '#e8f0fe'
-                                : 'transparent',
-                            },
-                          ]}
-                        >
-                          <View style={styles.avatarContainer}>
-                            <Image
-                              source={{ uri: item?.avatar }}
-                              style={styles.avatar}
-                            />
-                          </View>
-                          <View style={styles.nameContainer}>
-                            <Text style={styles.fullName}>
-                              {item?.fullName}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                      ))}
+                      {allAccount
+                        .filter(
+                          (item) =>
+                            !(
+                              item.role.roleName === 'ROLE_ADMIN' ||
+                              item.active === false
+                            ),
+                        )
+                        .map((item) => (
+                          <TouchableOpacity
+                            key={item.user.id}
+                            onPress={() =>
+                              setStaffs((prevStaffs) => {
+                                if (prevStaffs.includes(item.user.id)) {
+                                  return prevStaffs.filter(
+                                    (id) => id !== item.user.id,
+                                  )
+                                } else {
+                                  return [...prevStaffs, item.user.id]
+                                }
+                              })
+                            }
+                            style={[
+                              styles.usersItem,
+                              {
+                                backgroundColor: staffs.includes(item.user.id)
+                                  ? '#e8f0fe'
+                                  : 'transparent',
+                              },
+                            ]}
+                          >
+                            <View style={styles.avatarContainer}>
+                              <Image
+                                source={{ uri: item.user.avatar }}
+                                style={styles.avatar}
+                              />
+                            </View>
+                            <View style={styles.nameContainer}>
+                              <Text style={styles.fullName}>
+                                {item.user.fullName}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        ))}
                     </ScrollView>
                     <View
                       style={{
@@ -448,7 +488,7 @@ function CreateJob() {
                         <Text
                           style={{
                             color: 'white',
-                            fontSize: 16
+                            fontSize: 16,
                           }}
                         >
                           Đóng
@@ -484,38 +524,74 @@ function CreateJob() {
                       onChangeText={setSearchKeyword}
                     />
                     <ScrollView style={styles.scrollContentContainer}>
-                      {allUser.map((item, key) => (
-                        <TouchableOpacity
-                          key={key}
-                          onPress={() =>
-                            setNewJobData({
-                              ...newJobData,
-                              userCreateJobId: item?.id,
-                            })
-                          }
-                          style={[
-                            styles.usersItem,
-                            {
-                              backgroundColor:
-                                item?.id === newJobData?.userCreateJobId
-                                  ? '#e8f0fe'
-                                  : 'transparent',
-                            },
-                          ]}
-                        >
-                          <View style={styles.avatarContainer}>
-                            <Image
-                              source={{ uri: item?.avatar }}
-                              style={styles.avatar}
-                            />
-                          </View>
-                          <View style={styles.nameContainer}>
-                            <Text style={styles.fullName}>
-                              {item?.fullName}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                      ))}
+                      {account.role.roleName === "ROLE_ADMIN"? allAccount
+                        ?.filter(
+                          (item) => item.role.roleName === 'ROLE_ADMIN'||
+                          item.active === false,
+                        )
+                        .map((item) => (
+                          <TouchableOpacity
+                            key={item.user.id}
+                            onPress={() =>
+                              setNewJobData({
+                                ...newJobData,
+                                userCreateJobId: item.user.id,
+                              })
+                            }
+                            style={[
+                              styles.usersItem,
+                              {
+                                backgroundColor:
+                                  item.user.id === newJobData.userCreateJobId
+                                    ? '#e8f0fe'
+                                    : 'transparent',
+                              },
+                            ]}
+                          >
+                            <View style={styles.avatarContainer}>
+                              <Image
+                                source={{ uri: item.user.avatar }}
+                                style={styles.avatar}
+                              />
+                            </View>
+                            <View style={styles.nameContainer}>
+                              <Text style={styles.fullName}>
+                                {item.user.fullName}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        )): account.user?.staffs?.map((item) => (
+                          <TouchableOpacity
+                            key={item.id}
+                            onPress={() =>
+                              setNewJobData({
+                                ...newJobData,
+                                userCreateJobId: item.id,
+                              })
+                            }
+                            style={[
+                              styles.usersItem,
+                              {
+                                backgroundColor:
+                                  item.id === newJobData.userCreateJobId
+                                    ? '#e8f0fe'
+                                    : 'transparent',
+                              },
+                            ]}
+                          >
+                            <View style={styles.avatarContainer}>
+                              <Image
+                                source={{ uri: item.user.avatar }}
+                                style={styles.avatar}
+                              />
+                            </View>
+                            <View style={styles.nameContainer}>
+                              <Text style={styles.fullName}>
+                                {item.user.fullName}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        ))}
                     </ScrollView>
                     <View
                       style={{
@@ -527,10 +603,14 @@ function CreateJob() {
                         onPress={() => setShowModal2(false)}
                         style={styles.closeButton}
                       >
-                        <Text style={{
+                        <Text
+                          style={{
                             color: 'white',
-                            fontSize: 16
-                          }}>Đóng</Text>
+                            fontSize: 16,
+                          }}
+                        >
+                          Đóng
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   </View>

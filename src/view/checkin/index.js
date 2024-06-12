@@ -72,7 +72,7 @@ const CheckInOutPage = () => {
       const netInfo = await NetInfo.fetch()
       const ipAddress = netInfo.details.ipAddress
 
-      const allowedNetworks = ['192.168.69', '192.168.1']
+      const allowedNetworks = ['192.168.69', '192.168.110']
 
       const ipPrefix = ipAddress.split('.').slice(0, 3).join('.')
 

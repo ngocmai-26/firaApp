@@ -35,6 +35,7 @@ const ManagerKPIs = () => {
 
   useLayoutEffect(() => {
     dispatch(getAllJob(0))
+    dispatch(getAllKPI());
   }, [])
 
   const [currentPage, setCurrentPage] = useState(paginationKPI.number)
@@ -67,6 +68,8 @@ const ManagerKPIs = () => {
       return item.user.id === account.user.id
     }
   })
+
+  console.log("allKPI", allKPI)
 
   return (
     <View style={styles.container}>

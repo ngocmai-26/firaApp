@@ -6,15 +6,16 @@ import {
   evaluateJob,
   updateEvaluateJob,
   updateJob,
+  userJob,
   verifyProgress,
 } from '../../thunks/JobsThunk'
 
 const EValueJobModal = ({ handleHiddenEValue, evaluateData }) => {
   const dispatch = useDispatch()
   const eValueList = [
-    { id: 1, value: 'BAD', eValuate: 'Xấu', bg: 'red' },
-    { id: 2, value: 'MEDIUM', eValuate: 'Trung Bình', bg: 'amber' },
-    { id: 3, value: 'GOOD', eValuate: 'Tốt', bg: 'green' },
+    { id: 1, value: 'BAD', eValuate: 'Xấu', bg: '#E68A8C' },
+    { id: 2, value: 'MEDIUM', eValuate: 'Trung Bình', bg: '#F59E0B' },
+    { id: 3, value: 'GOOD', eValuate: 'Tốt', bg: '#22C55E' },
   ]
   const [evaluateJobData, setEvaluateJobData] = useState({})
   const [evaluateDetailData, setEvaluateDetailData] = useState({})
@@ -56,54 +57,48 @@ const EValueJobModal = ({ handleHiddenEValue, evaluateData }) => {
   }
 
   const handleSubmitEvaluate = () => {
-    evaluateJobData.status = 'DONE'
-    dispatch(verifyProgress(evaluateJobData.id)).then((reps) => {
-      if (!reps?.error) {
+    dispatch(
+      userJob({
+        id: evaluateData.id,
+        data: {
+          userId: evaluateData.userJobs[0]?.user.id,
+          progress: +evaluateData?.userJobs[0]?.progress,
+          status: "DONE",
+          instructionLink: evaluateData?.userJobs[0]?.instructionLink,
+          verifyLink: "",
+          denyReason: evaluateData?.userJobs[0]?.denyReason || "", // Sử dụng denyReason từ userJobs[0]
+        },
+      })
+    ).then((reps) => {
+      if(!reps.error) {
         dispatch(
-          updateJob({ id: evaluateJobData.id, data: evaluateJobData }),
-        ).then((resp) => {
-          if (!resp?.error) {
-            dispatch(
-              updateEvaluateJob({
-                id: evaluateJobData.id,
-                data: evaluateDetailData,
-              }),
-            ).then((resp) => {
-              if (!resp?.error) {
-                handleHiddenEValue()
-              }
-            })
+          evaluateJob({ id: evaluateData.id, data: { jobEvaluate: eValuate } })
+        ).then((reps) => {
+          if (!reps.error) {
+            handleHiddenEValue();
           }
-        })
+        });
       }
-    })
+    });
   }
 
   const handleReassess = () => {
-    const updatedStatus = {
-      ...evaluateJobData,
-      progress: 0,
-      status: 'PROCESSING',
-    }
-    const updatedDetailStatus = {
-      ...evaluateDetailData,
-      note: '',
-      verifyLink: '',
-    }
     dispatch(
-      updateEvaluateJob({
-        id: evaluateJobData.id,
-        data: updatedDetailStatus,
-      }),
-    ).then((resp) => {
-      if (!resp?.error) {
-        dispatch(
-          ReassessJob({ id: evaluateJobData.id, data: updatedStatus }),
-        ).then((resp) => {
-          if (!resp?.error) {
-            handleHiddenEValue()
-          }
-        })
+      userJob({
+        id: evaluateData.id,
+        data: {
+          userId: evaluateData.userJobs[0]?.user.id,
+          progress: +evaluateData?.userJobs[0]?.progress,
+          status: "PROCESSING",
+          instructionLink:
+            evaluateData?.userJobs[0]?.instructionLink,
+          verifyLink: "reassess",
+          denyReason: evaluateData?.userJobs[0]?.denyReason || "", // Sử dụng denyReason từ userJobs[0]
+        },
+      })
+    ).then((reps) => {
+      if (!reps.error) {
+        handleHiddenEValue();
       }
     })
   }
@@ -118,7 +113,7 @@ const EValueJobModal = ({ handleHiddenEValue, evaluateData }) => {
               onPress={() => handleHiddenEValue()}
               style={styles.closeButton}
             >
-              <Text style={styles.closeButtonText}>Đóng</Text>
+              <Text style={styles.closeButtonText}>X</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.content}>
@@ -137,10 +132,10 @@ const EValueJobModal = ({ handleHiddenEValue, evaluateData }) => {
                   style={[
                     styles.eValueButton,
                     {
-                      backgroundColor:
-                        evaluateDetailData?.jobEvaluate === item.value
-                          ? 'blue'
-                          : 'gray',
+                      backgroundColor:  evaluateDetailData?.jobEvaluate === item.value? item.bg: "white",
+                      borderColor: item.bg,
+                      color: item.bg,
+                      borderWidth: 1,
                     },
                   ]}
                   onPress={() => handleEValuate(item.value)}
@@ -230,7 +225,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   eValueButtonText: {
-    color: 'white',
     fontSize: 12,
   },
   footer: {

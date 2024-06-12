@@ -131,6 +131,8 @@ export const updateStatus = createAsyncThunk(
           text1: resp?.defaultMessage ?? 'Update plan error ',
         })
       }
+      
+      console.log("data", resp)
     } catch (e) {
       console.log(e)
     }

@@ -6,39 +6,46 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native'
-import { useDispatch } from 'react-redux'
-import { updateDetailJob, updateJob } from '../../thunks/JobsThunk'
+import { useDispatch, useSelector } from 'react-redux'
+import { updateDetailJob, updateJob, userJob } from '../../thunks/JobsThunk'
 
 const ReportJobModel = ({ handleHiddenReport, report }) => {
+  const { user } = useSelector((state) => state.authReducer);
   const [dataReportJob, setDataReportJob] = useState({
-    note: '',
+    note: "",
     progress: 0,
-    instructionLink: '',
+    instructionLink: "",
+    denyReason: ""
   })
 
   const dispatch = useDispatch()
 
   const handleSubmit = () => {
-    dispatch(
-      updateJob({
-        id: report.id,
-        data: { progress: dataReportJob?.progress, status: 'PROCESSING' },
-      }),
-    ).then((reps) => {
-      if (!reps.error) {
-        dispatch(
-          updateDetailJob({
-            id: report.id,
-            data: {
-              note: dataReportJob?.note,
-              instructionLink: dataReportJob?.instructionLink,
-            },
-          }),
-        ).then((reps) => {
-          handleHiddenReport()
-        })
-      }
+    console.log({
+      userId: user.id,
+      progress: +dataReportJob?.progress,
+      status: "PROCESSING",
+      instructionLink: dataReportJob?.instructionLink,
+      verifyLink: "",
+      denyReason: dataReportJob?.denyReason,
     })
+    // dispatch(
+    //   userJob({
+    //     id: report.id,
+    //     data: {
+    //       userId: user.id,
+    //       progress: +dataReportJob?.progress,
+    //       status: "PROCESSING",
+    //       instructionLink: dataReportJob?.instructionLink,
+    //       verifyLink: "",
+    //       denyReason: dataReportJob?.denyReason,
+    //     },
+    //   })
+    // ).then((reps) => {
+    //   if (!reps.error) {
+    //     handleHiddenReport()
+    //   }
+    // })
   }
 
   return (
@@ -50,7 +57,7 @@ const ReportJobModel = ({ handleHiddenReport, report }) => {
             onPress={handleHiddenReport}
             style={styles.closeButton}
           >
-            <Text style={styles.closeButtonText}>Đóng</Text>
+            <Text style={styles.closeButtonText}>X</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.content}>
@@ -58,9 +65,9 @@ const ReportJobModel = ({ handleHiddenReport, report }) => {
             <TextInput
               style={styles.input}
               placeholder="Công việc đã hoàn thành"
-              value={dataReportJob.note}
+              value={dataReportJob.denyReason}
               onChangeText={(text) =>
-                setDataReportJob({ ...dataReportJob, note: text })
+                setDataReportJob({ ...dataReportJob, denyReason: text })
               }
             />
             <TextInput
@@ -81,8 +88,12 @@ const ReportJobModel = ({ handleHiddenReport, report }) => {
               keyboardType="numeric"
             />
           </View>
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Lưu</Text>
+          
+          <TouchableOpacity
+            style={styles.createButton}
+            onPress={handleSubmit}
+          >
+            <Text style={styles.createButtonText}>Lưu</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -102,7 +113,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    width: '80%',
+    width: '90%',
     backgroundColor: 'white',
     borderRadius: 8,
     paddingHorizontal: 16,
@@ -117,7 +128,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   closeButton: {
@@ -145,10 +156,17 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     alignItems: 'center',
   },
-  buttonText: {
+  createButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  
+  createButton: {
+    backgroundColor: '#2089dc',
+    padding: 12,
+    borderRadius: 5,
+    alignItems: 'center',
   },
 })
 

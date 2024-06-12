@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import {
   View,
   Text,
@@ -18,6 +18,8 @@ import DetailJob from './detail'
 import Icon from 'react-native-vector-icons/FontAwesome6'
 import moment from 'moment'
 import { useNavigation } from '@react-navigation/native'
+import EValueJobModal from '../../../models/jobs/EValateJobModal'
+import ReportJobModel from '../../../models/jobs/ReportJobModal'
 
 const ManagerJobs = () => {
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -51,15 +53,17 @@ const ManagerJobs = () => {
 
   const tabs = [
     { id: 'allTasks', label: 'Tất cả công việc' },
-    { id: 'plan', label: 'Kế hoạch' },
-    { id: 'due', label: 'Đến hạn' },
-    { id: 'inProgress', label: 'Đang tiến hành' },
+    { id: 'planning', label: 'Công việc đang thực hiện' },
+    { id: 'report', label: 'Đánh giá công việc' },
     { id: 'completed', label: 'Đã hoàn thành' },
   ]
+
+  const [filteredJobs, setFilteredJobs] = useState([])
 
   const handleTabChange = (tab) => {
     setCurrentTab(tab)
     setIsModalVisible(false)
+    setFilteredJobs([])
   }
 
   const handlePrevPage = () => {
@@ -83,16 +87,109 @@ const ManagerJobs = () => {
       }
     })
   }
-  const filteredJobs = allJob.filter((item) => {
-    if (account?.role?.roleName === 'ROLE_ADMIN') {
-      return true
+
+  const [hiddenEValue, isHiddenEValue] = useState(false)
+  const [evaluateData, setEvaluateData] = useState({})
+  const handleHiddenEValue = (item) => {
+    isHiddenEValue(!hiddenEValue)
+    setEvaluateData(item)
+  }
+
+  const [isHiddenReport, setIsHiddenReport] = useState(false)
+  const [report, setReport] = useState({})
+
+  const handleHiddenReport = (item) => {
+    setReport(item)
+    setIsHiddenReport(!isHiddenReport)
+  }
+
+  useEffect(() => {
+    const addedJobIds = new Set()
+    let filteredData = []
+    const filteredList = []
+
+    if (currentTab?.id === 'planning') {
+      // Lọc công việc đang thực hiện
+      filteredData = allJob
+        .filter((item) =>
+          item.userJobs.some((userJob) => {
+            const condition =
+              account?.role?.roleName === 'ROLE_ADMIN'
+                ? userJob.status === 'PROCESSING'
+                : userJob.user.id === account?.user?.id &&
+                  userJob.status === 'PROCESSING'
+            return condition 
+          }),
+        )
+        .map((item) => {
+          addedJobIds.add(item.id)
+          const userJobs = item.userJobs.filter((userJob) => {
+            return account?.role?.roleName === 'ROLE_ADMIN'
+              ? userJob.status === 'PROCESSING'
+              : userJob.user.id === account?.user?.id &&
+                  userJob.status === 'PROCESSING' ||
+                  userJob?.verifyLink === "reassess"
+          })
+
+          return { ...item, userJobs }
+        })
+    } else if (currentTab?.id === 'report') {
+      // Lọc công việc cần đánh giá
+      allJob.forEach((job) => {
+        job.userJobs.forEach((userJob) => {
+          if (
+            account.role.roleName === 'ROLE_ADMIN' ||
+            account.user.id === job.manager.id
+          ) {
+            const shouldRender =
+              userJob.status === 'PROCESSING' &&
+              userJob.cachedProgress !== 0 &&
+              userJob.verifyLink === '' &&
+              userJob.jobEvaluate === null
+            if (shouldRender) {
+              filteredData.push({
+                ...job,
+                userJobs: [userJob],
+              })
+            }
+          }
+        })
+      })
+    } else if (currentTab?.id === 'completed') {
+      // Lọc công việc đã hoàn thành
+
+      allJob.forEach((job) => {
+        job.userJobs.forEach((userJob) => {
+          if (
+            account.role.roleName === 'ROLE_ADMIN' ||
+            account.user.id === job.manager.id
+          ) {
+            const shouldRender = userJob.status === 'DONE'
+            if (shouldRender) {
+              filteredData.push({
+                ...job,
+                userJobs: [userJob],
+              })
+            }
+          }
+        })
+      })
     } else {
-      return (
-        item.staffs.some((staff) => staff.id === account?.user?.id) ||
-        item.manager.id === account?.user?.id
-      )
+      // Hiển thị tất cả công việc
+      filteredData = allJob.filter((item) => {
+        if (account?.role?.roleName === 'ROLE_ADMIN') {
+          return true
+        } else {
+          return (
+            item.userJobs.some(
+              (userJob) => userJob.user.id === account?.user?.id,
+            ) || item.manager.id === account?.user?.id
+          )
+        }
+      })
     }
-  })
+    setFilteredJobs(filteredData)
+  }, [currentTab, allJob, account])
 
   return (
     <View style={styles.container}>
@@ -116,11 +213,8 @@ const ManagerJobs = () => {
         <View style={[styles.content, { height: '90%' }]}>
           <ScrollView style={[styles.taskContainer, { height: '100%' }]}>
             {filteredJobs?.map((item, index) => (
-              <TouchableOpacity
-                style={[styles.job, styles.jobContainer]}
-                onPress={() => handleDetailJob(item.id)}
-              >
-                {item.manager.id === account.user.id && (
+              <View key={index} style={[styles.job, styles.jobContainer]}>
+                {item?.manager?.id === account?.user?.id && (
                   <View style={{ position: 'absolute', top: 0, right: 0 }}>
                     <Icon
                       name="crown"
@@ -155,20 +249,20 @@ const ManagerJobs = () => {
                     <Text
                       style={[
                         styles.lineJob,
-                        { fontWeight: 500, fontSize: 15 },
+                        { fontWeight: '500', fontSize: 15 },
                       ]}
                     >
                       Người phụ trách:
                     </Text>
                     <Text style={[styles.lineJob, { color: 'red' }]}>
-                      {item.manager.fullName}
+                      {item?.manager?.fullName}
                     </Text>
                   </View>
                   <View style={{ gap: 2 }}>
                     <Text
                       style={[
                         styles.lineJob,
-                        { fontWeight: 500, fontSize: 15 },
+                        { fontWeight: '500', fontSize: 15 },
                       ]}
                     >
                       Người thực hiện:
@@ -176,11 +270,13 @@ const ManagerJobs = () => {
                     <Text
                       style={[
                         styles.lineJob,
-                        { fontWeight: 400, fontSize: 15 },
+                        { fontWeight: '400', fontSize: 15 },
                       ]}
                     >
-                      {item.staffs.length !== 0
-                        ? item.staffs.map((props) => props.fullName)
+                      {item?.userJobs?.length !== 0
+                        ? item?.userJobs
+                            .map((userJob) => userJob?.user?.fullName)
+                            .join(', ')
                         : 'Chưa có người thực hiện'}
                     </Text>
                   </View>
@@ -203,24 +299,114 @@ const ManagerJobs = () => {
                     </Text>
                     <Text style={{ fontSize: 12, color: '#888' }}>
                       Đến ngày:{' '}
-                      {moment(item?.jobDetail?.timeStart).format('DD-MM-YYYY')}
+                      {moment(item?.jobDetail?.timeEnd).format('DD-MM-YYYY')}
                     </Text>
                   </View>
                 </View>
                 <View style={styles.optionsBox}>
-                  <TouchableOpacity>
-                    {/* <Ionicons
-                      name="checkmark-done-circle"
-                      size={24}
-                      color="green"
-                    /> */}
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: 'white',
+                      borderWidth: 1,
+                      borderColor: '#58AD69',
+                      padding: 7,
+                      marginLeft: 5,
+                      borderRadius: 5,
+                      elevation: 5,
+                    }}
+                    onPress={() => handleDetailJob(item?.id)}
+                  >
+                    <Text style={{ color: '#58AD69', fontSize: 12 }}>
+                      Chi tiết
+                    </Text>
                   </TouchableOpacity>
-                  {/* <TouchableOpacity 
-                  onPress={() => dispatch(deleteJob(item.id))}>
-                    <Text>X</Text>
-                  </TouchableOpacity> */}
+                  {currentTab?.id === 'planning' && (
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: 'white',
+                        borderWidth: 1,
+                        borderColor: '#e97254',
+                        padding: 7,
+                        marginLeft: 5,
+                        borderRadius: 5,
+                        elevation: 5,
+                      }}
+                      onPress={() => handleHiddenReport(item)}
+                    >
+                      <Text style={{ color: '#e97254', fontSize: 12 }}>
+                        Báo cáo
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  {currentTab?.id === 'report' && (
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: 'white',
+                        padding: 7,
+                        borderRadius: 5,
+                        elevation: 5,
+                        marginLeft: 5,
+                        borderColor: '#17103a',
+                        borderWidth: 1,
+                      }}
+                      onPress={() => handleHiddenEValue(item)}
+                    >
+                      <Text style={{ color: '#17103a', fontSize: 12 }}>
+                        Đánh giá
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  {currentTab?.id === 'completed' && (
+                    <View
+                      style={{
+                        backgroundColor: '#17103a',
+                        padding: 7,
+                        borderRadius: 5,
+                        elevation: 5,
+                        marginLeft: 5,
+                        borderColor: '#17103a',
+                        borderWidth: 1,
+                      }}
+                    >
+                      <Text style={{ color: 'white', fontSize: 12 }}>
+                        Đã đánh giá
+                      </Text>
+                    </View>
+                  )}
+                  {currentTab?.id === 'allTasks' && (
+                    <View style={{ flexDirection: 'row' }}>
+                      <TouchableOpacity
+                        style={{
+                          borderColor: 'red',
+                          padding: 5,
+                          borderRadius: 5,
+                          borderWidth: 1,
+                          backgroundColor: 'white',
+                          elevation: 5,
+                        }}
+                        onPress={() => handleDelete(singleJob?.id)}
+                      >
+                        <Text style={{ color: 'red', fontSize: 12 }}>Xóa</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: 'white',
+                          borderWidth: 1,
+                          borderColor: '#3b82f6',
+                          padding: 7,
+                          marginLeft: 5,
+                          borderRadius: 5,
+                          elevation: 5,
+                        }}
+                      >
+                        <Text style={{ color: '#3b82f6', fontSize: 12 }}>
+                          Chỉnh sửa
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
-              </TouchableOpacity>
+              </View>
             ))}
           </ScrollView>
         </View>
@@ -244,7 +430,7 @@ const ManagerJobs = () => {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.modalItem}
-                  onPress={() => handleTabChange(item?.id)}
+                  onPress={() => handleTabChange(item)}
                 >
                   <Text>{item.label}</Text>
                 </TouchableOpacity>
@@ -254,6 +440,20 @@ const ManagerJobs = () => {
           </View>
         </View>
       </Modal>
+
+      {hiddenEValue && (
+        <EValueJobModal
+          handleHiddenEValue={handleHiddenEValue}
+          evaluateData={evaluateData}
+        />
+      )}
+
+      {isHiddenReport && (
+        <ReportJobModel
+          handleHiddenReport={handleHiddenReport}
+          report={report}
+        />
+      )}
 
       {hiddenDetail && <DetailJob handleDetailJob={handleDetailJob} />}
       {/* <DetailJob setHiddenDetail={setHiddenDetail} /> */}
@@ -410,6 +610,15 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
   },
+  optionsBox: {
+    flexDirection: 'row',
+    gap: 5,
+    borderTopWidth: 1,
+    borderTopColor: '#ccc',
+    marginTop: 10,
+    paddingTop: 5,
+    justifyContent: 'flex-end',
+  },
   nameContainer: {
     flex: 1,
   },
@@ -429,9 +638,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   job: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 15,

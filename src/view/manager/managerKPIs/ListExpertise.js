@@ -97,7 +97,7 @@ const ListExpertise = () => {
           <ScrollView style={[styles.taskContainer, { height: '100%' }]}>
             {allKPI?.map(
               (item, index) =>
-                item.description === 'EVALUATE' && (
+                item.description === 'EVALUATE' && (account?.user?.staffs?.some(staff => staff.id === item?.user?.id) || account?.role?.roleName === "ROLE_ADMIN") &&(
                   <TouchableOpacity
                     style={[styles.job, styles.jobContainer]}
                     onPress={() => handleDetailModal(item.id)}

@@ -52,7 +52,6 @@ const ADMIN_NAVBAR_ITEMS = [
 
 const ANONYMOUS = [
   new AdminSideNavItem(1, '', "chart-pie", 'Dashboards'),
-  new AdminSideNavItem(2, 'quan-ly-tai-khoan', "users-gear", 'Quản lý tài khoản'),
   new AdminSideNavItem(
     3,
     'quan-ly-cong-viec',
@@ -83,7 +82,6 @@ const MANAGER_NAVBAR_ITEMS = [
     "calendar",
     'Quản lý lịch làm việc',
   ),
-  // new AdminSideNavItem(7, 'quan-ly-danh-muc-kpi', "square-pen", ' Quản lý danh mục kpi'),
   new AdminSideNavItem(8, 'quan-ly-kpi', "square-pen", ' Quản lý kpi'),
   new AdminSideNavItem(9, 'checkin', "right-to-bracket", ' Checkin'),
 ]

@@ -1,6 +1,6 @@
-import { useLayoutEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { getAllUsers } from '../../../thunks/UserThunk'
+import { useLayoutEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAllUsers } from '../../../thunks/UserThunk';
 import {
   Dimensions,
   Image,
@@ -9,58 +9,58 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native'
-import { comFirmJob, deleteJob } from '../../../thunks/JobsThunk'
-import EValueJobModal from '../../../models/jobs/EValateJobModal'
-import ReportJobModel from '../../../models/jobs/ReportJobModal'
-import { useNavigation } from '@react-navigation/native'
-import moment from 'moment'
+} from 'react-native';
+import { comFirmJob, deleteJob } from '../../../thunks/JobsThunk';
+import EValueJobModal from '../../../models/jobs/EValateJobModal';
+import ReportJobModel from '../../../models/jobs/ReportJobModal';
+import { useNavigation } from '@react-navigation/native';
+import moment from 'moment';
 
 function DetailJob({ handleDetailJob }) {
-  const { singleJob } = useSelector((state) => state.jobsReducer)
-  const { allUser } = useSelector((state) => state.usersReducer)
-  const { account } = useSelector((state) => state.authReducer)
-  const [isHiddenReport, setIsHiddenReport] = useState(false)
+  const { singleJob } = useSelector((state) => state.jobsReducer);
+  const { allUser } = useSelector((state) => state.usersReducer);
+  const { account } = useSelector((state) => state.authReducer);
+  const [isHiddenReport, setIsHiddenReport] = useState(false);
+  const [report, setReport] = useState({});
+  const [evaluateData, setEvaluateData] = useState({});
+  const [hiddenEValue, setHiddenEValue] = useState(false);
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
 
-  const [report, setReport] = useState({})
-  const [evaluateData, setEvaluateData] = useState({})
-  const [hiddenEValue, isHiddenEValue] = useState(false)
-  const dispatch = useDispatch()
-  const navigation = useNavigation()
   useLayoutEffect(() => {
     if (allUser?.length <= 0) {
-      dispatch(getAllUsers())
+      dispatch(getAllUsers());
     }
-  }, [])
+  }, [allUser, dispatch]);
 
   const handleConfirm = (item) => {
     dispatch(comFirmJob({ id: item, data: { status: 'PROCESSING' } })).then(
       (reps) => {
         if (!reps.error) {
-          handleDetailJob()
+          handleDetailJob();
         }
-      },
-    )
-  }
-  console.log('singleJob', singleJob)
+      }
+    );
+  };
 
   const handleHiddenReport = (item) => {
-    setReport(item)
-    setIsHiddenReport(!isHiddenReport)
-  }
+    setReport(item);
+    setIsHiddenReport(!isHiddenReport);
+  };
 
   const handleHiddenEValue = (item) => {
-    isHiddenEValue(!hiddenEValue)
-    setEvaluateData(item)
-  }
+    setHiddenEValue(!hiddenEValue);
+    setEvaluateData(item);
+  };
 
   const handleDelete = (item) => {
     dispatch(deleteJob(item)).then((reps) => {
       if (!reps.error) {
-        navigation.navigate('quan-ly-cong-viec')
+        navigation.navigate('quan-ly-cong-viec');
       }
-    })
-  }
+    });
+  };
+
   return (
     <View
       style={{
@@ -74,9 +74,7 @@ function DetailJob({ handleDetailJob }) {
         alignItems: 'center',
       }}
     >
-      <ScrollView
-        style={{ padding: 20, width: Dimensions.get('window').width }}
-      >
+      <ScrollView style={{ padding: 20, width: Dimensions.get('window').width }}>
         <View
           style={{
             backgroundColor: 'white',
@@ -93,9 +91,7 @@ function DetailJob({ handleDetailJob }) {
                 justifyContent: 'space-between',
               }}
             >
-              <Text
-                style={{ fontSize: 16, fontWeight: '400', color: '#b2b4b6' }}
-              >
+              <Text style={{ fontSize: 16, fontWeight: '400', color: '#b2b4b6' }}>
                 Tiêu đề:
               </Text>
               <View
@@ -111,7 +107,6 @@ function DetailJob({ handleDetailJob }) {
                   padding: 5,
                   marginRight: 2,
                   borderRadius: 5,
-                  
                 }}
               >
                 <Text style={{ color: 'white', fontSize: 12 }}>
@@ -125,7 +120,7 @@ function DetailJob({ handleDetailJob }) {
                 </Text>
               </View>
             </View>
-            <Text style={{ fontSize: 20, fontWeight: '600', marginTop: 15, }}>
+            <Text style={{ fontSize: 20, fontWeight: '600', marginTop: 15 }}>
               {singleJob?.title}
             </Text>
           </View>
@@ -140,9 +135,7 @@ function DetailJob({ handleDetailJob }) {
             <View>
               <Text style={styles.textTitle}>Thời gian bắt đầu:</Text>
               <Text style={{ fontSize: 16 }}>
-                {
-                  moment(singleJob?.jobDetail?.timeStart).format('DD-MM-YYYY')
-                }
+                {moment(singleJob?.jobDetail?.timeStart).format('DD-MM-YYYY')}
               </Text>
             </View>
             <View>
@@ -156,7 +149,15 @@ function DetailJob({ handleDetailJob }) {
           <View style={{ marginBottom: 20 }}>
             <Text style={styles.textTitle}>
               Mức độ:{' '}
-              <Text style={{ color: '#000' }}>{singleJob?.priority}</Text>
+              <Text style={{ color: '#000' }}>
+                {singleJob?.priority === 1
+                  ? 'Cần gấp'
+                  : singleJob?.priority === 2
+                  ? 'Quan trọng'
+                  : singleJob?.priority === 3
+                  ? 'Bình thường'
+                  : 'Ưu tiên sau'}
+              </Text>
             </Text>
             <Text style={styles.textTitle}>
               Trạng thái:{' '}
@@ -212,11 +213,11 @@ function DetailJob({ handleDetailJob }) {
               paddingTop: 10,
             }}
           >
-            {singleJob?.staffs?.length > 0 ? (
-              singleJob?.staffs?.map((item) =>
-                allUser.some((user) => user.id === item.id) ? (
+            {singleJob?.userJobs?.length > 0 ? (
+              singleJob?.userJobs?.map((item, index) =>
+                allUser.some((user) => user.id === item.user.id) ? (
                   <TouchableOpacity
-                    key={singleJob.id}
+                    key={index}
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -224,7 +225,7 @@ function DetailJob({ handleDetailJob }) {
                     }}
                   >
                     <Image
-                      source={{ uri: item?.avatar }}
+                      source={{ uri: item?.user.avatar }}
                       style={{
                         width: 50,
                         height: 50,
@@ -232,14 +233,12 @@ function DetailJob({ handleDetailJob }) {
                         marginRight: 10,
                       }}
                     />
-                    <Text style={{ fontSize: 16 }}>{item?.fullName}</Text>
+                    <Text style={{ fontSize: 16 }}>{item?.user.fullName}</Text>
                   </TouchableOpacity>
-                ) : null,
+                ) : null
               )
             ) : (
-              <Text style={{ color: 'red' }}>
-                Công việc chưa được phân công
-              </Text>
+              <Text style={{ color: 'red' }}>Công việc chưa được phân công</Text>
             )}
           </View>
         </View>
@@ -340,207 +339,47 @@ function DetailJob({ handleDetailJob }) {
           </View>
         )}
 
-        <View
-          style={{
-            backgroundColor: 'white',
-            borderRadius: 10,
-            padding: 10,
-            elevation: 5,
-            marginBottom: 25,
-          }}
-        >
-          <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Thao tác</Text>
-          <View
-            style={{
-              borderTopWidth: 1,
-              borderColor: '#ccc',
-              marginTop: 10,
-              paddingTop: 10,
-              flexDirection: 'row',
-            }}
-          >
-            {account?.role?.id === 3 || account?.role?.id === 1 ? (
-              singleJob.status === 'DONE' &&
-              singleJob?.jobDetail?.jobEvaluate !== null ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                 
-                </View>
-              ) : (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  {(singleJob.jobDetail.note !== '' &&
-                    singleJob.cachedProgress !== 0 &&
-                    singleJob.jobDetail.instructionLink !== '' &&
-                    singleJob.jobDetail.jobEvaluate === null &&
-                    singleJob.status === 'DONE' &&
-                    singleJob.manager.id === account.user.id) ||
-                  account.role.roleName === 'ROLE_ADMIN' ? (
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: 'white',
-                        padding: 7,
-                        borderRadius: 5,
-                        elevation: 5,
-                        marginLeft: 5,
-                        borderColor: '#17103a',
-                        borderWidth: 1,
-                      }}
-                      onPress={() => handleHiddenEValue(singleJob)}
-                    >
-                      <Text style={{ color: '#17103a', fontSize: 12 }}>
-                        Đánh giá
-                      </Text>
-                    </TouchableOpacity>
-                  ) : null}
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: 'white',
-                      borderWidth: 1,
-                      borderColor: '#3b82f6',
-                      padding: 7,
-                      marginLeft: 5,
-                      borderRadius: 5,
-                      elevation: 5,
-                    }}
-                  >
-                    <Text style={{ color: '#3b82f6', fontSize: 12 }}>
-                      Chỉnh sửa
-                    </Text>
-                  </TouchableOpacity>
-                  {singleJob?.status === null ? (
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: 'white',
-                        borderWidth: 1,
-                        borderColor: '#ffd273',
-                        padding: 7,
-                        marginLeft: 5,
-                        borderRadius: 5,
-                        elevation: 5,
-                      }}
-                      onPress={() =>
-                        dispatch(
-                          comFirmJob({
-                            id: singleJob.id,
-                            data: { status: 'PENDING' },
-                          }),
-                        )
-                      }
-                    >
-                      <Text style={{ color: '#ffd273', fontSize: 12 }}>
-                      PENDING
-                      </Text>
-                    </TouchableOpacity>
-                  ) : null}
-                </View>
-              )
-            ) : (
-              <View>
-                {singleJob?.status === 'PROCESSING' &&
-                  singleJob.cachedProgress === 0 &&
-                  singleJob?.staffs.map((staff) => (
-                    <View key={staff.id}>
-                      {staff.id === account?.user?.id ? (
-                        <View style={{ flexDirection: 'row' }}>
-                          <TouchableOpacity
-                            style={{
-                              backgroundColor: 'white',
-                              borderWidth: 1,
-                              borderColor: '#e97254',
-                              padding: 7,
-                              marginLeft: 5,
-                              borderRadius: 5,
-                              elevation: 5,
-                            }}
-                            onPress={() => handleHiddenReport(singleJob)}
-                          >
-                            <Text style={{ color: '#e97254', fontSize: 12 }}>
-                              Báo cáo
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-                      ) : null}
-                    </View>
-                  ))}
-              </View>
-            )}
-
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginHorizontal: 5,
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  borderColor: 'red',
-                  padding: 5,
-                  borderRadius: 5,
-                  borderWidth: 1,
-                  backgroundColor: 'white',
-                  elevation: 5,
-                }}
-                onPress={() => handleDelete(singleJob?.id)}
-              >
-                <Text style={{ color: 'red', fontSize: 12 }}>Xóa</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-        {(singleJob.jobDetail.note &&
+        {((singleJob.jobDetail.note &&
           singleJob.cachedProgress !== 0 &&
           singleJob.jobDetail.instructionLink &&
           singleJob.manager.id === account.user.id) ||
-          (account.role.roleName === 'ROLE_ADMIN' && (
+          (account.role.roleName === 'ROLE_ADMIN')) && (
+          <View
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 10,
+              padding: 10,
+              elevation: 5,
+              marginBottom: 25,
+            }}
+          >
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+              Thao tác đánh giá
+            </Text>
             <View
               style={{
-                backgroundColor: 'white',
-                borderRadius: 10,
-                padding: 10,
-                elevation: 5,
-                marginBottom: 25,
+                borderTopWidth: 1,
+                borderColor: '#ccc',
+                marginTop: 10,
+                paddingTop: 10,
+                flexDirection: 'row',
               }}
             >
-              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
-                Thao tác đánh giá
-              </Text>
-              <View
-                style={{
-                  borderTopWidth: 1,
-                  borderColor: '#ccc',
-                  marginTop: 10,
-                  paddingTop: 10,
-                  flexDirection: 'row',
-                }}
-              >
-                <View style={{ marginBottom: 20 }}>
-                  <Text style={styles.textTitle}>
-                    Điểm tự đánh giá:{' '}
-                    <Text style={{ color: '#000' }}>
-                      {singleJob?.cachedProgress}
-                    </Text>
+              <View style={{ marginBottom: 20 }}>
+                <Text style={styles.textTitle}>
+                  Điểm tự đánh giá:{' '}
+                  <Text style={{ color: '#000' }}>
+                    {singleJob?.cachedProgress}
                   </Text>
-                </View>
+                </Text>
               </View>
             </View>
-          ))}
+          </View>
+        )}
       </ScrollView>
 
-      {hiddenEValue && (
-        <EValueJobModal
-          handleHiddenEValue={handleHiddenEValue}
-          evaluateData={evaluateData}
-        />
-      )}
-      {/* Báo cáo công việc */}
-      {isHiddenReport && (
-        <ReportJobModel
-          handleHiddenReport={handleHiddenReport}
-          report={report}
-        />
-      )}
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -549,6 +388,6 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: '#b2b4b6',
   },
-})
+});
 
-export default DetailJob
+export default DetailJob;
