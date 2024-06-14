@@ -3,6 +3,7 @@ import { API } from "../constants/api"
 import Toast from "react-native-toast-message"
 import { TOAST_ERROR, TOAST_SUCCESS } from "../constants/toast"
 import { setAllKPICategories, setPaginationKPICategories, setSingleKPICategories } from "../slices/KPICategoriesSlice"
+import { loadTokenFromStorage } from "../services/AuthService"
 
 export const getAllKPICategories = createAsyncThunk(
     '/kpisCategories',

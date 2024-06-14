@@ -13,55 +13,33 @@ import {
 import moment from "moment";
 import { useDispatch, useSelector } from "react-redux";
 import Icon from "react-native-vector-icons/FontAwesome6";
-import { GetKPIHistory, updateKPI, updateKPIDetail } from "../../../thunks/KPIsThunk";
+import {
+  GetKPIHistory,
+  updateKPI,
+  updateKPIDetail,
+} from "../../../thunks/KPIsThunk";
 import KPIMoreModal from "../../../models/kpi/KPIMoreModal";
-function DetailKPI({ setIsModalDetail }) {
+function DetailKPIEvaluated({ setIsModalDetail }) {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "DONE":
+        return "#FEA837"; // Màu vàng nhạt
+      case "EVALUATE":
+        return "#A4C3A2"; // Màu xanh lá
+      default:
+        return "#fff";
+    }
+  };
   const { singleKPI } = useSelector((state) => state.kpisReducer);
   const dispatch = useDispatch();
   const [kpiMore, setKPIMore] = useState(false);
-  
-  const [pointValues, setPointValues] = useState({
-    score1: 0,
-    score2: 0,
-  });
-  const [dataUpdate, setDataUpdate] = useState({
-    name: singleKPI?.name,
-    description: singleKPI?.description,
-    target: 0,
-    kpiTypeId: singleKPI?.kpiType?.id,
-  });
-  const [dataUpdateDetail, setDataUpdateDetail] = useState({
-    note: singleKPI?.detail?.note,
-    comment: singleKPI?.detail?.comment,
-    timeStart: moment(singleKPI?.detail?.timeStart).format("YYYY-MM-DD"),
-    timeEnd: moment(singleKPI?.detail?.timeEnd).format("YYYY-MM-DD"),
-  });
-  useEffect(() => {
-    const newTotal = Object.values(pointValues).reduce(
-      (acc, curr) => acc + curr,
-      0
-    );
-    setDataUpdate({ ...dataUpdate, target: newTotal });
-  }, [pointValues]);
-  const handleInputChange = (name, value) => {
-    setPointValues({ ...pointValues, [name]: value });
-  };
+
   const handleMore = (item) => {
     setKPIMore(!kpiMore);
     dispatch(GetKPIHistory(item));
   };
 
-  const handleSubmit = () => {
-    dispatch(updateKPI({id: singleKPI.id, data: {...dataUpdate, description: "DONE"}})).then((reps) => {
-      if (!reps.error) {
-        dispatch(updateKPIDetail({id: singleKPI.id, data:dataUpdateDetail})).then((reps) => {
-          if (!reps.error) {
-            setIsModalDetail(false)
-          }
-        });
-      }
-    });
-  };
+  console.log(singleKPI);
   return (
     <>
       <Modal animationType="slide" transparent={true}>
@@ -72,12 +50,34 @@ function DetailKPI({ setIsModalDetail }) {
                 paddingVertical: 5,
                 borderBottomWidth: 1,
                 borderColor: "#ccc",
+                position: "relative"
               }}
             >
               <Text
                 style={{ fontSize: 22, textAlign: "center", fontWeight: 500 }}
               >
                 {singleKPI.name}
+              </Text>
+            </View>
+            <View
+              style={{
+                borderColor: getStatusColor(singleKPI.description),
+                borderWidth: 1,
+                padding: 3,
+                marginRight: 2,
+                borderRadius: 5,
+                position: "absolute",
+                right: 10,
+                top: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: getStatusColor(singleKPI.description),
+                  fontSize: 10,
+                }}
+              >
+                {singleKPI.description}
               </Text>
             </View>
             <View
@@ -152,20 +152,6 @@ function DetailKPI({ setIsModalDetail }) {
                       {((singleKPI?.user?.checkInPoint / 95) * 5).toFixed(2)} %
                     </Text>
                   </View>
-                  <View style={{ flexDirection: "row" }}>
-                    <Text>THẨM ĐỊNH: </Text>
-                    <TextInput
-                      style={{
-                        borderWidth: 1,
-                        borderColor: "#ccc",
-                        textAlign: "center",
-                      }}
-                      defaultValue={pointValues.score1}
-                      onChange={(e) =>
-                        handleInputChange("score1", +e.target.value)
-                      }
-                    />
-                  </View>
                 </View>
                 <View>
                   <Text style={{ fontWeight: 500 }}>2/</Text>
@@ -192,20 +178,7 @@ function DetailKPI({ setIsModalDetail }) {
                       {((singleKPI?.user?.jobPoint / 95) * 100).toFixed(2)} %
                     </Text>
                   </View>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Text>THẨM ĐỊNH: </Text>
-                    <TextInput
-                      style={{
-                        borderWidth: 1,
-                        borderColor: "#ccc",
-                        textAlign: "center",
-                      }}
-                      defaultValue={pointValues.score2}
-                      onChange={(e) =>
-                        handleInputChange("score2", +e.target.value)
-                      }
-                    />
-                  </View>
+
                   <View style={{ flexDirection: "row" }}>
                     <TouchableOpacity
                       style={{
@@ -259,23 +232,12 @@ function DetailKPI({ setIsModalDetail }) {
                 <View
                   style={{ flexDirection: "row", alignItems: "flex-start" }}
                 >
-                  <TextInput
-                    placeholder="Hãy thêm nhận xét"
-                    onPress={(e) =>
-                      setDataUpdateDetail({
-                        ...dataUpdateDetail,
-                        comment: e.target.value,
-                      })}
-                    style={{
-                      borderWidth: 1,
-                      borderColor: "#ccc",
-                      height: 60,
-                      width: "100%",
-                      paddingHorizontal: 10,
-                      paddingVertical: 2,
-                    }}
-                  />
+                  <Text>{singleKPI?.detail?.comment}</Text>
                 </View>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text>Điểm thẩm định: </Text>
+                <Text>{singleKPI?.target || 0}</Text>
               </View>
             </View>
             <View
@@ -306,27 +268,6 @@ function DetailKPI({ setIsModalDetail }) {
                   Đóng
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: "#f8dea7",
-                  borderWidth: 1,
-                  borderColor: "#f8dea7",
-                  padding: 5,
-                  marginLeft: 5,
-                  borderRadius: 5,
-                  elevation: 5,
-                }}
-                onPress={handleSubmit}
-              >
-                <Text
-                  style={{
-                    color: "white",
-                    fontSize: 16,
-                  }}
-                >
-                  Gửi
-                </Text>
-              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -336,7 +277,7 @@ function DetailKPI({ setIsModalDetail }) {
   );
 }
 
-export default DetailKPI;
+export default DetailKPIEvaluated;
 
 const styles = StyleSheet.create({
   informationPlanContainer: {

@@ -51,7 +51,7 @@ const ADMIN_NAVBAR_ITEMS = [
 ]
 
 const ANONYMOUS = [
-  new AdminSideNavItem(1, '', "chart-pie", 'Dashboards'),
+  new AdminSideNavItem(1, 'dashboard', "chart-pie", 'Dashboards'),
   new AdminSideNavItem(
     3,
     'quan-ly-cong-viec',
@@ -69,7 +69,7 @@ const ANONYMOUS = [
   new AdminSideNavItem(9, 'checkin', "right-to-bracket", ' Checkin'),
 ]
 const MANAGER_NAVBAR_ITEMS = [
-  new AdminSideNavItem(1, '', "chart-pie", 'Dashboards'),
+  new AdminSideNavItem(1, 'dashboard', "chart-pie", 'Dashboards'),
   new AdminSideNavItem(
     3,
     'quan-ly-cong-viec',
@@ -86,7 +86,7 @@ const MANAGER_NAVBAR_ITEMS = [
   new AdminSideNavItem(9, 'checkin', "right-to-bracket", ' Checkin'),
 ]
 const STAFF_NAVBAR_ITEMS = [
-  new AdminSideNavItem(1, '', "chart-pie", 'Dashboards'),
+  new AdminSideNavItem(1, 'dashboard', "chart-pie", 'Dashboards'),
   new AdminSideNavItem(
     3,
     'quan-ly-cong-viec',

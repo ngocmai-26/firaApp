@@ -43,7 +43,7 @@ const GeneralRoute = () => {
           headerShown: false,
         }}
       />
-      <Stack.Screen name="Dashboard" component={Dashboard} />
+      <Stack.Screen name="dashboard" component={Dashboard} />
       <Stack.Screen
         name="register"
         component={Register}

@@ -16,6 +16,7 @@ import PlansSlice from '../slices/PlansSlice'
 import KPIsSlice from '../slices/KPIsSlice'
 import KPICategoriesSlice from '../slices/KPICategoriesSlice'
 import NotificationSlice from '../slices/NotificationSlice'
+import DashboardSlice from '../slices/DashboardSlice'
 
 export const store = configureStore({
   reducer: {
@@ -33,10 +34,10 @@ export const store = configureStore({
     jobsReducer: JobsSlice,
     timeKeepsReducer: TimeKeepsSlice,
     plansReducer: PlansSlice,
-    
     kpisReducer: KPIsSlice,
     kpiCategoriesReducer: KPICategoriesSlice,
     notificationReducer: NotificationSlice,
+    dashboardReducer: DashboardSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),

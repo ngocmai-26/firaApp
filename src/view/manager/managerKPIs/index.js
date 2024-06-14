@@ -17,25 +17,36 @@ import { useNavigation } from '@react-navigation/native'
 import { getAllKPI, getKpisById } from '../../../thunks/KPIsThunk'
 import EvaluateKPIModal from '../../../models/kpi/EvaluateKPIModal'
 import DetailKPI from './detail'
+import DetailKPIEvaluated from './detailKPI'
 
 const ManagerKPIs = () => {
-  const { allKPI, paginationKPI } = useSelector((state) => state.kpisReducer);
-  const { account } = useSelector((state) => state.authReducer);
+  const { allKPI, paginationKPI } = useSelector((state) => state.kpisReducer)
+  const { account } = useSelector((state) => state.authReducer)
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [isModalDetail, setIsModalDetail] = useState(false)
-  
+
   useLayoutEffect(() => {
     if (allKPI?.length <= 0) {
-      dispatch(getAllKPI());
+      dispatch(getAllKPI())
     }
-  }, []);
+  }, [])
   const navigation = useNavigation()
 
   const dispatch = useDispatch()
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'DONE':
+        return '#FEA837' // Màu vàng nhạt
+      case 'EVALUATE':
+        return '#A4C3A2' // Màu xanh lá
+      default:
+        return '#fff'
+    }
+  }
 
   useLayoutEffect(() => {
     dispatch(getAllJob(0))
-    dispatch(getAllKPI());
+    dispatch(getAllKPI())
   }, [])
 
   const [currentPage, setCurrentPage] = useState(paginationKPI.number)
@@ -55,21 +66,23 @@ const ManagerKPIs = () => {
   }
 
   const handleDetailModal = (item) => {
+    console.log(item)
     dispatch(getKpisById(item)).then((reps) => {
-      if(!reps.error) {
+      if (!reps.error) {
         setIsModalDetail(true)
       }
     })
   }
   const filteredKPIs = allKPI.filter((item) => {
-    if (account.role.roleName === 'ROLE_ADMIN' || account.role.roleName === 'ROLE_MANAGER') {
+    if (
+      account.role.roleName === 'ROLE_ADMIN' ||
+      account.role.roleName === 'ROLE_MANAGER'
+    ) {
       return true
     } else {
       return item.user.id === account.user.id
     }
   })
-
-  console.log("allKPI", allKPI)
 
   return (
     <View style={styles.container}>
@@ -93,7 +106,7 @@ const ManagerKPIs = () => {
           <ScrollView style={[styles.taskContainer, { height: '100%' }]}>
             {filteredKPIs?.map((item, index) => (
               <TouchableOpacity
-                style={[styles.job, styles.jobContainer]}
+                style={[styles.job, styles.jobContainer, {position: 'relative'}]}
                 onPress={() => handleDetailModal(item.id)}
               >
                 {/* {item.manager.id === account.user.id && (
@@ -109,13 +122,34 @@ const ManagerKPIs = () => {
                     />
                   </View>
                 )} */}
+                 <View
+                      style={{
+                        borderColor: getStatusColor(item.description),
+                        borderWidth: 1,
+                        padding: 3,
+                        marginRight: 2,
+                        borderRadius: 5,
+                        position: "absolute",
+                        right: 10,
+                        top: 10,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: getStatusColor(item.description),
+                          fontSize: 10,
+                        }}
+                      >
+                        {item.description}
+                      </Text>
+                    </View>
 
                 <View style={{ width: Dimensions.get('window').width * 0.8 }}>
                   <Text style={[styles.jobTitle, styles.lineJob]}>
                     {item?.name}
                   </Text>
                   <Text style={[styles.lineJob, { fontSize: 10 }]}>
-                  {item.user.department}
+                    {item.user.department}
                   </Text>
                   <View
                     style={[styles.lineJob, { flexDirection: 'row', gap: 2 }]}
@@ -132,7 +166,7 @@ const ManagerKPIs = () => {
                       {item.user.fullName}
                     </Text>
                   </View>
-                  <View style={{ flexDirection: 'row',gap: 2 }}>
+                  <View style={{ flexDirection: 'row', gap: 2 }}>
                     <Text
                       style={[
                         styles.lineJob,
@@ -165,15 +199,11 @@ const ManagerKPIs = () => {
                   >
                     <Text style={{ fontSize: 12, color: '#888' }}>
                       Từ ngày:{' '}
-                      {moment(item?.detail?.timeStart).format(
-                                        "DD-MM-YYYY"
-                                      )}
+                      {moment(item?.detail?.timeStart).format('DD-MM-YYYY')}
                     </Text>
                     <Text style={{ fontSize: 12, color: '#888' }}>
                       Đến ngày:{' '}
-                      {moment(item?.detail?.timeEnd).format(
-                                        "DD-MM-YYYY"
-                                      )}
+                      {moment(item?.detail?.timeEnd).format('DD-MM-YYYY')}
                     </Text>
                   </View>
                 </View>
@@ -201,8 +231,10 @@ const ManagerKPIs = () => {
       >
         <MaterialIcons name="add" size={36} color="#fff" />
       </TouchableOpacity>
-      {isModalVisible && <EvaluateKPIModal setIsModalVisible={setIsModalVisible} />}
-{isModalDetail && <DetailKPI setIsModalDetail={setIsModalDetail}/>}
+      {isModalVisible && (
+        <EvaluateKPIModal setIsModalVisible={setIsModalVisible} />
+      )}
+      {isModalDetail && <DetailKPIEvaluated setIsModalDetail={setIsModalDetail} />}
       {paginationKPI?.totalPages > 1 && (
         <View style={styles.containerPagination}>
           <TouchableOpacity

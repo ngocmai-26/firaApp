@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import {
+  Alert,
   Modal,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -9,24 +11,46 @@ import {
 } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import KPIMoreModal from './KPIMoreModal'
-import { GetKPIHistory } from '../../thunks/KPIsThunk'
+import { GetKPIHistory, addNewKpi } from '../../thunks/KPIsThunk'
+import { getAllKPICategories } from '../../thunks/KPICategories'
 import moment from 'moment'
 import Icon from 'react-native-vector-icons/FontAwesome6'
 import DateTimePicker from '@react-native-community/datetimepicker'
+import { Picker } from '@react-native-picker/picker'
 
 function EvaluateKPIModal({ setIsModalVisible }) {
   const { account } = useSelector((state) => state.authReducer)
-  const [sumPoint, setSumPoint] = useState(
-    account.user.checkInPoint + account?.user?.jobPoint,
+  const { allKPICategories } = useSelector(
+    (state) => state.kpiCategoriesReducer,
   )
 
   const [timeEnd, setTimeEnd] = useState(new Date())
   const [timeStart, setTimeStart] = useState(new Date())
+  const [sumPoint, setSumPoint] = useState(
+    account.user.checkInPoint + account?.user?.jobPoint,
+  )
+  const [kpiData, setKPIData] = useState({
+    name: 'KPI - ' + account?.user?.fullName,
+    description: 'EVALUATE',
+    target: +sumPoint.toFixed(0),
+    kpiTypeId: '',
+    note: '',
+    comment: 'none',
+    timeStart: '',
+    timeEnd: '',
+  })
+
+  useLayoutEffect(() => {
+    if (allKPICategories?.length <= 0) {
+      dispatch(getAllKPICategories())
+    }
+    dispatch(getAllKPICategories())
+  }, [])
 
   const [show, setShow] = useState(false)
   const [showStart, setShowStart] = useState(false)
   const [kpiMore, setKPIMore] = useState(false)
-  
+
   const [mode, setMode] = useState('date')
   const [modeStart, setModeStart] = useState('date')
   const dispatch = useDispatch()
@@ -41,8 +65,8 @@ function EvaluateKPIModal({ setIsModalVisible }) {
     setShow(false)
     setTimeEnd(currentDate)
 
-    setNewJobData({
-      ...newJobData,
+    setKPIData({
+      ...kpiData,
       timeEnd: moment(currentDate).format('YYYY-MM-DD'),
     })
   }
@@ -52,8 +76,8 @@ function EvaluateKPIModal({ setIsModalVisible }) {
     setShowStart(false)
     setTimeStart(currentDate)
 
-    setNewJobData({
-      ...newJobData,
+    setKPIData({
+      ...kpiData,
       timeStart: moment(currentDate).format('YYYY-MM-DD'),
     })
   }
@@ -74,11 +98,29 @@ function EvaluateKPIModal({ setIsModalVisible }) {
     showModeStart('date')
   }
 
+  const handleSubmit = () => {
+    if (kpiData.timeEnd < kpiData.timeStart) {
+      Alert.alert("Lỗi", "Ngày kết thúc phải sau ngày bắt đầu!");
+      return;
+    }
+
+    if (kpiData.timeEnd > new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)) {
+      Alert.alert("Lỗi", "Ngày kết thúc không được quá 5 ngày sau ngày hiện tại!");
+      return;
+    }
+
+    dispatch(addNewKpi(kpiData)).then((reps) => {
+      if (!reps.error) {
+        setIsModalVisible(false)
+      }
+    });
+  }
+
   return (
     <>
       <Modal animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+        <ScrollView style={styles.modalContent}>
             <View
               style={{
                 paddingVertical: 5,
@@ -124,6 +166,36 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                       ? 'Nhân viên'
                       : 'Vô danh'}
                   </Text>
+                </View>
+                <View>
+                  <Text>Loại đánh giá: </Text>
+                  <View
+                    style={{
+                      borderWidth: 1,
+                      borderRadius: 10,
+                      borderColor: '#CCCCCC',
+                    }}
+                  >
+                    <Picker
+                      selectedValue={kpiData.kpiTypeId}
+                      onValueChange={(e) =>
+                        setKPIData({
+                          ...kpiData,
+                          kpiTypeId: e,
+                        })
+                      }
+                    >
+                      {
+                        allKPICategories.map((item) => (
+                          <Picker.Item label={item.name} value={item.id} />
+                        ))
+                      }
+                      {/* <Picker.Item label="Chọn loại lịch trình" value="hhhh" />
+                      <Picker.Item label="Ngày" value="DAY" />
+                      <Picker.Item label="Tháng" value="MONTH" /> */}
+                      {/* <Picker.Item label="Năm" value="YEAR" /> */}
+                    </Picker>
+                  </View>
                 </View>
                 <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
                   <Text>Email: </Text>
@@ -174,7 +246,7 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                     />
                   )}
                 </View>
-                <View style={{ flexDirection: 'row',  paddingVertical: 5}}>
+                <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
                   <Text>Ngày kết thúc: </Text>
                   <View
                     style={{
@@ -229,7 +301,7 @@ function EvaluateKPIModal({ setIsModalVisible }) {
               <Text style={{ fontWeight: 500 }}>Danh sách đánh giá KPI</Text>
               <View>
                 <Text style={{ fontWeight: 500 }}>1/</Text>
-                <View style={{ paddingVertical: 5}}>
+                <View style={{ paddingVertical: 5 }}>
                   <Text>TIÊU CHÍ ĐÁNH GIÁ: </Text>
                   <Text style={{ fontSize: 18, color: '#AAAAAA' }}>
                     Tuân thủ giờ giấc làm việc{' '}
@@ -311,6 +383,36 @@ function EvaluateKPIModal({ setIsModalVisible }) {
             </View>
             <View
               style={{
+                paddingVertical: 5,
+                borderBottomWidth: 1,
+                borderColor: '#ccc',
+              }}
+            >
+              <Text>Ghi chú</Text>
+              <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 2,
+                borderWidth: 1,
+                borderColor: "#ccc",
+                paddingVertical: 2,
+                paddingHorizontal: 10,
+                borderRadius: 10,
+              }}
+            >
+              <TextInput
+              multiline={true}
+              numberOfLines={3}
+              defaultValue={kpiData.note}
+              style={styles.textInput}
+              placeholder="Ghi chú cho người đánh giá lưu ý"
+              onChangeText={(text) => setKPIData({ ...kpiData, note: text })}
+            />
+            </View>
+            </View>
+            <View
+              style={{
                 flexDirection: 'row',
                 justifyContent: 'flex-end',
                 marginVertical: 15,
@@ -347,6 +449,7 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                   borderRadius: 5,
                   elevation: 5,
                 }}
+                onPress={handleSubmit}
               >
                 <Text
                   style={{
@@ -358,7 +461,7 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
+            </ScrollView>
         </View>
       </Modal>
       {kpiMore && <KPIMoreModal handleMore={handleMore} />}

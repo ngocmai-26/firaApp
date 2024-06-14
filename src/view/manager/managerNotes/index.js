@@ -59,7 +59,6 @@ export default function NotesApp() {
     { id: 'completed', label: 'Đã hoàn thành' },
   ]
 
-
   const handleGetPlanById = (item) => {
     dispatch(getPlanById(item.id)).then((reps) => {
       if (!reps.error) {
@@ -73,7 +72,7 @@ export default function NotesApp() {
       setShowUpdateBox(!showUpdateBox)
     })
   }
-  
+
   const [filteredJobs, setFilteredJobs] = useState([])
 
   const handleTabChange = (tab) => {
@@ -82,63 +81,79 @@ export default function NotesApp() {
     setFilteredJobs([])
   }
   useEffect(() => {
-    let filtered = [];
+    let filtered = []
 
-    if (currentTab.id === 'allTasks' && account.role.roleName === 'ROLE_ADMIN') {
-      filtered = allPlan;
-    } else if (currentTab.id === 'planning' && account.role.roleName !== 'ROLE_ADMIN') {
-      filtered = allPlan.filter(plan => {
-        if (plan.status === 'ACTIVE' && (account.user.id === plan.creator.id ||
-          plan.planJobs.some(job =>
-            job.userJobs.some(userJob => userJob.user.id === account.user.id)
-          ))) {
-          return true;
+    if (
+      currentTab.id === 'allTasks' &&
+      account.role.roleName === 'ROLE_ADMIN'
+    ) {
+      filtered = allPlan
+    } else if (
+      currentTab.id === 'planning' &&
+      account.role.roleName !== 'ROLE_ADMIN'
+    ) {
+      filtered = allPlan.filter((plan) => {
+        if (
+          plan.status === 'ACTIVE' &&
+          (account.user.id === plan.creator.id ||
+            plan.planJobs.some((job) =>
+              job.userJobs.some(
+                (userJob) => userJob.user.id === account.user.id,
+              ),
+            ))
+        ) {
+          return true
         }
-        return false;
-      });
+        return false
+      })
     } else if (currentTab.id === 'completed') {
-      filtered = allPlan.filter(plan => {
-        if (plan.status === 'DISABLE' && (account.user.id === plan.creator.id ||
-          plan.planJobs.some(job =>
-            job.userJobs.some(userJob => userJob.user.id === account.user.id)
-          ))) {
-          return true;
+      filtered = allPlan.filter((plan) => {
+        if (
+          plan.status === 'DISABLE' &&
+          (account.user.id === plan.creator.id ||
+            plan.planJobs.some((job) =>
+              job.userJobs.some(
+                (userJob) => userJob.user.id === account.user.id,
+              ),
+            ))
+        ) {
+          return true
         }
-        return false;
-      });
+        return false
+      })
     } else {
-      filtered = allPlan.filter(plan => {
+      filtered = allPlan.filter((plan) => {
         if (account.user.id === plan.creator.id) {
-          return true;
+          return true
         }
-        return plan.planJobs.some(job =>
-          job.userJobs.some(userJob => userJob.user.id === account.user.id)
-        );
-      });
+        return plan.planJobs.some((job) =>
+          job.userJobs.some((userJob) => userJob.user.id === account.user.id),
+        )
+      })
     }
 
-    setFilteredJobs(filtered);
-  }, [currentTab, allPlan, account]);
+    setFilteredJobs(filtered)
+  }, [currentTab, allPlan, account])
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-      <View style={styles.tabBar}>
-        <TouchableOpacity
-          style={styles.tabButton}
-          onPress={() => setIsModalVisible(true)}
-        >
-          <Icon
-            name="filter"
-            size={23}
-            style={{
-              color: '#bdc6cf',
-              alignItems: 'center',
-              marginVertical: 'auto',
-            }}
-          />
-        </TouchableOpacity>
-      </View>
+        <View style={styles.tabBar}>
+          <TouchableOpacity
+            style={styles.tabButton}
+            onPress={() => setIsModalVisible(true)}
+          >
+            <Icon
+              name="filter"
+              size={23}
+              style={{
+                color: '#bdc6cf',
+                alignItems: 'center',
+                marginVertical: 'auto',
+              }}
+            />
+          </TouchableOpacity>
+        </View>
         {/* <TouchableOpacity
           style={[
             styles.headerButton,
@@ -162,10 +177,7 @@ export default function NotesApp() {
       <ScrollView style={styles.notesContainer}>
         {showPlannedNotes
           ? filteredJobs?.map((note, index) => (
-              <View
-                key={index}
-                style={[styles.note]}
-              >
+              <View key={index} style={[styles.note]}>
                 <View style={{ paddingVertical: 10 }}>
                   <View
                     style={[
@@ -180,6 +192,7 @@ export default function NotesApp() {
                       style={{
                         fontWeight: 'bold',
                         fontSize: 16,
+                        width: "90%"
                       }}
                     >
                       {note.title}
@@ -188,10 +201,12 @@ export default function NotesApp() {
                       style={{
                         borderColor: getStatusColor(note.status),
                         borderWidth: 1,
-
                         padding: 3,
                         marginRight: 2,
                         borderRadius: 5,
+                        position: "absolute",
+                        right: 10,
+                        top: 10,
                       }}
                     >
                       <Text
@@ -273,7 +288,7 @@ export default function NotesApp() {
                         </Text>
                       </TouchableOpacity>
                     ))}
-<TouchableOpacity
+                  <TouchableOpacity
                     style={{
                       backgroundColor: 'white',
                       borderWidth: 1,
@@ -285,7 +300,9 @@ export default function NotesApp() {
                     }}
                     onPress={() => handleGetPlanById(note)}
                   >
-                    <Text style={{ color: '#58AD69', fontSize: 12 }}>Chi tiết</Text>
+                    <Text style={{ color: '#58AD69', fontSize: 12 }}>
+                      Chi tiết
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={{
