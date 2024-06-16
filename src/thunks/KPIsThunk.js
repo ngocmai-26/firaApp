@@ -133,7 +133,7 @@ export const getKpiVerifyById = createAsyncThunk(
   async (id, { dispatch, rejectWithValue }) => {
     try {
       const token = await loadTokenFromStorage()
-      let uri = `${API.uri}/kpi/verify/${id}`
+      let uri = `${API.uri}/kpis/verify/${id}`
 
       const resp = await fetch(uri, {
         method: 'PUT',
@@ -143,7 +143,6 @@ export const getKpiVerifyById = createAsyncThunk(
         },
       })
       if (resp.status >= 200 && resp.status < 300) {
-        const jsonData = await resp.json()
         dispatch(getAllKPI())
       }
     } catch (e) {
@@ -240,4 +239,33 @@ export const updateKPI = createAsyncThunk(
     },
 )
 
+export const cancelKPI = createAsyncThunk(
+  '/kpis/id',
+  async (data, { dispatch, rejectWithValue }) => {
+    try {
+      const token = await loadTokenFromStorage()
+      const resp = await fetch(`${API.uri}/kpis/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data.data),
+      })
+      const dataJson = await resp.json()
+      if (resp.status >= 300) {
+        console.log(dataJson.message[0])
+        Toast.show({
+          type: TOAST_ERROR,
+          text1: dataJson.message[0]
+        })
+        return rejectWithValue()
+      }
+
+      dispatch(getAllKPI())
+    } catch (e) {
+      console.log(e)
+    }
+  },
+)
 

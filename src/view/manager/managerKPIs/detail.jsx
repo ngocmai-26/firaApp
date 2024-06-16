@@ -66,7 +66,7 @@ function DetailKPI({ setIsModalDetail }) {
     <>
       <Modal animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+          <ScrollView style={styles.modalContent}>
             <View
               style={{
                 paddingVertical: 5,
@@ -87,28 +87,28 @@ function DetailKPI({ setIsModalDetail }) {
                 borderColor: "#ccc",
               }}
             >
-              <Text style={{ fontWeight: 500 }}>Thông tin cơ bản</Text>
+              <Text  style={{ fontWeight: 500, fontSize: 20 }}>Thông tin cơ bản</Text>
               <View>
-                <View style={{ flexDirection: "row" }}>
-                  <Text>Họ và tên: </Text>
+                <View style={{ flexDirection: "row", paddingVertical: 3 }}>
+                <Text style={{ fontWeight: 500 }}>Họ và tên: </Text>
                   <Text style={{ color: "#AAAAAA" }}>
                     {singleKPI.user.fullName}
                   </Text>
                 </View>
-                <View style={{ flexDirection: "row" }}>
-                  <Text>Phòng ban: </Text>
+                <View style={{ flexDirection: "row", paddingVertical: 3 }}>
+                  <Text style={{ fontWeight: 500 }}>Phòng ban: </Text>
                   <Text style={{ color: "#AAAAAA" }}>
                     {singleKPI.user.department}
                   </Text>
                 </View>
-                <View style={{ flexDirection: "row" }}>
-                  <Text>Email: </Text>
-                  <Text style={{ color: "#AAAAAA" }}>
+                <View style={{ flexDirection: "row", paddingVertical: 3  }}>
+                  <Text style={{ fontWeight: 500 }}>Email: </Text>
+                  <Text style={{ color: "#AAAAAA"}}>
                     {singleKPI.user?.email}
                   </Text>
                 </View>
-                <View style={{ flexDirection: "row" }}>
-                  <Text>Name Sinh: </Text>
+                <View style={{ flexDirection: "row", paddingVertical: 3 }}>
+                  <Text style={{ fontWeight: 500 }}>Năm Sinh: </Text>
                   <Text style={{ color: "#AAAAAA" }}>
                     {moment(singleKPI?.user?.birthday).format("DD-MM-YYYY")}
                   </Text>
@@ -122,7 +122,9 @@ function DetailKPI({ setIsModalDetail }) {
                 borderColor: "#ccc",
               }}
             >
-              <Text style={{ fontWeight: 500 }}>Thông tin phiếu KPI</Text>
+              <Text style={{ fontWeight: 500, fontSize: 20 }}>
+                Thông tin phiếu KPI
+              </Text>
               <View
                 style={{
                   paddingVertical: 5,
@@ -131,32 +133,42 @@ function DetailKPI({ setIsModalDetail }) {
                 <View>
                   <Text style={{ fontWeight: 500 }}>1/</Text>
                   <View>
-                    <Text>TIÊU CHÍ ĐÁNH GIÁ: </Text>
+                    <Text style={{ fontWeight: 500, paddingVertical: 3 }}>
+                      Tiêu chí đánh giá:{" "}
+                    </Text>
                     <Text style={{ fontSize: 18, color: "#AAAAAA" }}>
                       Tuân thủ giờ giấc làm việc{" "}
                     </Text>
                   </View>
                   <View style={{ flexDirection: "row" }}>
-                    <Text>ĐIỂM TỐI ĐA: </Text>
+                   <Text style={{ fontWeight: 500, paddingVertical: 3 }}>
+                      Điểm tối đa:{" "}
+                    </Text>
                     <Text style={{ color: "#AAAAAA" }}>5</Text>
                   </View>
                   <View style={{ flexDirection: "row" }}>
-                    <Text>ĐIỂM TỰ ĐÁNH GIÁ: </Text>
+                    <Text style={{ fontWeight: 500, paddingVertical: 3 }}>
+                      Điểm tự đánh giá:{" "}
+                    </Text>
                     <Text style={{ color: "#AAAAAA" }}>
                       {singleKPI?.user?.checkInPoint}
                     </Text>
                   </View>
                   <View style={{ flexDirection: "row" }}>
-                    <Text>TỈ LỆ HOÀN THÀNH: </Text>
+                     <Text style={{ fontWeight: 500, paddingVertical: 3 }}>
+                      Tỉ lệ hoàn thành:{" "}
+                    </Text>
                     <Text style={{ color: "#AAAAAA" }}>
                       {((singleKPI?.user?.checkInPoint / 95) * 5).toFixed(2)} %
                     </Text>
                   </View>
                   <View style={{ flexDirection: "row" }}>
-                    <Text>THẨM ĐỊNH: </Text>
+                    <Text  style={{ fontWeight: 500, paddingVertical: 3 }}>Thẩm định: </Text>
                     <TextInput
                       style={{
                         borderWidth: 1,
+                        borderRadius: 5,
+                        paddingHorizontal: 5,
                         borderColor: "#ccc",
                         textAlign: "center",
                       }}
@@ -170,33 +182,43 @@ function DetailKPI({ setIsModalDetail }) {
                 <View>
                   <Text style={{ fontWeight: 500 }}>2/</Text>
                   <View>
-                    <Text>TIÊU CHÍ ĐÁNH GIÁ: </Text>
+                    <Text style={{ fontWeight: 500, paddingVertical: 3 }}>
+                      Tiêu chí đánh giá:{" "}
+                    </Text>
                     <Text style={{ fontSize: 18, color: "#AAAAAA" }}>
                       Công việc hoàn thành{" "}
                     </Text>
                   </View>
                   <View style={{ flexDirection: "row" }}>
-                    <Text>ĐIỂM TỐI ĐA: </Text>
+                   <Text style={{ fontWeight: 500, paddingVertical: 3 }}>
+                      Điểm tối đa:{" "}
+                    </Text>
                     <Text style={{ color: "#AAAAAA" }}>5</Text>
                   </View>
                   <View style={{ flexDirection: "row" }}>
-                    <Text>Điểm tự đánh giá: </Text>
+                    <Text style={{ fontWeight: 500, paddingVertical: 3 }}>
+                      Điểm tự đánh giá:{" "}
+                    </Text>
                     <Text style={{ color: "#AAAAAA" }}>
                       {" "}
                       {singleKPI?.user?.jobPoint}
                     </Text>
                   </View>
                   <View style={{ flexDirection: "row" }}>
-                    <Text>TỈ LỆ HOÀN THÀNH: </Text>
+                     <Text style={{ fontWeight: 500, paddingVertical: 3 }}>
+                      Tỉ lệ hoàn thành:{" "}
+                    </Text>
                     <Text style={{ color: "#AAAAAA" }}>
                       {((singleKPI?.user?.jobPoint / 95) * 100).toFixed(2)} %
                     </Text>
                   </View>
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Text>THẨM ĐỊNH: </Text>
+                    <Text  style={{ fontWeight: 500, paddingVertical: 3 }}>Thẩm định: </Text>
                     <TextInput
                       style={{
                         borderWidth: 1,
+                        borderRadius: 5,
+                        paddingHorizontal: 5,
                         borderColor: "#ccc",
                         textAlign: "center",
                       }}
@@ -206,28 +228,28 @@ function DetailKPI({ setIsModalDetail }) {
                       }
                     />
                   </View>
-                  <View style={{ flexDirection: "row" }}>
-                    <TouchableOpacity
+                 
+                </View>
+                <View style={{ flexDirection: "row" }}>
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: "#fff",
+                      borderWidth: 1,
+                      borderColor: "black",
+                      padding: 5,
+                      borderRadius: 5,
+                    }}
+                    onPress={() => handleMore(singleKPI?.user?.id)}
+                  >
+                    <Text
                       style={{
-                        backgroundColor: "#fff",
-                        borderWidth: 1,
-                        borderColor: "#FFFF33",
-                        padding: 5,
-                        borderRadius: 5,
-                        elevation: 5,
+                        color: "black",
+                        fontSize: 16,
                       }}
-                      onPress={() => handleMore(singleKPI?.user?.id)}
                     >
-                      <Text
-                        style={{
-                          color: "black",
-                          fontSize: 16,
-                        }}
-                      >
-                        Chi tiết
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
+                      Chi tiết
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -273,6 +295,8 @@ function DetailKPI({ setIsModalDetail }) {
                       width: "100%",
                       paddingHorizontal: 10,
                       paddingVertical: 2,
+                      borderRadius: 10,
+                      marginVertical: 5,
                     }}
                   />
                 </View>
@@ -282,7 +306,8 @@ function DetailKPI({ setIsModalDetail }) {
               style={{
                 flexDirection: "row",
                 justifyContent: "flex-end",
-                marginVertical: 15,
+                marginVertical: 20,
+                paddingVertical: 10,
               }}
             >
               <TouchableOpacity
@@ -328,7 +353,7 @@ function DetailKPI({ setIsModalDetail }) {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </ScrollView>
         </View>
       </Modal>
       {kpiMore && <KPIMoreModal handleMore={handleMore} />}

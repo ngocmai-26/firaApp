@@ -100,27 +100,30 @@ function EvaluateKPIModal({ setIsModalVisible }) {
 
   const handleSubmit = () => {
     if (kpiData.timeEnd < kpiData.timeStart) {
-      Alert.alert("Lỗi", "Ngày kết thúc phải sau ngày bắt đầu!");
-      return;
+      Alert.alert('Lỗi', 'Ngày kết thúc phải sau ngày bắt đầu!')
+      return
     }
 
     if (kpiData.timeEnd > new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)) {
-      Alert.alert("Lỗi", "Ngày kết thúc không được quá 5 ngày sau ngày hiện tại!");
-      return;
+      Alert.alert(
+        'Lỗi',
+        'Ngày kết thúc không được quá 5 ngày sau ngày hiện tại!',
+      )
+      return
     }
 
     dispatch(addNewKpi(kpiData)).then((reps) => {
       if (!reps.error) {
         setIsModalVisible(false)
       }
-    });
+    })
   }
 
   return (
     <>
       <Modal animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
-        <ScrollView style={styles.modalContent}>
+          <ScrollView style={styles.modalContent}>
             <View
               style={{
                 paddingVertical: 5,
@@ -141,22 +144,24 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                 borderColor: '#ccc',
               }}
             >
-              <Text style={{ fontWeight: 500 }}>Thông tin cơ bản</Text>
+              <Text style={{ fontWeight: 500, fontSize: 20 }}>
+                Thông tin cơ bản
+              </Text>
               <View>
                 <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>Họ và tên: </Text>
+                  <Text style={{ fontWeight: 500 }}>Họ và tên: </Text>
                   <Text style={{ color: '#AAAAAA' }}>
                     {account?.user?.fullName}
                   </Text>
                 </View>
                 <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>Phòng ban: </Text>
+                  <Text style={{ fontWeight: 500 }}>Phòng ban: </Text>
                   <Text style={{ color: '#AAAAAA' }}>
                     {account?.user?.department}
                   </Text>
                 </View>
                 <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>Chức vụ: </Text>
+                  <Text style={{ fontWeight: 500 }}>Chức vụ: </Text>
                   <Text style={{ color: '#AAAAAA' }}>
                     {account?.role?.roleName === 'ROLE_ADMIN'
                       ? 'Quản trị viên'
@@ -167,13 +172,20 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                       : 'Vô danh'}
                   </Text>
                 </View>
+                <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
+                  <Text style={{ fontWeight: 500 }}>Email: </Text>
+                  <Text style={{ color: '#AAAAAA' }}>
+                    {account?.user?.email}
+                  </Text>
+                </View>
                 <View>
-                  <Text>Loại đánh giá: </Text>
+                  <Text style={{ fontWeight: 500 }}>Loại đánh giá: </Text>
                   <View
                     style={{
                       borderWidth: 1,
                       borderRadius: 10,
                       borderColor: '#CCCCCC',
+                      marginVertical: 5,
                     }}
                   >
                     <Picker
@@ -184,12 +196,11 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                           kpiTypeId: e,
                         })
                       }
+                      style={{ padding: 0, margin: 0 }}
                     >
-                      {
-                        allKPICategories.map((item) => (
-                          <Picker.Item label={item.name} value={item.id} />
-                        ))
-                      }
+                      {allKPICategories.map((item) => (
+                        <Picker.Item label={item.name} value={item.id} />
+                      ))}
                       {/* <Picker.Item label="Chọn loại lịch trình" value="hhhh" />
                       <Picker.Item label="Ngày" value="DAY" />
                       <Picker.Item label="Tháng" value="MONTH" /> */}
@@ -197,14 +208,28 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                     </Picker>
                   </View>
                 </View>
-                <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>Email: </Text>
-                  <Text style={{ color: '#AAAAAA' }}>
-                    {account?.user?.email}
-                  </Text>
-                </View>
-                <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>Ngày bắt đầu: </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    paddingVertical: 3,
+                    marginVertical: 'auto',
+                    marginTop: 10,
+                    borderTopWidth: 1,
+                    borderColor: '#CCCCCC',
+                    paddingTop: 10,
+                  }}
+                >
+                  <View style={{ justifyContent: 'center' }}>
+                    <Text
+                      style={{
+                        fontWeight: 500,
+                        marginVertical: 'auto',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Ngày bắt đầu:{' '}
+                    </Text>
+                  </View>
                   <View
                     style={{
                       flexDirection: 'row',
@@ -215,6 +240,8 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                       alignItems: 'center',
                       paddingHorizontal: 10,
                       flex: 2,
+                      paddingVertical: 5,
+                      borderRadius: 10,
                     }}
                   >
                     <TextInput
@@ -247,7 +274,17 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                   )}
                 </View>
                 <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
-                  <Text>Ngày kết thúc: </Text>
+                  <View style={{ justifyContent: 'center' }}>
+                    <Text
+                      style={{
+                        fontWeight: 500,
+                        marginVertical: 'auto',
+                        alignItems: 'center',
+                      }}
+                    >
+                      Ngày kết thúc:{' '}
+                    </Text>
+                  </View>
                   <View
                     style={{
                       flexDirection: 'row',
@@ -258,6 +295,8 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                       alignItems: 'center',
                       paddingHorizontal: 10,
                       flex: 2,
+                      paddingVertical: 5,
+                      borderRadius: 10,
                     }}
                   >
                     <TextInput
@@ -298,87 +337,88 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                 borderColor: '#ccc',
               }}
             >
-              <Text style={{ fontWeight: 500 }}>Danh sách đánh giá KPI</Text>
-              <View>
+              <Text style={{ fontWeight: 500, fontSize: 20 }}>
+                Danh sách đánh giá KPI
+              </Text>
+              <View style={{ marginVertical: 10 }}>
                 <Text style={{ fontWeight: 500 }}>1/</Text>
                 <View style={{ paddingVertical: 5 }}>
-                  <Text>TIÊU CHÍ ĐÁNH GIÁ: </Text>
+                  <Text style={{ fontWeight: 500 }}>Tiêu chí đánh giá: </Text>
                   <Text style={{ fontSize: 18, color: '#AAAAAA' }}>
                     Tuân thủ giờ giấc làm việc{' '}
                   </Text>
                 </View>
                 <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>ĐIỂM TỐI ĐA: </Text>
+                  <Text style={{ fontWeight: 500 }}>Điểm tối đa: </Text>
                   <Text style={{ color: '#AAAAAA' }}>5</Text>
                 </View>
                 <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>ĐIỂM TỰ ĐÁNH GIÁ: </Text>
+                  <Text style={{ fontWeight: 500 }}>Điểm tự đánh giá: </Text>
                   <Text style={{ color: '#AAAAAA' }}>
                     {account?.user?.checkInPoint}
                   </Text>
                 </View>
                 <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>TỈ LỆ HOÀN THÀNH: </Text>
+                  <Text style={{ fontWeight: 500 }}>Tỉ lệ hoàn thành: </Text>
                   <Text style={{ color: '#AAAAAA' }}>
                     {((account?.user?.checkInPoint / 95) * 5).toFixed(2)} %
                   </Text>
                 </View>
                 <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>THẨM ĐỊNH: </Text>
-                  <Text style={{ color: '#AAAAAA' }}>5</Text>
+                  <Text style={{ fontWeight: 500 }}>Thẩm định: </Text>
+                  <Text style={{ color: '#AAAAAA' }}>0</Text>
                 </View>
               </View>
-              <View>
+              <View style={{ marginVertical: 10 }}>
                 <Text style={{ fontWeight: 500 }}>2/</Text>
                 <View>
-                  <Text>TIÊU CHÍ ĐÁNH GIÁ: </Text>
+                  <Text style={{ fontWeight: 500 }}>Tiêu chí đánh giá: </Text>
                   <Text style={{ fontSize: 18, color: '#AAAAAA' }}>
                     Công việc hoàn thành{' '}
                   </Text>
                 </View>
                 <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>ĐIỂM TỐI ĐA: </Text>
+                  <Text style={{ fontWeight: 500 }}>Điểm tối đa: </Text>
                   <Text style={{ color: '#AAAAAA' }}>5</Text>
                 </View>
                 <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>Điểm tự đánh giá: </Text>
+                  <Text style={{ fontWeight: 500 }}>Điểm tự đánh giá: </Text>
                   <Text style={{ color: '#AAAAAA' }}>
                     {' '}
                     {account?.user?.jobPoint}
                   </Text>
                 </View>
                 <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>TỈ LỆ HOÀN THÀNH: </Text>
+                  <Text style={{ fontWeight: 500 }}>Tỉ lệ hoàn thành: </Text>
                   <Text style={{ color: '#AAAAAA' }}>
                     {((account?.user?.jobPoint / 95) * 100).toFixed(2)} %
                   </Text>
                 </View>
                 <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <Text>THẨM ĐỊNH: </Text>
-                  <Text style={{ color: '#AAAAAA' }}>5</Text>
+                  <Text style={{ fontWeight: 500 }}>Thẩm định </Text>
+                  <Text style={{ color: '#AAAAAA' }}>0</Text>
                 </View>
-                <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
-                  <TouchableOpacity
+              </View>
+              <View style={{ flexDirection: 'row', paddingVertical: 3 }}>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#fff',
+                    borderWidth: 1,
+                    borderColor: 'black',
+                    padding: 5,
+                    borderRadius: 5,
+                  }}
+                  onPress={() => handleMore(account?.user?.id)}
+                >
+                  <Text
                     style={{
-                      backgroundColor: '#fff',
-                      borderWidth: 1,
-                      borderColor: '#FFFF33',
-                      padding: 5,
-                      borderRadius: 5,
-                      elevation: 5,
+                      color: 'black',
+                      fontSize: 16,
                     }}
-                    onPress={() => handleMore(account?.user?.id)}
                   >
-                    <Text
-                      style={{
-                        color: 'black',
-                        fontSize: 16,
-                      }}
-                    >
-                      Chi tiết
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+                    Chi tiết
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
             <View
@@ -388,34 +428,38 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                 borderColor: '#ccc',
               }}
             >
-              <Text>Ghi chú</Text>
+              <Text style={{ fontWeight: 500 }}>Ghi chú</Text>
               <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 2,
-                borderWidth: 1,
-                borderColor: "#ccc",
-                paddingVertical: 2,
-                paddingHorizontal: 10,
-                borderRadius: 10,
-              }}
-            >
-              <TextInput
-              multiline={true}
-              numberOfLines={3}
-              defaultValue={kpiData.note}
-              style={styles.textInput}
-              placeholder="Ghi chú cho người đánh giá lưu ý"
-              onChangeText={(text) => setKPIData({ ...kpiData, note: text })}
-            />
-            </View>
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 2,
+                  borderWidth: 1,
+                  borderColor: '#ccc',
+                  paddingVertical: 2,
+                  paddingHorizontal: 10,
+                  borderRadius: 10,
+                  marginVertical: 5,
+                }}
+              >
+                <TextInput
+                  multiline={true}
+                  numberOfLines={3}
+                  defaultValue={kpiData.note}
+                  style={styles.textInput}
+                  placeholder="Ghi chú cho người đánh giá lưu ý"
+                  onChangeText={(text) =>
+                    setKPIData({ ...kpiData, note: text })
+                  }
+                />
+              </View>
             </View>
             <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'flex-end',
-                marginVertical: 15,
+                marginVertical: 20,
+                paddingVertical: 10,
               }}
             >
               <TouchableOpacity
@@ -461,7 +505,7 @@ function EvaluateKPIModal({ setIsModalVisible }) {
                 </Text>
               </TouchableOpacity>
             </View>
-            </ScrollView>
+          </ScrollView>
         </View>
       </Modal>
       {kpiMore && <KPIMoreModal handleMore={handleMore} />}

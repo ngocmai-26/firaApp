@@ -30,6 +30,9 @@ const ManagerKPIs = () => {
       dispatch(getAllKPI())
     }
   }, [])
+  useLayoutEffect(() => {
+    dispatch(getAllKPI())
+  }, [])
   const navigation = useNavigation()
 
   const dispatch = useDispatch()
@@ -66,7 +69,7 @@ const ManagerKPIs = () => {
   }
 
   const handleDetailModal = (item) => {
-    console.log(item)
+    // console.log(item)
     dispatch(getKpisById(item)).then((reps) => {
       if (!reps.error) {
         setIsModalDetail(true)

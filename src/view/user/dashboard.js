@@ -1,6 +1,13 @@
 // Import necessary libraries
 import React, { useEffect, useState } from 'react'
-import { ScrollView, Text, View, Dimensions, StyleSheet } from 'react-native'
+import {
+  ScrollView,
+  Text,
+  View,
+  Dimensions,
+  StyleSheet,
+  Image,
+} from 'react-native'
 import { PieChart, LineChart, BarChart } from 'react-native-chart-kit'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllDashboard } from '../../thunks/DashboardThunk'
@@ -54,7 +61,7 @@ const JobStatusDoughnutChart = ({ data }) => {
           }}
           accessor="count"
           backgroundColor="transparent"
-          paddingLeft="15"
+          paddingLeft="10"
           absolute
         />
       </View>
@@ -189,7 +196,7 @@ const KPIChart = ({ data }) => {
           }}
           accessor="count"
           backgroundColor="transparent"
-          paddingLeft="15"
+          paddingLeft="10"
           absolute
         />
       </View>
@@ -313,7 +320,7 @@ const JobStatusManagerDoughnutChart = ({ data }) => {
           }}
           accessor="count"
           backgroundColor="transparent"
-          paddingLeft="15"
+          paddingLeft="10"
           absolute
         />
       </View>
@@ -393,86 +400,109 @@ const Dashboard = () => {
   const [jobsDoneCount, setJobsDoneCount] = useState(0)
 
   useEffect(() => {
-    // Tính toán số lượng công việc đã hoàn thành khi allDashboard thay đổi
+    dispatch(getAllDashboard())
+  }, [dispatch])
+
+  useEffect(() => {
     if (
-      !allDashboard ||
-      !allDashboard.statusJobInMonth ||
-      !allDashboard.statusJobInMonth.jobsInMonth
+      allDashboard &&
+      allDashboard.statusJobInMonth &&
+      allDashboard.statusJobInMonth.jobsInMonth
     ) {
-      return 0
-    }
-
-    let doneCount = 0
-
-    allDashboard.statusJobInMonth.jobsInMonth.forEach((job) => {
-      job.userJobs.forEach((userJob) => {
-        if (userJob.status === 'DONE') {
-          doneCount++
-        }
+      let doneCount = 0
+      allDashboard.statusJobInMonth.jobsInMonth.forEach((job) => {
+        job.userJobs.forEach((userJob) => {
+          if (userJob.status === 'DONE') {
+            doneCount++
+          }
+        })
       })
-    })
-
-    setJobsDoneCount(doneCount)
-  }, [])
-
-
+      setJobsDoneCount(doneCount)
+    }
+  }, [allDashboard])
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.gridContainer}>
-        <View style={styles.card}>
-          <Text style={styles.number}>{allDashboard?.myJob || 0}</Text>
-          <Text style={styles.label}>Công việc của tôi</Text>
+      {account.role.roleName === 'ROLE_ADMIN' ||
+      account.role.roleName === 'ANONYMOUS' ? (
+        <View style={{height: "100%"}}>
+          <View style={styles.logoWrapper}>
+          <Image
+            source={require('../../../assets/loading.png')}
+            style={styles.logo}
+          />
+          <View style={{ textAlign: 'center' }}>
+            <Text style={{ textAlign: 'center', fontSize: 16 }}>
+              Hiện tại trang web đang được nâng cấp và sửa chữa vui lòng quay
+              lại sau
+            </Text>
+          </View>
         </View>
-
-        {account.role.roleName === 'ROLE_MANAGER' && (
-          <>
-            <View style={styles.card}>
-              <Text style={styles.number}>{allDashboard?.giveJob}</Text>
-              <Text style={styles.label}>Công việc đã giao</Text>
-            </View>
-            <View style={styles.card}>
-              <Text style={styles.number}>{jobsDoneCount}</Text>
-              <Text style={styles.label}>Tổng số công việc đã hoàn thành</Text>
-            </View>
-          </>
-        )}
-
-        <View style={styles.card}>
-          <Text style={styles.number}>{allDashboard?.runningPlan}</Text>
-          <Text style={styles.label}>Kế hoạch đang chạy</Text>
         </View>
-
-        {account.role.roleName !== 'ROLE_MANAGER' && (
-          <>
+      ) : (
+        <>
+          <View style={styles.gridContainer}>
             <View style={styles.card}>
-              <Text style={styles.number}>
-                {allDashboard?.dataJobInMonth?.jobDone || 0}
-              </Text>
-              <Text style={styles.label}>Việc đã hoàn thành trong tháng</Text>
+              <Text style={styles.number}>{allDashboard?.myJob || 0}</Text>
+              <Text style={styles.label}>Công việc của tôi</Text>
             </View>
 
-            <View style={styles.card}>
-              <Text style={styles.number}>{allDashboard?.checkedIn || 0}</Text>
-              <Text style={styles.label}>Đã chấm công</Text>
-            </View>
-          </>
-        )}
-      </View>
+            {account.role.roleName === 'ROLE_MANAGER' && (
+              <>
+                <View style={styles.card}>
+                  <Text style={styles.number}>{allDashboard?.giveJob}</Text>
+                  <Text style={styles.label}>Công việc đã giao</Text>
+                </View>
+                <View style={styles.card}>
+                  <Text style={styles.number}>{jobsDoneCount}</Text>
+                  <Text style={styles.label}>
+                    Tổng số công việc đã hoàn thành
+                  </Text>
+                </View>
+              </>
+            )}
 
-      {/* Biểu đồ Doughnut */}
-      {account.role.roleName === 'ROLE_STAFF' && (
-        <View style={styles.container}>
-          <JobStatusDoughnutChart data={allDashboard} />
-          <DailyJobCreationChart data={allDashboard} />
-          <KPIChart data={allDashboard} />
-          <JobEvaluateChart data={allDashboard} />
-        </View>
-      )}
-      {account.role.roleName === 'ROLE_MANAGER' && (
-        <View style={styles.container}>
-          <JobStatusManagerDoughnutChart data={allDashboard} />
-          <DailyJobManagerCreationChart data={allDashboard} />
-        </View>
+            <View style={styles.card}>
+              <Text style={styles.number}>{allDashboard?.runningPlan}</Text>
+              <Text style={styles.label}>Kế hoạch đang chạy</Text>
+            </View>
+
+            {account.role.roleName !== 'ROLE_MANAGER' && (
+              <>
+                <View style={styles.card}>
+                  <Text style={styles.number}>
+                    {allDashboard?.dataJobInMonth?.jobDone || 0}
+                  </Text>
+                  <Text style={styles.label}>
+                    Việc đã hoàn thành trong tháng
+                  </Text>
+                </View>
+
+                <View style={styles.card}>
+                  <Text style={styles.number}>
+                    {allDashboard?.checkedIn || 0}
+                  </Text>
+                  <Text style={styles.label}>Đã chấm công</Text>
+                </View>
+              </>
+            )}
+          </View>
+
+          {/* Biểu đồ Doughnut */}
+          {account.role.roleName === 'ROLE_STAFF' && (
+            <View style={styles.container}>
+              <JobStatusDoughnutChart data={allDashboard} />
+              <DailyJobCreationChart data={allDashboard} />
+              <KPIChart data={allDashboard} />
+              <JobEvaluateChart data={allDashboard} />
+            </View>
+          )}
+          {account.role.roleName === 'ROLE_MANAGER' && (
+            <View style={styles.container}>
+              <JobStatusManagerDoughnutChart data={allDashboard} />
+              <DailyJobManagerCreationChart data={allDashboard} />
+            </View>
+          )}
+        </>
       )}
     </ScrollView>
   )
@@ -543,6 +573,13 @@ const styles = StyleSheet.create({
   chartTitle: {
     textAlign: 'center',
     marginBottom: 10,
+  },
+  logoWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+    height: Dimensions.get('window').height * 0.8
   },
 })
 
