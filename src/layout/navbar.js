@@ -113,7 +113,7 @@ function NavBar({ children, hidden }) {
   }, [])
 
   useLayoutEffect(() => {
-    const ws = new SockJS('http://192.168.218.88:8082/ws')
+    const ws = new SockJS('http://192.168.1.12:8082/ws')
     const client = Stomp.over(ws)
     client.connect(
       {},

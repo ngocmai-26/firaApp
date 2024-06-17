@@ -463,7 +463,7 @@ function CreateJob() {
                           >
                             <View style={styles.avatarContainer}>
                               <Image
-                                source={{ uri: item.user.avatar }}
+                                source={{ uri: item?.user?.avatar }}
                                 style={styles.avatar}
                               />
                             </View>
@@ -526,7 +526,7 @@ function CreateJob() {
                     <ScrollView style={styles.scrollContentContainer}>
                       {account.role.roleName === "ROLE_ADMIN"? allAccount
                         ?.filter(
-                          (item) => item.role.roleName === 'ROLE_ADMIN'||
+                          (item) => item?.role?.roleName === 'ROLE_ADMIN'||
                           item.active === false,
                         )
                         .map((item) => (
@@ -535,7 +535,7 @@ function CreateJob() {
                             onPress={() =>
                               setNewJobData({
                                 ...newJobData,
-                                userCreateJobId: item.user.id,
+                                userCreateJobId: item?.user?.id,
                               })
                             }
                             style={[
@@ -556,7 +556,7 @@ function CreateJob() {
                             </View>
                             <View style={styles.nameContainer}>
                               <Text style={styles.fullName}>
-                                {item.user.fullName}
+                                {item?.user?.fullName}
                               </Text>
                             </View>
                           </TouchableOpacity>
@@ -581,13 +581,13 @@ function CreateJob() {
                           >
                             <View style={styles.avatarContainer}>
                               <Image
-                                source={{ uri: item.user.avatar }}
+                                source={{ uri: item?.user?.avatar }}
                                 style={styles.avatar}
                               />
                             </View>
                             <View style={styles.nameContainer}>
                               <Text style={styles.fullName}>
-                                {item.user.fullName}
+                                {item?.user?.fullName}
                               </Text>
                             </View>
                           </TouchableOpacity>
