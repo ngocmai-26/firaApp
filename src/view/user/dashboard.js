@@ -35,7 +35,7 @@ const JobStatusDoughnutChart = ({ data }) => {
     return acc
   }, {})
 
-  const allStatuses = ['PENDING', 'PROCESSING', 'DONE']
+  const allStatuses = ["Đang chờ xử lý", "Đang xử lý", "Hoàn thành"]
   const pieData = allStatuses.map((status, index) => ({
     name: status,
     count: jobStatusCounts[status] || 0,
@@ -157,21 +157,21 @@ const KPIChart = ({ data }) => {
 
   const pieData = [
     {
-      name: 'DONE',
+      name: "Hoàn thành",
       count: doneRate,
       color: '#4BC0C0',
       legendFontColor: '#7F7F7F',
       legendFontSize: 15,
     },
     {
-      name: 'EVALUATE',
+      name: "Đang đánh giá",
       count: evaluateRate,
       color: '#FF6384',
       legendFontColor: '#7F7F7F',
       legendFontSize: 15,
     },
     {
-      name: 'NOT COMPLETED',
+      name: "Chưa hoàn thành",
       count: notCompletedRate,
       color: '#36A2EB',
       legendFontColor: '#7F7F7F',
@@ -223,7 +223,7 @@ const JobEvaluateChart = ({ data }) => {
     evaluateCounts[evaluate] += 1
   })
 
-  const allStatuses = ['BAD', 'MEDIUM', 'GOOD', 'NOT DONE']
+  const allStatuses = ["Xấu", "Trung bình", "Tốt", "Không"]
   const barData = {
     labels: allStatuses,
     datasets: [
@@ -493,7 +493,7 @@ const Dashboard = () => {
               <JobStatusDoughnutChart data={allDashboard} />
               <DailyJobCreationChart data={allDashboard} />
               <KPIChart data={allDashboard} />
-              <JobEvaluateChart data={allDashboard} />
+              {/* <JobEvaluateChart data={allDashboard} /> */}
             </View>
           )}
           {account.role.roleName === 'ROLE_MANAGER' && (
